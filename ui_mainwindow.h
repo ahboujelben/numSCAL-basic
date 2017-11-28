@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.2.0
+** Created by: Qt User Interface Compiler version 5.9.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -570,7 +570,7 @@ public:
         tab_8->setObjectName(QStringLiteral("tab_8"));
         groupBox_21 = new QGroupBox(tab_8);
         groupBox_21->setObjectName(QStringLiteral("groupBox_21"));
-        groupBox_21->setGeometry(QRect(10, 10, 291, 151));
+        groupBox_21->setGeometry(QRect(10, 10, 321, 151));
         groupBox_21->setFlat(true);
         choleskyRadioButton = new QRadioButton(groupBox_21);
         choleskyRadioButton->setObjectName(QStringLiteral("choleskyRadioButton"));
@@ -582,7 +582,7 @@ public:
         bicstabRadioButton->setChecked(false);
         calcPermCheckBox = new QCheckBox(groupBox_21);
         calcPermCheckBox->setObjectName(QStringLiteral("calcPermCheckBox"));
-        calcPermCheckBox->setGeometry(QRect(100, 20, 191, 21));
+        calcPermCheckBox->setGeometry(QRect(100, 20, 221, 21));
         calcPermCheckBox->setChecked(true);
         networkTabBox->addTab(tab_8, QString());
         tab_5 = new QWidget();
@@ -866,14 +866,14 @@ public:
         tab_19->setObjectName(QStringLiteral("tab_19"));
         groupBox_8 = new QGroupBox(tab_19);
         groupBox_8->setObjectName(QStringLiteral("groupBox_8"));
-        groupBox_8->setGeometry(QRect(10, 10, 181, 151));
+        groupBox_8->setGeometry(QRect(10, 10, 201, 151));
         groupBox_8->setFlat(true);
         twoPhaseRPermCheckBox = new QCheckBox(groupBox_8);
         twoPhaseRPermCheckBox->setObjectName(QStringLiteral("twoPhaseRPermCheckBox"));
-        twoPhaseRPermCheckBox->setGeometry(QRect(10, 20, 171, 21));
+        twoPhaseRPermCheckBox->setGeometry(QRect(10, 20, 191, 21));
         twoPhasePostProcessCheckBox = new QCheckBox(groupBox_8);
         twoPhasePostProcessCheckBox->setObjectName(QStringLiteral("twoPhasePostProcessCheckBox"));
-        twoPhasePostProcessCheckBox->setGeometry(QRect(10, 40, 171, 21));
+        twoPhasePostProcessCheckBox->setGeometry(QRect(10, 40, 191, 21));
         twoPhasePostProcessCheckBox->setChecked(false);
         tabWidget_2->addTab(tab_19, QString());
 
@@ -1369,356 +1369,356 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "numSCAL", 0));
-        label->setText(QApplication::translate("MainWindow", "Network Properties", 0));
-        extractedRadioButton->setText(QApplication::translate("MainWindow", "E&xtracted Network", 0));
-        calibratedRadioButton->setText(QApplication::translate("MainWindow", "Regular Network", 0));
-        pathToExtractedLabel->setText(QApplication::translate("MainWindow", "Path to Extracted Network", 0));
-        loadNetworkButton->setText(QApplication::translate("MainWindow", "Load Network", 0));
-        pathToExtractedLineEdit->setText(QApplication::translate("MainWindow", "Extracted Networks/", 0));
-        rockPrefixLabel->setText(QApplication::translate("MainWindow", "Rock Prefix", 0));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "numSCAL", Q_NULLPTR));
+        label->setText(QApplication::translate("MainWindow", "Network Properties", Q_NULLPTR));
+        extractedRadioButton->setText(QApplication::translate("MainWindow", "E&xtracted Network", Q_NULLPTR));
+        calibratedRadioButton->setText(QApplication::translate("MainWindow", "Regular Network", Q_NULLPTR));
+        pathToExtractedLabel->setText(QApplication::translate("MainWindow", "Path to Extracted Network", Q_NULLPTR));
+        loadNetworkButton->setText(QApplication::translate("MainWindow", "Load Network", Q_NULLPTR));
+        pathToExtractedLineEdit->setText(QApplication::translate("MainWindow", "Extracted Networks/", Q_NULLPTR));
+        rockPrefixLabel->setText(QApplication::translate("MainWindow", "Rock Prefix", Q_NULLPTR));
         networkRunningLabel->setText(QString());
-        extendCheckBox->setText(QApplication::translate("MainWindow", "Extend", 0));
-        loadFromFileRadioButton->setText(QApplication::translate("MainWindow", "&Load  from File", 0));
-        oneDirection->setText(QApplication::translate("MainWindow", "1D", 0));
+        extendCheckBox->setText(QApplication::translate("MainWindow", "Extend", Q_NULLPTR));
+        loadFromFileRadioButton->setText(QApplication::translate("MainWindow", "&Load  from File", Q_NULLPTR));
+        oneDirection->setText(QApplication::translate("MainWindow", "1D", Q_NULLPTR));
         rockList->clear();
         rockList->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Berea", 0)
-         << QApplication::translate("MainWindow", "A1", 0)
-         << QApplication::translate("MainWindow", "C1", 0)
-         << QApplication::translate("MainWindow", "F42A", 0)
-         << QApplication::translate("MainWindow", "F42B", 0)
-         << QApplication::translate("MainWindow", "F42C", 0)
-         << QApplication::translate("MainWindow", "LV60A", 0)
-         << QApplication::translate("MainWindow", "LV60B", 0)
-         << QApplication::translate("MainWindow", "LV60C", 0)
-         << QApplication::translate("MainWindow", "S1", 0)
-         << QApplication::translate("MainWindow", "S2", 0)
-         << QApplication::translate("MainWindow", "S3", 0)
-         << QApplication::translate("MainWindow", "S4", 0)
-         << QApplication::translate("MainWindow", "S5", 0)
-         << QApplication::translate("MainWindow", "S6", 0)
-         << QApplication::translate("MainWindow", "S7", 0)
-         << QApplication::translate("MainWindow", "S8", 0)
-         << QApplication::translate("MainWindow", "S9", 0)
+         << QApplication::translate("MainWindow", "Berea", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "A1", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "C1", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "F42A", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "F42B", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "F42C", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "LV60A", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "LV60B", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "LV60C", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "S1", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "S2", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "S3", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "S4", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "S5", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "S6", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "S7", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "S8", Q_NULLPTR)
+         << QApplication::translate("MainWindow", "S9", Q_NULLPTR)
         );
-        rockList->setCurrentText(QApplication::translate("MainWindow", "Berea", 0));
-        extensionNumber->setText(QApplication::translate("MainWindow", "2", 0));
-        label_x->setText(QApplication::translate("MainWindow", "x", 0));
-        networkTabBox->setTabText(networkTabBox->indexOf(tab), QApplication::translate("MainWindow", "Source", 0));
-        groupBox_3->setTitle(QApplication::translate("MainWindow", "Network Size", 0));
-        label_10->setText(QApplication::translate("MainWindow", "Seed", 0));
+        rockList->setCurrentText(QApplication::translate("MainWindow", "Berea", Q_NULLPTR));
+        extensionNumber->setText(QApplication::translate("MainWindow", "2", Q_NULLPTR));
+        label_x->setText(QApplication::translate("MainWindow", "x", Q_NULLPTR));
+        networkTabBox->setTabText(networkTabBox->indexOf(tab), QApplication::translate("MainWindow", "Source", Q_NULLPTR));
+        groupBox_3->setTitle(QApplication::translate("MainWindow", "Network Size", Q_NULLPTR));
+        label_10->setText(QApplication::translate("MainWindow", "Seed", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        NxSpinBox->setToolTip(QApplication::translate("MainWindow", "number of elements in X direction", 0));
+        NxSpinBox->setToolTip(QApplication::translate("MainWindow", "number of elements in X direction", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        NxSpinBox->setText(QApplication::translate("MainWindow", "30", 0));
+        NxSpinBox->setText(QApplication::translate("MainWindow", "30", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        NySpinBox->setToolTip(QApplication::translate("MainWindow", "number of elements in Y direction", 0));
+        NySpinBox->setToolTip(QApplication::translate("MainWindow", "number of elements in Y direction", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        NySpinBox->setText(QApplication::translate("MainWindow", "30", 0));
+        NySpinBox->setText(QApplication::translate("MainWindow", "30", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        NzSpinBox->setToolTip(QApplication::translate("MainWindow", "number of elements in Z direction", 0));
+        NzSpinBox->setToolTip(QApplication::translate("MainWindow", "number of elements in Z direction", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        NzSpinBox->setText(QApplication::translate("MainWindow", "1", 0));
-        label_25->setText(QApplication::translate("MainWindow", "Nx", 0));
-        label_27->setText(QApplication::translate("MainWindow", "Ny", 0));
-        label_51->setText(QApplication::translate("MainWindow", "Nz", 0));
-        seed->setText(QApplication::translate("MainWindow", "50", 0));
-        groupBox_4->setTitle(QApplication::translate("MainWindow", "Pore Size Distribution", 0));
-        psdRayleighRadioButton->setText(QApplication::translate("MainWindow", "Rayleigh", 0));
-        label_5->setText(QApplication::translate("MainWindow", "Max Radius", 0));
+        NzSpinBox->setText(QApplication::translate("MainWindow", "1", Q_NULLPTR));
+        label_25->setText(QApplication::translate("MainWindow", "Nx", Q_NULLPTR));
+        label_27->setText(QApplication::translate("MainWindow", "Ny", Q_NULLPTR));
+        label_51->setText(QApplication::translate("MainWindow", "Nz", Q_NULLPTR));
+        seed->setText(QApplication::translate("MainWindow", "50", Q_NULLPTR));
+        groupBox_4->setTitle(QApplication::translate("MainWindow", "Pore Size Distribution", Q_NULLPTR));
+        psdRayleighRadioButton->setText(QApplication::translate("MainWindow", "Rayleigh", Q_NULLPTR));
+        label_5->setText(QApplication::translate("MainWindow", "Max Radius", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        minRadiusLineEdit->setToolTip(QApplication::translate("MainWindow", "um", 0));
+        minRadiusLineEdit->setToolTip(QApplication::translate("MainWindow", "um", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        minRadiusLineEdit->setText(QApplication::translate("MainWindow", "5", 0));
-        psdUniformRadioButton->setText(QApplication::translate("MainWindow", "U&niform", 0));
+        minRadiusLineEdit->setText(QApplication::translate("MainWindow", "5", Q_NULLPTR));
+        psdUniformRadioButton->setText(QApplication::translate("MainWindow", "U&niform", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        maxRadiusLineEdit->setToolTip(QApplication::translate("MainWindow", "um", 0));
+        maxRadiusLineEdit->setToolTip(QApplication::translate("MainWindow", "um", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        maxRadiusLineEdit->setText(QApplication::translate("MainWindow", "20", 0));
-        label_6->setText(QApplication::translate("MainWindow", "Min Radius", 0));
+        maxRadiusLineEdit->setText(QApplication::translate("MainWindow", "20", Q_NULLPTR));
+        label_6->setText(QApplication::translate("MainWindow", "Min Radius", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        rayleighParamLineEdit->setToolTip(QApplication::translate("MainWindow", "lambda (um)", 0));
+        rayleighParamLineEdit->setToolTip(QApplication::translate("MainWindow", "lambda (um)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        rayleighParamLineEdit->setText(QApplication::translate("MainWindow", "10", 0));
+        rayleighParamLineEdit->setText(QApplication::translate("MainWindow", "10", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        volConsRadiusLineEdit->setToolTip(QApplication::translate("MainWindow", "volume constant (3Rs approach)", 0));
+        volConsRadiusLineEdit->setToolTip(QApplication::translate("MainWindow", "volume constant (3Rs approach)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        volConsRadiusLineEdit->setText(QApplication::translate("MainWindow", "1", 0));
-        label_13->setText(QApplication::translate("MainWindow", "Vol. Cons.", 0));
-        label_14->setText(QApplication::translate("MainWindow", "Vol. Exp.", 0));
+        volConsRadiusLineEdit->setText(QApplication::translate("MainWindow", "1", Q_NULLPTR));
+        label_13->setText(QApplication::translate("MainWindow", "Vol. Cons.", Q_NULLPTR));
+        label_14->setText(QApplication::translate("MainWindow", "Vol. Exp.", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        volExpLineEdit->setToolTip(QApplication::translate("MainWindow", "volume exponent (3Rs approach)", 0));
+        volExpLineEdit->setToolTip(QApplication::translate("MainWindow", "volume exponent (3Rs approach)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        volExpLineEdit->setText(QApplication::translate("MainWindow", "2", 0));
-        label_17->setText(QApplication::translate("MainWindow", "Cond. Cons.", 0));
+        volExpLineEdit->setText(QApplication::translate("MainWindow", "2", Q_NULLPTR));
+        label_17->setText(QApplication::translate("MainWindow", "Cond. Cons.", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        condConsLineEdit->setToolTip(QApplication::translate("MainWindow", "conductance constant (3Rs approach)", 0));
+        condConsLineEdit->setToolTip(QApplication::translate("MainWindow", "conductance constant (3Rs approach)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        condConsLineEdit->setText(QApplication::translate("MainWindow", "1", 0));
-        label_19->setText(QApplication::translate("MainWindow", "Cond. Exp.", 0));
+        condConsLineEdit->setText(QApplication::translate("MainWindow", "1", Q_NULLPTR));
+        label_19->setText(QApplication::translate("MainWindow", "Cond. Exp.", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        condExpLineEdit->setToolTip(QApplication::translate("MainWindow", "conductance exponent (3Rs approach)", 0));
+        condExpLineEdit->setToolTip(QApplication::translate("MainWindow", "conductance exponent (3Rs approach)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        condExpLineEdit->setText(QApplication::translate("MainWindow", "4", 0));
-        psdTriangularRadioButton->setText(QApplication::translate("MainWindow", "Triang.", 0));
+        condExpLineEdit->setText(QApplication::translate("MainWindow", "4", Q_NULLPTR));
+        psdTriangularRadioButton->setText(QApplication::translate("MainWindow", "Triang.", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        triangularParameter->setToolTip(QApplication::translate("MainWindow", "c (a=minRadius , b=maxRadius) (um)", 0));
+        triangularParameter->setToolTip(QApplication::translate("MainWindow", "c (a=minRadius , b=maxRadius) (um)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        triangularParameter->setText(QApplication::translate("MainWindow", "10", 0));
-        psdNormalRadioButton->setText(QApplication::translate("MainWindow", "TN", 0));
+        triangularParameter->setText(QApplication::translate("MainWindow", "10", Q_NULLPTR));
+        psdNormalRadioButton->setText(QApplication::translate("MainWindow", "TN", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        muNormalParameter->setToolTip(QApplication::translate("MainWindow", "u (mean) (um)", 0));
+        muNormalParameter->setToolTip(QApplication::translate("MainWindow", "u (mean) (um)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        muNormalParameter->setText(QApplication::translate("MainWindow", "1", 0));
+        muNormalParameter->setText(QApplication::translate("MainWindow", "1", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        sigmaNormalParameter->setToolTip(QApplication::translate("MainWindow", "sigma (variance) (um)", 0));
+        sigmaNormalParameter->setToolTip(QApplication::translate("MainWindow", "sigma (variance) (um)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        sigmaNormalParameter->setText(QApplication::translate("MainWindow", "1", 0));
-        groupBox_5->setTitle(QApplication::translate("MainWindow", "Connectivity", 0));
+        sigmaNormalParameter->setText(QApplication::translate("MainWindow", "1", Q_NULLPTR));
+        groupBox_5->setTitle(QApplication::translate("MainWindow", "Connectivity", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        lengthLineEdit->setToolTip(QApplication::translate("MainWindow", "um", 0));
+        lengthLineEdit->setToolTip(QApplication::translate("MainWindow", "um", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        lengthLineEdit->setText(QApplication::translate("MainWindow", "100", 0));
-        lengthLineEdit->setPlaceholderText(QApplication::translate("MainWindow", "um", 0));
-        label_9->setText(QApplication::translate("MainWindow", "Distort", 0));
-        label_8->setText(QApplication::translate("MainWindow", "Length", 0));
-        label_7->setText(QApplication::translate("MainWindow", "Z", 0));
-        label_11->setText(QApplication::translate("MainWindow", "A. Ratio", 0));
+        lengthLineEdit->setText(QApplication::translate("MainWindow", "100", Q_NULLPTR));
+        lengthLineEdit->setPlaceholderText(QApplication::translate("MainWindow", "um", Q_NULLPTR));
+        label_9->setText(QApplication::translate("MainWindow", "Distort", Q_NULLPTR));
+        label_8->setText(QApplication::translate("MainWindow", "Length", Q_NULLPTR));
+        label_7->setText(QApplication::translate("MainWindow", "Z", Q_NULLPTR));
+        label_11->setText(QApplication::translate("MainWindow", "A. Ratio", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        zSpinBox->setToolTip(QApplication::translate("MainWindow", "coordination number", 0));
+        zSpinBox->setToolTip(QApplication::translate("MainWindow", "coordination number", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        zSpinBox->setText(QApplication::translate("MainWindow", "6", 0));
+        zSpinBox->setText(QApplication::translate("MainWindow", "6", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        distortionSpinBox->setToolTip(QApplication::translate("MainWindow", "distortion factor", 0));
+        distortionSpinBox->setToolTip(QApplication::translate("MainWindow", "distortion factor", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        distortionSpinBox->setText(QApplication::translate("MainWindow", "0", 0));
+        distortionSpinBox->setText(QApplication::translate("MainWindow", "0", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        aspectRatioSpinBox->setToolTip(QApplication::translate("MainWindow", "aspect ratio (node/throat)", 0));
+        aspectRatioSpinBox->setToolTip(QApplication::translate("MainWindow", "aspect ratio (node/throat)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        aspectRatioSpinBox->setText(QApplication::translate("MainWindow", "2", 0));
-        networkTabBox->setTabText(networkTabBox->indexOf(geometryTab), QApplication::translate("MainWindow", "Geometry", 0));
-        groupBox->setTitle(QApplication::translate("MainWindow", "Wettability Type", 0));
-        wwSpinBox->setText(QApplication::translate("MainWindow", "Water Wet", 0));
-        owSpinBox->setText(QApplication::translate("MainWindow", "Oil Wet", 0));
-        mwlSpinBox->setText(QApplication::translate("MainWindow", "Mi&x Wet Large", 0));
-        fwSpinBox->setText(QApplication::translate("MainWindow", "Fractional Wet", 0));
-        mwsSpinBox->setText(QApplication::translate("MainWindow", "Mix Wet Small", 0));
-        groupBox_2->setTitle(QApplication::translate("MainWindow", "Water Contact Angle", 0));
-        waterWetLabel->setText(QApplication::translate("MainWindow", "WW", 0));
-        oilWetLabel->setText(QApplication::translate("MainWindow", "OW", 0));
-        to1Label->setText(QApplication::translate("MainWindow", "to", 0));
-        to2Label->setText(QApplication::translate("MainWindow", "to", 0));
-        oilWetFractionLabel->setText(QApplication::translate("MainWindow", "OW Pores Fraction", 0));
-        label_12->setText(QApplication::translate("MainWindow", "Shape Factor", 0));
-        shapeFactor->setText(QApplication::translate("MainWindow", "0.03", 0));
-        shapeFactor->setPlaceholderText(QApplication::translate("MainWindow", "um", 0));
+        aspectRatioSpinBox->setText(QApplication::translate("MainWindow", "2", Q_NULLPTR));
+        networkTabBox->setTabText(networkTabBox->indexOf(geometryTab), QApplication::translate("MainWindow", "Geometry", Q_NULLPTR));
+        groupBox->setTitle(QApplication::translate("MainWindow", "Wettability Type", Q_NULLPTR));
+        wwSpinBox->setText(QApplication::translate("MainWindow", "Water Wet", Q_NULLPTR));
+        owSpinBox->setText(QApplication::translate("MainWindow", "Oil Wet", Q_NULLPTR));
+        mwlSpinBox->setText(QApplication::translate("MainWindow", "Mi&x Wet Large", Q_NULLPTR));
+        fwSpinBox->setText(QApplication::translate("MainWindow", "Fractional Wet", Q_NULLPTR));
+        mwsSpinBox->setText(QApplication::translate("MainWindow", "Mix Wet Small", Q_NULLPTR));
+        groupBox_2->setTitle(QApplication::translate("MainWindow", "Water Contact Angle", Q_NULLPTR));
+        waterWetLabel->setText(QApplication::translate("MainWindow", "WW", Q_NULLPTR));
+        oilWetLabel->setText(QApplication::translate("MainWindow", "OW", Q_NULLPTR));
+        to1Label->setText(QApplication::translate("MainWindow", "to", Q_NULLPTR));
+        to2Label->setText(QApplication::translate("MainWindow", "to", Q_NULLPTR));
+        oilWetFractionLabel->setText(QApplication::translate("MainWindow", "OW Pores Fraction", Q_NULLPTR));
+        label_12->setText(QApplication::translate("MainWindow", "Shape Factor", Q_NULLPTR));
+        shapeFactor->setText(QApplication::translate("MainWindow", "0.03", Q_NULLPTR));
+        shapeFactor->setPlaceholderText(QApplication::translate("MainWindow", "um", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        minWWThetaSpinBox->setToolTip(QApplication::translate("MainWindow", "deg", 0));
+        minWWThetaSpinBox->setToolTip(QApplication::translate("MainWindow", "deg", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        minWWThetaSpinBox->setText(QApplication::translate("MainWindow", "0", 0));
+        minWWThetaSpinBox->setText(QApplication::translate("MainWindow", "0", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        maxWWThetaSpinBox->setToolTip(QApplication::translate("MainWindow", "deg", 0));
+        maxWWThetaSpinBox->setToolTip(QApplication::translate("MainWindow", "deg", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        maxWWThetaSpinBox->setText(QApplication::translate("MainWindow", "0", 0));
+        maxWWThetaSpinBox->setText(QApplication::translate("MainWindow", "0", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        minOWThetaSpinBox->setToolTip(QApplication::translate("MainWindow", "deg", 0));
+        minOWThetaSpinBox->setToolTip(QApplication::translate("MainWindow", "deg", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        minOWThetaSpinBox->setText(QApplication::translate("MainWindow", "180", 0));
+        minOWThetaSpinBox->setText(QApplication::translate("MainWindow", "180", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        maxOWThetaSpinBox->setToolTip(QApplication::translate("MainWindow", "deg", 0));
+        maxOWThetaSpinBox->setToolTip(QApplication::translate("MainWindow", "deg", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        maxOWThetaSpinBox->setText(QApplication::translate("MainWindow", "180", 0));
+        maxOWThetaSpinBox->setText(QApplication::translate("MainWindow", "180", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        owFractionSpinBox->setToolTip(QApplication::translate("MainWindow", "fraction", 0));
+        owFractionSpinBox->setToolTip(QApplication::translate("MainWindow", "fraction", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        owFractionSpinBox->setText(QApplication::translate("MainWindow", "0.5", 0));
-        networkTabBox->setTabText(networkTabBox->indexOf(tab_4), QApplication::translate("MainWindow", "Wettability", 0));
-        groupBox_21->setTitle(QApplication::translate("MainWindow", "Solver", 0));
-        choleskyRadioButton->setText(QApplication::translate("MainWindow", "Choles&ky", 0));
-        bicstabRadioButton->setText(QApplication::translate("MainWindow", "BICSTAB", 0));
-        calcPermCheckBox->setText(QApplication::translate("MainWindow", "Calculate Absolute Permeability", 0));
-        networkTabBox->setTabText(networkTabBox->indexOf(tab_8), QApplication::translate("MainWindow", "Misc", 0));
-        groupBox_14->setTitle(QApplication::translate("MainWindow", "Network Properties", 0));
-        label_16->setText(QApplication::translate("MainWindow", "Porosity", 0));
-        label_15->setText(QApplication::translate("MainWindow", "Permeabilty", 0));
+        owFractionSpinBox->setText(QApplication::translate("MainWindow", "0.5", Q_NULLPTR));
+        networkTabBox->setTabText(networkTabBox->indexOf(tab_4), QApplication::translate("MainWindow", "Wettability", Q_NULLPTR));
+        groupBox_21->setTitle(QApplication::translate("MainWindow", "Solver", Q_NULLPTR));
+        choleskyRadioButton->setText(QApplication::translate("MainWindow", "Choles&ky", Q_NULLPTR));
+        bicstabRadioButton->setText(QApplication::translate("MainWindow", "BICSTAB", Q_NULLPTR));
+        calcPermCheckBox->setText(QApplication::translate("MainWindow", "Calculate Absolute Permeability", Q_NULLPTR));
+        networkTabBox->setTabText(networkTabBox->indexOf(tab_8), QApplication::translate("MainWindow", "Misc", Q_NULLPTR));
+        groupBox_14->setTitle(QApplication::translate("MainWindow", "Network Properties", Q_NULLPTR));
+        label_16->setText(QApplication::translate("MainWindow", "Porosity", Q_NULLPTR));
+        label_15->setText(QApplication::translate("MainWindow", "Permeabilty", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        porosityLabel->setToolTip(QApplication::translate("MainWindow", "%", 0));
+        porosityLabel->setToolTip(QApplication::translate("MainWindow", "%", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        porosityLabel->setText(QApplication::translate("MainWindow", "NA", 0));
+        porosityLabel->setText(QApplication::translate("MainWindow", "NA", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        permeabilityLabel->setToolTip(QApplication::translate("MainWindow", "mDarcy", 0));
+        permeabilityLabel->setToolTip(QApplication::translate("MainWindow", "mDarcy", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        permeabilityLabel->setText(QApplication::translate("MainWindow", "NA", 0));
-        label_35->setText(QApplication::translate("MainWindow", "Total Pores", 0));
-        totalPoresLabel->setText(QApplication::translate("MainWindow", "NA", 0));
-        totalNodesLabel->setText(QApplication::translate("MainWindow", "NA", 0));
-        label_38->setText(QApplication::translate("MainWindow", "Total Nodes", 0));
-        saveNetworkImageButton->setText(QApplication::translate("MainWindow", "Save Network Image", 0));
-        networkTabBox->setTabText(networkTabBox->indexOf(tab_5), QApplication::translate("MainWindow", "Results", 0));
-        label_3->setText(QApplication::translate("MainWindow", "Simulation Workflow", 0));
-        PDCheckBox->setText(QApplication::translate("MainWindow", "Primary Drainage", 0));
-        PICheckBox->setText(QApplication::translate("MainWindow", "Spont. Imbibition", 0));
-        SDCheckBox->setText(QApplication::translate("MainWindow", "Forced W. Injection", 0));
-        SICheckBox->setText(QApplication::translate("MainWindow", "Spont. O. Invasion", 0));
-        TDCheckBox->setText(QApplication::translate("MainWindow", "Secondary O. Drainage", 0));
-        twoPhaseSimButton->setText(QApplication::translate("MainWindow", "Run Simulation", 0));
-        twoPhaseSimStopButton->setText(QApplication::translate("MainWindow", "Stop Simulation", 0));
+        permeabilityLabel->setText(QApplication::translate("MainWindow", "NA", Q_NULLPTR));
+        label_35->setText(QApplication::translate("MainWindow", "Total Pores", Q_NULLPTR));
+        totalPoresLabel->setText(QApplication::translate("MainWindow", "NA", Q_NULLPTR));
+        totalNodesLabel->setText(QApplication::translate("MainWindow", "NA", Q_NULLPTR));
+        label_38->setText(QApplication::translate("MainWindow", "Total Nodes", Q_NULLPTR));
+        saveNetworkImageButton->setText(QApplication::translate("MainWindow", "Save Network Image", Q_NULLPTR));
+        networkTabBox->setTabText(networkTabBox->indexOf(tab_5), QApplication::translate("MainWindow", "Results", Q_NULLPTR));
+        label_3->setText(QApplication::translate("MainWindow", "Simulation Workflow", Q_NULLPTR));
+        PDCheckBox->setText(QApplication::translate("MainWindow", "Primary Drainage", Q_NULLPTR));
+        PICheckBox->setText(QApplication::translate("MainWindow", "Spont. Imbibition", Q_NULLPTR));
+        SDCheckBox->setText(QApplication::translate("MainWindow", "Forced W. Injection", Q_NULLPTR));
+        SICheckBox->setText(QApplication::translate("MainWindow", "Spont. O. Invasion", Q_NULLPTR));
+        TDCheckBox->setText(QApplication::translate("MainWindow", "Secondary O. Drainage", Q_NULLPTR));
+        twoPhaseSimButton->setText(QApplication::translate("MainWindow", "Run Simulation", Q_NULLPTR));
+        twoPhaseSimStopButton->setText(QApplication::translate("MainWindow", "Stop Simulation", Q_NULLPTR));
         twoPhaseRunningLabel->setText(QString());
-        twoPhaseFlowSteady->setText(QApplication::translate("MainWindow", "SS Flow", 0));
-        twoPhaseFlowUnSteady->setText(QApplication::translate("MainWindow", "Tracer Flow", 0));
-        twoPhaseLoadFromFileRadioButton->setText(QApplication::translate("MainWindow", "&Load  from File", 0));
-        twoPhaseFlowUnSteadyFast->setText(QApplication::translate("MainWindow", "USS Flow", 0));
-        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_3), QApplication::translate("MainWindow", "Cycles", 0));
-        groupBox_6->setTitle(QApplication::translate("MainWindow", "Parameters", 0));
-        label_60->setText(QApplication::translate("MainWindow", "PC Variation Steps", 0));
-        twoPhaseStepsLineEdit->setText(QApplication::translate("MainWindow", "100", 0));
-        groupBox_20->setTitle(QApplication::translate("MainWindow", "Film properties", 0));
-        waterWetLabel_2->setText(QApplication::translate("MainWindow", "Film Conductance Resistivity", 0));
+        twoPhaseFlowSteady->setText(QApplication::translate("MainWindow", "SS Flow", Q_NULLPTR));
+        twoPhaseFlowUnSteady->setText(QApplication::translate("MainWindow", "Tracer Flow", Q_NULLPTR));
+        twoPhaseLoadFromFileRadioButton->setText(QApplication::translate("MainWindow", "&Load  from File", Q_NULLPTR));
+        twoPhaseFlowUnSteadyFast->setText(QApplication::translate("MainWindow", "USS Flow", Q_NULLPTR));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_3), QApplication::translate("MainWindow", "Cycles", Q_NULLPTR));
+        groupBox_6->setTitle(QApplication::translate("MainWindow", "Parameters", Q_NULLPTR));
+        label_60->setText(QApplication::translate("MainWindow", "PC Variation Steps", Q_NULLPTR));
+        twoPhaseStepsLineEdit->setText(QApplication::translate("MainWindow", "100", Q_NULLPTR));
+        groupBox_20->setTitle(QApplication::translate("MainWindow", "Film properties", Q_NULLPTR));
+        waterWetLabel_2->setText(QApplication::translate("MainWindow", "Film Conductance Resistivity", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhasefilmConductance->setToolTip(QApplication::translate("MainWindow", "Cw (Oren, 1998)", 0));
+        twoPhasefilmConductance->setToolTip(QApplication::translate("MainWindow", "Cw (Oren, 1998)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhasefilmConductance->setText(QApplication::translate("MainWindow", "100", 0));
-        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_11), QApplication::translate("MainWindow", "SS", 0));
-        groupBox_10->setTitle(QApplication::translate("MainWindow", "Flow Properties", 0));
+        twoPhasefilmConductance->setText(QApplication::translate("MainWindow", "100", Q_NULLPTR));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_11), QApplication::translate("MainWindow", "SS", Q_NULLPTR));
+        groupBox_10->setTitle(QApplication::translate("MainWindow", "Flow Properties", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseFlowRateLineEdit->setToolTip(QApplication::translate("MainWindow", "m^3/s", 0));
+        twoPhaseFlowRateLineEdit->setToolTip(QApplication::translate("MainWindow", "m^3/s", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseFlowRateLineEdit->setText(QApplication::translate("MainWindow", "1e-10", 0));
-        label_73->setText(QApplication::translate("MainWindow", "Flow Rate", 0));
+        twoPhaseFlowRateLineEdit->setText(QApplication::translate("MainWindow", "1e-10", Q_NULLPTR));
+        label_73->setText(QApplication::translate("MainWindow", "Flow Rate", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseSimulationTimeLineEdit->setToolTip(QApplication::translate("MainWindow", "seconds", 0));
+        twoPhaseSimulationTimeLineEdit->setToolTip(QApplication::translate("MainWindow", "seconds", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseSimulationTimeLineEdit->setText(QApplication::translate("MainWindow", "100", 0));
-        label_80->setText(QApplication::translate("MainWindow", "Simulation Time", 0));
-        overrideByInjectedPVs->setText(QApplication::translate("MainWindow", "Injected  PVs", 0));
-        injectedPVs->setText(QApplication::translate("MainWindow", "5", 0));
+        twoPhaseSimulationTimeLineEdit->setText(QApplication::translate("MainWindow", "100", Q_NULLPTR));
+        label_80->setText(QApplication::translate("MainWindow", "Simulation Time", Q_NULLPTR));
+        overrideByInjectedPVs->setText(QApplication::translate("MainWindow", "Injected  PVs", Q_NULLPTR));
+        injectedPVs->setText(QApplication::translate("MainWindow", "5", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        enhancedWaterConnectivity->setToolTip(QApplication::translate("MainWindow", "Allows OW throats trapped between two water filled pores to slowly drain over time", 0));
+        enhancedWaterConnectivity->setToolTip(QApplication::translate("MainWindow", "Allows OW throats trapped between two water filled pores to slowly drain over time", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        enhancedWaterConnectivity->setText(QApplication::translate("MainWindow", "Enhanced Connectivity", 0));
-        extractDataCheckBox->setText(QApplication::translate("MainWindow", "Extract Data for Replay", 0));
-        groupBox_11->setTitle(QApplication::translate("MainWindow", "Tracer Properties", 0));
+        enhancedWaterConnectivity->setText(QApplication::translate("MainWindow", "Enhanced Connectivity", Q_NULLPTR));
+        extractDataCheckBox->setText(QApplication::translate("MainWindow", "Extract Data for Replay", Q_NULLPTR));
+        groupBox_11->setTitle(QApplication::translate("MainWindow", "Tracer Properties", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseDiffCoef->setToolTip(QApplication::translate("MainWindow", "m^2/s", 0));
+        twoPhaseDiffCoef->setToolTip(QApplication::translate("MainWindow", "m^2/s", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseDiffCoef->setText(QApplication::translate("MainWindow", "1e-9", 0));
-        label_74->setText(QApplication::translate("MainWindow", "Diffusion Coef.", 0));
-        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_14), QApplication::translate("MainWindow", "USS", 0));
-        groupBox_25->setTitle(QApplication::translate("MainWindow", "Simulation Replay", 0));
-        imagesCountLineEdit->setText(QApplication::translate("MainWindow", "1000", 0));
-        imagesCountLineEdit->setPlaceholderText(QApplication::translate("MainWindow", "um", 0));
-        pathToPhaseNodesLineEdit->setText(QApplication::translate("MainWindow", "Results/Network_Status/phases_nodes.txt", 0));
-        renderImagesRadioButton->setText(QApplication::translate("MainWindow", "Render a Video from Files", 0));
-        renderNetworkButton->setText(QApplication::translate("MainWindow", "Render", 0));
-        label_18->setText(QApplication::translate("MainWindow", "Pores", 0));
-        label_30->setText(QApplication::translate("MainWindow", "Total Images To Process", 0));
-        pathToPhasePoresLineEdit->setText(QApplication::translate("MainWindow", "Results/Network_Status/phases_pores.txt", 0));
-        label_29->setText(QApplication::translate("MainWindow", "Nodes", 0));
-        renderStopButton->setText(QApplication::translate("MainWindow", "Stop Rendering", 0));
-        loadNetworkStatusRadioButton->setText(QApplication::translate("MainWindow", "Render Networ&k Status from Files", 0));
+        twoPhaseDiffCoef->setText(QApplication::translate("MainWindow", "1e-9", Q_NULLPTR));
+        label_74->setText(QApplication::translate("MainWindow", "Diffusion Coef.", Q_NULLPTR));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_14), QApplication::translate("MainWindow", "USS", Q_NULLPTR));
+        groupBox_25->setTitle(QApplication::translate("MainWindow", "Simulation Replay", Q_NULLPTR));
+        imagesCountLineEdit->setText(QApplication::translate("MainWindow", "1000", Q_NULLPTR));
+        imagesCountLineEdit->setPlaceholderText(QApplication::translate("MainWindow", "um", Q_NULLPTR));
+        pathToPhaseNodesLineEdit->setText(QApplication::translate("MainWindow", "Results/Network_Status/phases_nodes.txt", Q_NULLPTR));
+        renderImagesRadioButton->setText(QApplication::translate("MainWindow", "Render a Video from Files", Q_NULLPTR));
+        renderNetworkButton->setText(QApplication::translate("MainWindow", "Render", Q_NULLPTR));
+        label_18->setText(QApplication::translate("MainWindow", "Pores", Q_NULLPTR));
+        label_30->setText(QApplication::translate("MainWindow", "Total Images To Process", Q_NULLPTR));
+        pathToPhasePoresLineEdit->setText(QApplication::translate("MainWindow", "Results/Network_Status/phases_pores.txt", Q_NULLPTR));
+        label_29->setText(QApplication::translate("MainWindow", "Nodes", Q_NULLPTR));
+        renderStopButton->setText(QApplication::translate("MainWindow", "Stop Rendering", Q_NULLPTR));
+        loadNetworkStatusRadioButton->setText(QApplication::translate("MainWindow", "Render Networ&k Status from Files", Q_NULLPTR));
         networkRenderingLabel->setText(QString());
-        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_6), QApplication::translate("MainWindow", "USS (2)", 0));
-        groupBox_7->setTitle(QApplication::translate("MainWindow", "Fluids Properties", 0));
-        label_20->setText(QApplication::translate("MainWindow", "Oil Viscosity", 0));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_6), QApplication::translate("MainWindow", "USS (2)", Q_NULLPTR));
+        groupBox_7->setTitle(QApplication::translate("MainWindow", "Fluids Properties", Q_NULLPTR));
+        label_20->setText(QApplication::translate("MainWindow", "Oil Viscosity", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseOilVisLineEdit->setToolTip(QApplication::translate("MainWindow", "cP", 0));
+        twoPhaseOilVisLineEdit->setToolTip(QApplication::translate("MainWindow", "cP", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseOilVisLineEdit->setText(QApplication::translate("MainWindow", "1.39", 0));
+        twoPhaseOilVisLineEdit->setText(QApplication::translate("MainWindow", "1.39", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseWaterVisLineEdit->setToolTip(QApplication::translate("MainWindow", "cP", 0));
+        twoPhaseWaterVisLineEdit->setToolTip(QApplication::translate("MainWindow", "cP", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseWaterVisLineEdit->setText(QApplication::translate("MainWindow", "1.05", 0));
-        label_21->setText(QApplication::translate("MainWindow", "Water Viscosity", 0));
+        twoPhaseWaterVisLineEdit->setText(QApplication::translate("MainWindow", "1.05", Q_NULLPTR));
+        label_21->setText(QApplication::translate("MainWindow", "Water Viscosity", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseGasVisLineEdit->setToolTip(QApplication::translate("MainWindow", "cP", 0));
+        twoPhaseGasVisLineEdit->setToolTip(QApplication::translate("MainWindow", "cP", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseGasVisLineEdit->setText(QApplication::translate("MainWindow", "0.0187", 0));
-        label_22->setText(QApplication::translate("MainWindow", "Gas Viscosity", 0));
-        label_23->setText(QApplication::translate("MainWindow", "OW IFT", 0));
+        twoPhaseGasVisLineEdit->setText(QApplication::translate("MainWindow", "0.0187", Q_NULLPTR));
+        label_22->setText(QApplication::translate("MainWindow", "Gas Viscosity", Q_NULLPTR));
+        label_23->setText(QApplication::translate("MainWindow", "OW IFT", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseOWIFTLineEdit->setToolTip(QApplication::translate("MainWindow", "dyn/cm", 0));
+        twoPhaseOWIFTLineEdit->setToolTip(QApplication::translate("MainWindow", "dyn/cm", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseOWIFTLineEdit->setText(QApplication::translate("MainWindow", "30", 0));
-        label_24->setText(QApplication::translate("MainWindow", "OG IFT", 0));
+        twoPhaseOWIFTLineEdit->setText(QApplication::translate("MainWindow", "30", Q_NULLPTR));
+        label_24->setText(QApplication::translate("MainWindow", "OG IFT", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseOGIFTLineEdit->setToolTip(QApplication::translate("MainWindow", "dyn/cm", 0));
+        twoPhaseOGIFTLineEdit->setToolTip(QApplication::translate("MainWindow", "dyn/cm", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseOGIFTLineEdit->setText(QApplication::translate("MainWindow", "30", 0));
+        twoPhaseOGIFTLineEdit->setText(QApplication::translate("MainWindow", "30", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseWGIFTLineEdit->setToolTip(QApplication::translate("MainWindow", "dyn/cm", 0));
+        twoPhaseWGIFTLineEdit->setToolTip(QApplication::translate("MainWindow", "dyn/cm", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseWGIFTLineEdit->setText(QApplication::translate("MainWindow", "30", 0));
-        label_70->setText(QApplication::translate("MainWindow", "WG IFT", 0));
-        groupBox_9->setTitle(QApplication::translate("MainWindow", "Initial State", 0));
-        label_26->setText(QApplication::translate("MainWindow", "Swi", 0));
-        twoPhaseSwRandomRadioButton->setText(QApplication::translate("MainWindow", "Random", 0));
-        twoPhaseSwBigRadioButton->setText(QApplication::translate("MainWindow", "Big", 0));
-        twoPhaseSwSmallRadioButton->setText(QApplication::translate("MainWindow", "Small", 0));
-        twoPhaseSwAPDRadioButton->setText(QApplication::translate("MainWindow", "After PD", 0));
+        twoPhaseWGIFTLineEdit->setText(QApplication::translate("MainWindow", "30", Q_NULLPTR));
+        label_70->setText(QApplication::translate("MainWindow", "WG IFT", Q_NULLPTR));
+        groupBox_9->setTitle(QApplication::translate("MainWindow", "Initial State", Q_NULLPTR));
+        label_26->setText(QApplication::translate("MainWindow", "Swi", Q_NULLPTR));
+        twoPhaseSwRandomRadioButton->setText(QApplication::translate("MainWindow", "Random", Q_NULLPTR));
+        twoPhaseSwBigRadioButton->setText(QApplication::translate("MainWindow", "Big", Q_NULLPTR));
+        twoPhaseSwSmallRadioButton->setText(QApplication::translate("MainWindow", "Small", Q_NULLPTR));
+        twoPhaseSwAPDRadioButton->setText(QApplication::translate("MainWindow", "After PD", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        twoPhaseInitialSwSpinBox->setToolTip(QApplication::translate("MainWindow", "fraction", 0));
+        twoPhaseInitialSwSpinBox->setToolTip(QApplication::translate("MainWindow", "fraction", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        twoPhaseInitialSwSpinBox->setText(QApplication::translate("MainWindow", "0", 0));
-        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_2), QApplication::translate("MainWindow", "Fluids", 0));
-        groupBox_8->setTitle(QApplication::translate("MainWindow", "Misc.", 0));
-        twoPhaseRPermCheckBox->setText(QApplication::translate("MainWindow", "R. Permeabilities Calc.", 0));
-        twoPhasePostProcessCheckBox->setText(QApplication::translate("MainWindow", "Record Simulation to Video", 0));
-        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_19), QApplication::translate("MainWindow", "Misc", 0));
-        label_4->setText(QApplication::translate("MainWindow", "Graphics", 0));
-        visiblePhases_2->setTitle(QApplication::translate("MainWindow", "View Angle", 0));
-        resetRadioButton->setText(QApplication::translate("MainWindow", "Reset &View", 0));
-        rotateCheckBox->setText(QApplication::translate("MainWindow", "Rotate", 0));
-        visiblePhases_3->setTitle(QApplication::translate("MainWindow", "Visible Elements", 0));
-        pore3DCheckBox->setText(QApplication::translate("MainWindow", "Throats (3D)", 0));
-        node3DCheckBox->setText(QApplication::translate("MainWindow", "Pores", 0));
-        lightCheckBox->setText(QApplication::translate("MainWindow", "Axes", 0));
-        linesCheckbox->setText(QApplication::translate("MainWindow", "(Lines)", 0));
-        tabWidget_3->setTabText(tabWidget_3->indexOf(tab_12), QApplication::translate("MainWindow", "Basic Options", 0));
-        visiblePhases->setTitle(QApplication::translate("MainWindow", "Filter Capillaries", 0));
-        visibleOilCheckBox->setText(QApplication::translate("MainWindow", "Oil", 0));
-        visibleWaterCheckBox->setText(QApplication::translate("MainWindow", "Water", 0));
-        visibleGasCheckBox->setText(QApplication::translate("MainWindow", "Gas", 0));
-        visibleOilWetCheckBox->setText(QApplication::translate("MainWindow", "OW", 0));
-        visibleWaterWetCheckBox->setText(QApplication::translate("MainWindow", "WW", 0));
-        visiblePhases_13->setTitle(QApplication::translate("MainWindow", "Colors", 0));
-        oilColor->setText(QApplication::translate("MainWindow", "Oil", 0));
-        waterColor->setText(QApplication::translate("MainWindow", "Water", 0));
-        tracerColor->setText(QApplication::translate("MainWindow", "Tracer", 0));
-        pushButton_4->setText(QApplication::translate("MainWindow", "Reset", 0));
-        label_55->setText(QApplication::translate("MainWindow", "R", 0));
-        label_56->setText(QApplication::translate("MainWindow", "G", 0));
-        label_57->setText(QApplication::translate("MainWindow", "B", 0));
-        tabWidget_3->setTabText(tabWidget_3->indexOf(tab_20), QApplication::translate("MainWindow", "Advanced Options", 0));
-        visiblePhases_4->setTitle(QApplication::translate("MainWindow", "Slicing", 0));
+        twoPhaseInitialSwSpinBox->setText(QApplication::translate("MainWindow", "0", Q_NULLPTR));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_2), QApplication::translate("MainWindow", "Fluids", Q_NULLPTR));
+        groupBox_8->setTitle(QApplication::translate("MainWindow", "Misc.", Q_NULLPTR));
+        twoPhaseRPermCheckBox->setText(QApplication::translate("MainWindow", "R. Permeabilities Calc.", Q_NULLPTR));
+        twoPhasePostProcessCheckBox->setText(QApplication::translate("MainWindow", "Record Simulation to Video", Q_NULLPTR));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_19), QApplication::translate("MainWindow", "Misc", Q_NULLPTR));
+        label_4->setText(QApplication::translate("MainWindow", "Graphics", Q_NULLPTR));
+        visiblePhases_2->setTitle(QApplication::translate("MainWindow", "View Angle", Q_NULLPTR));
+        resetRadioButton->setText(QApplication::translate("MainWindow", "Reset &View", Q_NULLPTR));
+        rotateCheckBox->setText(QApplication::translate("MainWindow", "Rotate", Q_NULLPTR));
+        visiblePhases_3->setTitle(QApplication::translate("MainWindow", "Visible Elements", Q_NULLPTR));
+        pore3DCheckBox->setText(QApplication::translate("MainWindow", "Throats (3D)", Q_NULLPTR));
+        node3DCheckBox->setText(QApplication::translate("MainWindow", "Pores", Q_NULLPTR));
+        lightCheckBox->setText(QApplication::translate("MainWindow", "Axes", Q_NULLPTR));
+        linesCheckbox->setText(QApplication::translate("MainWindow", "(Lines)", Q_NULLPTR));
+        tabWidget_3->setTabText(tabWidget_3->indexOf(tab_12), QApplication::translate("MainWindow", "Basic Options", Q_NULLPTR));
+        visiblePhases->setTitle(QApplication::translate("MainWindow", "Filter Capillaries", Q_NULLPTR));
+        visibleOilCheckBox->setText(QApplication::translate("MainWindow", "Oil", Q_NULLPTR));
+        visibleWaterCheckBox->setText(QApplication::translate("MainWindow", "Water", Q_NULLPTR));
+        visibleGasCheckBox->setText(QApplication::translate("MainWindow", "Gas", Q_NULLPTR));
+        visibleOilWetCheckBox->setText(QApplication::translate("MainWindow", "OW", Q_NULLPTR));
+        visibleWaterWetCheckBox->setText(QApplication::translate("MainWindow", "WW", Q_NULLPTR));
+        visiblePhases_13->setTitle(QApplication::translate("MainWindow", "Colors", Q_NULLPTR));
+        oilColor->setText(QApplication::translate("MainWindow", "Oil", Q_NULLPTR));
+        waterColor->setText(QApplication::translate("MainWindow", "Water", Q_NULLPTR));
+        tracerColor->setText(QApplication::translate("MainWindow", "Tracer", Q_NULLPTR));
+        pushButton_4->setText(QApplication::translate("MainWindow", "Reset", Q_NULLPTR));
+        label_55->setText(QApplication::translate("MainWindow", "R", Q_NULLPTR));
+        label_56->setText(QApplication::translate("MainWindow", "G", Q_NULLPTR));
+        label_57->setText(QApplication::translate("MainWindow", "B", Q_NULLPTR));
+        tabWidget_3->setTabText(tabWidget_3->indexOf(tab_20), QApplication::translate("MainWindow", "Advanced Options", Q_NULLPTR));
+        visiblePhases_4->setTitle(QApplication::translate("MainWindow", "Slicing", Q_NULLPTR));
         xCutCheckBox->setText(QString());
         yCutCheckBox->setText(QString());
         zCutCheckBox->setText(QString());
-        label_52->setText(QApplication::translate("MainWindow", "X", 0));
-        label_53->setText(QApplication::translate("MainWindow", "Y", 0));
-        label_54->setText(QApplication::translate("MainWindow", "Z", 0));
-        tabWidget_3->setTabText(tabWidget_3->indexOf(tab_21), QApplication::translate("MainWindow", "Slicing", 0));
-        label_2->setText(QApplication::translate("MainWindow", "Graphs", 0));
-        tabWidget->setTabText(tabWidget->indexOf(tab_17), QApplication::translate("MainWindow", "3D Window", 0));
-        label_71->setText(QApplication::translate("MainWindow", "Title", 0));
-        label_37->setText(QApplication::translate("MainWindow", "X-Axis Title", 0));
-        yAxisTitle22->setText(QApplication::translate("MainWindow", "Y-Axis Title", 0));
-        pushButton->setText(QApplication::translate("MainWindow", "Update", 0));
-        twoPhaseSaveCurveButton->setText(QApplication::translate("MainWindow", "Save Plot", 0));
-        label_33->setText(QApplication::translate("MainWindow", "Min X", 0));
+        label_52->setText(QApplication::translate("MainWindow", "X", Q_NULLPTR));
+        label_53->setText(QApplication::translate("MainWindow", "Y", Q_NULLPTR));
+        label_54->setText(QApplication::translate("MainWindow", "Z", Q_NULLPTR));
+        tabWidget_3->setTabText(tabWidget_3->indexOf(tab_21), QApplication::translate("MainWindow", "Slicing", Q_NULLPTR));
+        label_2->setText(QApplication::translate("MainWindow", "Graphs", Q_NULLPTR));
+        tabWidget->setTabText(tabWidget->indexOf(tab_17), QApplication::translate("MainWindow", "3D Window", Q_NULLPTR));
+        label_71->setText(QApplication::translate("MainWindow", "Title", Q_NULLPTR));
+        label_37->setText(QApplication::translate("MainWindow", "X-Axis Title", Q_NULLPTR));
+        yAxisTitle22->setText(QApplication::translate("MainWindow", "Y-Axis Title", Q_NULLPTR));
+        pushButton->setText(QApplication::translate("MainWindow", "Update", Q_NULLPTR));
+        twoPhaseSaveCurveButton->setText(QApplication::translate("MainWindow", "Save Plot", Q_NULLPTR));
+        label_33->setText(QApplication::translate("MainWindow", "Min X", Q_NULLPTR));
         minXAxis->setText(QString());
-        label_34->setText(QApplication::translate("MainWindow", "Max X", 0));
+        label_34->setText(QApplication::translate("MainWindow", "Max X", Q_NULLPTR));
         maxXAxis->setText(QString());
-        label_31->setText(QApplication::translate("MainWindow", "Min Y", 0));
-        label_32->setText(QApplication::translate("MainWindow", "Max Y", 0));
-        label_36->setText(QApplication::translate("MainWindow", "Tick Step", 0));
+        label_31->setText(QApplication::translate("MainWindow", "Min Y", Q_NULLPTR));
+        label_32->setText(QApplication::translate("MainWindow", "Max Y", Q_NULLPTR));
+        label_36->setText(QApplication::translate("MainWindow", "Tick Step", Q_NULLPTR));
         tickStep->setText(QString());
-        pushButton_2->setText(QApplication::translate("MainWindow", "Add Plot", 0));
-        realTimeCheckBox->setText(QApplication::translate("MainWindow", "Real Time", 0));
-        plot->setText(QApplication::translate("MainWindow", "Plot", 0));
-        pushButton_3->setText(QApplication::translate("MainWindow", "Clear Plots", 0));
-        tabWidget->setTabText(tabWidget->indexOf(tab_18), QApplication::translate("MainWindow", "Curves", 0));
-        SimNotif->setText(QApplication::translate("MainWindow", "Ready", 0));
+        pushButton_2->setText(QApplication::translate("MainWindow", "Add Plot", Q_NULLPTR));
+        realTimeCheckBox->setText(QApplication::translate("MainWindow", "Real Time", Q_NULLPTR));
+        plot->setText(QApplication::translate("MainWindow", "Plot", Q_NULLPTR));
+        pushButton_3->setText(QApplication::translate("MainWindow", "Clear Plots", Q_NULLPTR));
+        tabWidget->setTabText(tabWidget->indexOf(tab_18), QApplication::translate("MainWindow", "Curves", Q_NULLPTR));
+        SimNotif->setText(QApplication::translate("MainWindow", "Ready", Q_NULLPTR));
     } // retranslateUi
 
 };
