@@ -1,51 +1,59 @@
-# numSCAL: An Open Source Numerical Special Core Analysis Laboratory
+# _numSCAL_: An Open Source Numerical Simulator for Special Core Analysis Laboratory
 
 ## Introduction
 
-_numSCAL_ is a pore-scale numerical simulator developed at Heriot-Watt University as part of a PhD project. The software has been implemented using C++ and Qt technologies and can be used on Windows, MacOS and Linux machines. Moreover, a Graphical User Interface (GUI) has been coded to allow fast access to the features provided by numSCAL (although a console version is also available if the simulations are intended to run on a Linux supercomputer).
+_numSCAL_ is a cross-platform pore-scale numerical simulator developed at Heriot-Watt University. The software has been implemented using C++ and Qt technologies with the idea of providing a solid platform to investigate multi-phase flow in porous media. A Graphical User Interface (GUI) has been also implemented to allow fast access to the underlying modules and to provide a real-time visualisation of the simulated flow processes (although a console version can be readily generated if the simulations are intended to run on a Linux supercomputer).
 
-![](https://lh3.googleusercontent.com/sqHIpd7fucnw3dmTlVQyYdY1a708vaE-L3bfZ4YQZ3FM590Y22hXPJt32PpgkjKIaTAPoGst0lhXjts=w1920-h925-rw)
+![numSCAL Screenshot](https://image.ibb.co/j0Tc3R/screenshot.png)
 
 ## Supported Networks
 
-We model the porous medium in _numSCAL_ as a network of capillary elements, partitioned into nodes (pore bodies) and bonds (pore throats), with the nodes being linked by the bonds. To each network element (a node or bond) we attach a range of geometric attributes (inscribed radius, length, volume, inter alia) that enables us to consider a range of different network modelling philosophies. At its most simplistic, we can use the framework to model the pore space as a simple 3D scaffold of interconnected cylindrical bonds; an approach that is useful for obtaining rapid, qualitative results, as fewer pore-scale entities need to be considered. At the other extreme, we can also use the methodology to model multi-phase flow through networks that are topologically and geometrically complex, where the pore space is comprised of irregular pore elements with distributed connectivity. 
+We model the porous medium in _numSCAL_ as a network of capillary elements, partitioned into nodes (pore bodies) and throats, with the nodes being linked by the throats. To each network element (a node or throat) we attach a range of geometric attributes (inscribed radius, length, volume, inter alia) that enables us to consider a range of different network modelling philosophies. At its most simplistic, we can use the framework to model the pore space as a simple 3D scaffold of interconnected capillary elements. At the other extreme, we can also use the methodology to model multi-phase flow through networks that are topologically and geometrically complex, where the pore space is comprised of irregular pore elements with distributed connectivity. 
+Currently, _numSCAL_ offers full support of the network file format provided by the Imperial College database. Similar network files can be readily imported into the software.
 
-![](https://lh6.googleusercontent.com/YGopaBj9IsPQgJ7eCeEp2I7zfJMVTLMe5Zq-ioL5Jae37A7DhP1rQGwIWhDnoFvyRbh5IvET0ktPIpE=w1920-h925)
+![Supported Networks](https://image.ibb.co/dWz6xm/networks.png)
 
 ## Features
 
-_numSCAL_ includes several flow models that cover a wide range of pore-scale phenomena and is briefly discussed below.
-* Quasi-steady state two-phase and three-phase flow:
+_numSCAL_ includes several flow models that cover a wide range of pore-scale phenomena. The modules included in the basic version include:
 
-This model simulates quasi-steady state multiphase flow in both regular and microCT digital networks. By quasi steady-state we mean that phase saturations are assumed to be invariant with time at each fixed capillary pressure value and only change if the controlling capillary pressure changes. A full cycle of displacements can be simulated: primary drainage, primary imbibition, secondary drainage, secondary imbibition and tertiary drainage. Snap-off mechanisms, cooperative pore body filling and film flow are supported in triangular capillaries. 
-When three phases are present, a graph-theory-based approach has been implemented to simulate the multi-displacement chains occurring at the pore-scale. Three-phase contact angles are used and spreading phenomena have been incorporated using geometrical conditions corresponding to triangular cross-sections. This model can be used to simulate quasi-static flow in any three-phase configuration, and three-phase saturation and relative permeability curves can be generated. WAG simulations are also supported. 
+* Quasi-steady-state Two-phase Flow Model:
 
-* Unsteady-state drainage model:
+This module simulates quasi-steady state multiphase flow in both regular and microCT digital networks. A full cycle of displacements can be simulated: primary drainage, spontaneous imbibition, forced water injection, spontaneous oil invasion and secondary oil drainage. Snap-off mechanisms, cooperative pore body filling and film swelling are supported in triangular capillaries. Output results include capillary pressure and relative permeabilities curves. 
 
-This model is appropriate when the balance between capillary and viscous forces is under investigation in two-phase systems. A dynamic approach is implemented to simulate fluid injection into a porous medium under either constant flow rate or constant differential pressure conditions. The algorithm solves the pressure field in the underlying network and updates phase saturations accordingly. 
+* Unsteady-state Two-phase Flow Model:
 
-* Unsteady-state ganglion model:
+This model is appropriate when the balance between capillary and viscous forces is under investigation in two-phase systems. A dynamic approach is implemented to simulate fluid injection into a porous medium under constant flow rate. The algorithm solves the pressure field in the underlying network and updates phase saturations accordingly. Output results include water staturations, pressure gradient, fractional flows and  relative permeabilities curves. The model also supports "simulation replay" by saving network snapshots along the simulation and rendering them at post-processing stages.
+(PS: Film support is not enabled in the basic version.)
 
-This model provides valuable insights into the conditions under which it is likely to observe ganglia displacements during a flood. The model extends the dynamic approach to solve the pressure field and update phase saturations in the network. Two fluids can simultaneously flow through a capillary element and no distinction is made between the invading and the defending phase. The model is appropriate when investigating high rate injection scenarios or scenarios characterised by low capillarity and can estimate the additional hydrocarbon recovery due to ganglia mobilisation. 
+![Viscous Fingering](https://image.ibb.co/bVraq6/USS.png)
 
-* Unsteady-state EOR model:
+* Tracer Flow Model:
 
-This model is based on the unsteady-state drainage model and is useful for simulating EOR processes at the pore-scale and their manifestations at the core-scale. Low salinity water, surfactant and polymer injection protocols are supported. The model is useful for investigating the efficiency of EOR techniques and estimate the additional recovery they could eventually yield. This model will be discussed in detail in this paper.
+This model is appropriate for investigating the convective and diffusive flow of a tracer in porous media. Although no output results are currently generated, the module is an ideal starting point to study phenomena that involve tracer flow modelling (i.e. surfactant flow, polymer flow).
 
-* Two-phase and three-phase depletion:
+![Tracer Flow](https://image.ibb.co/ddkeHm/tracer.png)
 
-This model is used to simulate depletion experiments, where the stages of the depletion are implemented – this includes nucleation, diffusion, gas growth and gas migration. When depletion is simulated in a water-flooded system, an alternative three-phase model based on graph theory is used to simulate the interactions and chain-displacements between gas, oil and water. Oil spreading and film flow are also considered in this model.
+Other modules that are supported by numSCAL but not enabled in the basic version include:
 
-Only quasi-steady state two-phase flow is supported in the basic version of numSCAL.
-
-
+* Quasi-steady State Three-Phase Flow
+* Unsteady-State Flow with Film Support
+* Depletion Processes
+* Ganglia Mobilisation Processes
+* Surfactant Flow
+* Low Salinity Water Injection
+* Polymer Injection
 
 ## Graphical Engine
 
-A new graphical engine based on OpenGL has been developed in _numSCAL_ to provide real-time visualisation of the running simulations. Several options are available to display the underlying network:
+An OpenGL graphical engine has been implemented into _numSCAL_ to provide real-time high quality visualisation of the running simulations. The engine uses advanced shading techniques (geometry shaders, sphere imposters, cylinder impostors) to minimise the CPU-GPU interaction and provide a smooth and real-time visualisation of large networks. 
 
-* Visualisation of a single phase.
+![Core Scale Network](https://image.ibb.co/hGJc3R/drainage.png)
+
+Several options are available to display the underlying network:
+
+* Visualisation of separate phases.
 * Visualisation of only oil-wet or water-wet elements.
-* Visualisation of one or multiple tracers during EOR processes (i.e. low salinity water, polymer, etc.).
+* Changing phase colors.
 * Slicing the underlying network to uncover obstructed elements.
 * Real-time generation of capillary pressure, saturation and relative permeability data.
