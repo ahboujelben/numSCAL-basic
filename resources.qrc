@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file>icon2.png</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>shaders/cylinder.frag</file>
+        <file>shaders/cylinder.geom</file>
+        <file>shaders/cylinder.vert</file>
+        <file>shaders/sphere.frag</file>
+        <file>shaders/sphere.geom</file>
+        <file>shaders/sphere.vert</file>
+        <file>shaders/line.frag</file>
+        <file>shaders/line.vert</file>
+    </qresource>
+</RCC>
