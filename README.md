@@ -1,4 +1,4 @@
-# _numSCAL_: An Open Source Numerical Simulator for Special Core Analysis Laboratory
+# _numSCAL_: An Open Source Numerical Special Core Analysis Laboratory
 
 ## Introduction
 
@@ -46,7 +46,7 @@ Other modules that are supported by numSCAL but not enabled in the basic version
 
 ## Graphical Engine
 
-An OpenGL graphical engine has been implemented into _numSCAL_ to provide real-time high quality visualisation of the running simulations. The engine uses advanced shading techniques (geometry shaders, sphere imposters, cylinder impostors) to minimise the CPU-GPU interaction and provide a smooth and real-time visualisation of large networks. 
+An OpenGL graphical engine has been implemented into _numSCAL_ to provide real-time high quality visualisation of the running simulations. The engine uses advanced shading techniques (geometry shaders, sphere imposters, cylinder impostors) to minimise CPU-GPU interaction and provide a smooth and real-time visualisation of large networks. 
 
 ![Core Scale Network](https://image.ibb.co/hGJc3R/drainage.png)
 
