@@ -26,13 +26,13 @@ This module simulates quasi-steady state multiphase flow in both regular and mic
 This model is appropriate when the balance between capillary and viscous forces is under investigation in two-phase systems. A dynamic approach is implemented to simulate fluid injection into a porous medium under constant flow rate. The algorithm solves the pressure field in the underlying network and updates phase saturations accordingly. Output results include water staturations, pressure gradient, fractional flows and  relative permeabilities curves. The model also supports "simulation replay" by saving network snapshots along the simulation and rendering them at post-processing stages.
 (PS: Film support is not enabled in the basic version.)
 
-![Viscous Fingering](https://image.ibb.co/bVraq6/USS.png)
+![Viscous Fingering](https://image.ibb.co/iHF5sw/USSS.png)
 
 * Tracer Flow Model:
 
 This model is appropriate for investigating the convective and diffusive flow of a tracer in porous media. Although no output results are currently generated, the module is an ideal starting point to study phenomena that involve tracer flow modelling (i.e. surfactant flow, polymer flow).
 
-![Tracer Flow](https://image.ibb.co/ddkeHm/tracer.png)
+![Tracer Flow](https://image.ibb.co/c0wBXw/tracerr.png)
 
 Other modules that are supported by numSCAL but not enabled in the basic version include:
 
@@ -52,8 +52,8 @@ An OpenGL graphical engine has been implemented into _numSCAL_ to provide real-t
 
 Several options are available to display the underlying network:
 
-* Visualisation of separate phases.
-* Visualisation of only oil-wet or water-wet elements.
-* Changing phase colors.
-* Slicing the underlying network to uncover obstructed elements.
-* Real-time generation of capillary pressure, saturation and relative permeability data.
+* Visualisation of separate phases
+* Visualisation of only oil-wet or water-wet elements
+* Changing phase colors
+* Slicing the underlying network to uncover obstructed elements
+* Real-time generation of capillary pressure, saturation and relative permeability data
