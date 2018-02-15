@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::loadNetworkData()
 {
@@ -92,4 +92,6 @@ void network::loadTwoPhaseData()
 
     relativePermeabilitiesCalculation=pt.get<bool>("FluidInjection_Misc.relativePermeabilitiesCalculation");
     videoRecording=pt.get<bool>("FluidInjection_Misc.videoRecording");
+}
+
 }

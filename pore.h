@@ -19,6 +19,8 @@
 #include "cluster.h"
 #include "element.h"
 
+namespace PNM {
+
 class pore : public element
 {
 public:
@@ -92,5 +94,7 @@ protected:
     bool nodeInWater;
     bool nodeOutOil;
 };
+
+}
 
 #endif // PORE_H

@@ -9,7 +9,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "node.h"
-using namespace std;
+
+namespace PNM {
 
 node::node(double X, double Y, double Z)
 {
@@ -166,4 +167,6 @@ bool node::getOutletZ() const
 void node::setOutletZ(bool value)
 {
     outletZ = value;
+}
+
 }

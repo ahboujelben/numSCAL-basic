@@ -20,6 +20,8 @@
 #include <QOpenGLFramebufferObject>
 #include <QApplication>
 
+using namespace PNM;
+
 class widget3d : public QGLWidget
 {
     Q_OBJECT

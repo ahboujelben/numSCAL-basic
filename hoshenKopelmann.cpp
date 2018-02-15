@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 //clustering
 
@@ -388,4 +388,6 @@ void network::clusterEverythingEverything()
             break;
         }
     }
+}
+
 }

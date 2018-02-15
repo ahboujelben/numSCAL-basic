@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::initializeTwoPhaseOutputs()
 {
@@ -214,3 +214,4 @@ void network::outputTwoPhaseData(double injectedPVs, int& outputCount, double wa
     }
 }
 
+}

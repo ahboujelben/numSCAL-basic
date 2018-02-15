@@ -37,7 +37,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    network* net;
+    PNM::network* net;
     QCPPlotTitle* plotTitle;
     QTimer timer;
     int imageIndex;

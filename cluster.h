@@ -14,6 +14,8 @@
 #include <vector>
 #include <map>
 
+namespace PNM {
+
 class cluster
 {
 public:
@@ -49,5 +51,7 @@ private:
     int size;
     int poreId;
 };
+
+}
 
 #endif // CLUSTER_H

@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM{
 
 network::network(QObject *parent):
     QObject(parent)
@@ -360,4 +360,6 @@ bool network::getReady() const
 void network::setCancel(bool value)
 {
     cancel = value;
+}
+
 }

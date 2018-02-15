@@ -9,7 +9,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::assignViscositiesWithMixedFluids()
 {
@@ -351,4 +351,6 @@ double network::weibull(double min, double max, double alpha, double beta)
 void network::emitPlotSignal()
 {
     emit plot();
+}
+
 }

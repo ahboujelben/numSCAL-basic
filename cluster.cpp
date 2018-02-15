@@ -10,6 +10,8 @@
 
 #include "cluster.h"
 
+namespace PNM {
+
 cluster::cluster(int pLabel)
 {
     inlet=false;
@@ -85,4 +87,6 @@ int cluster::getPoreId() const
 void cluster::setPoreId(int value)
 {
     poreId = value;
+}
+
 }

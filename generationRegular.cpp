@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::setupRegularModel()
 {
@@ -936,4 +936,6 @@ void network::setNeighs()
            neighs.push_back(getPore(neighboors[j]-1));
         n->setNeighs(neighs);
     }
+}
+
 }

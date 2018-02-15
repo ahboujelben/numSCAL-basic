@@ -16,6 +16,7 @@
 #include "tools.h"
 #include "element.h"
 
+namespace PNM {
 
 class node : public element
 {
@@ -90,5 +91,7 @@ private:
 
     double pressure;
 };
+
+}
 
 #endif // NODE_H

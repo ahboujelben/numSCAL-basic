@@ -10,8 +10,9 @@
 
 #include "network.h"
 
-using namespace std;
 using namespace Eigen;
+
+namespace PNM {
 
 void network::solvePressuresForRegularModel()
 {
@@ -320,4 +321,6 @@ void network::setConstantFlowRateAker()
     pressureOut=0;
     solvePressures();
     updateFlows();
+}
+
 }

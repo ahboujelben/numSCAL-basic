@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::runTwoPhaseSSModelPT()
 {
@@ -1039,4 +1039,6 @@ void network::secondaryOilDrainagePT()
 
     endTime=tools::getCPUTime();
     //cout<<"Secondary Oil Drainage Time: "<<endTime-startTime<<" s"<<endl;
+}
+
 }

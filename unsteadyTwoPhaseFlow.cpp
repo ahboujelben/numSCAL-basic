@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::runUSSDrainageModelPT()
 {
@@ -715,4 +715,6 @@ void network::updateElementaryFluidFlagsPT(std::set<pore *> &poresToCheck, std::
             }
         }
     }
+}
+
 }

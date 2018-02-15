@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::calculateRelativePermeabilities()
 {
@@ -148,3 +148,4 @@ void network::calculateRelativePermeabilitiesUSS()
     waterRelativePermeability=waterFlow*waterViscosity/flow;
 }
 
+}

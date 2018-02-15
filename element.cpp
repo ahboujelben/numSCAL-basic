@@ -10,6 +10,8 @@
 
 #include "element.h"
 
+namespace PNM {
+
 element::element()
 {
     radius=0;
@@ -536,3 +538,4 @@ void element::setWaterFilmConductance(double value)
     waterFilmConductance = value;
 }
 
+}

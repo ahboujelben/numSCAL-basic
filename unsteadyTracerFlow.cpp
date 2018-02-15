@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::runTracerFlowPT()
 {
@@ -305,3 +305,4 @@ void network::runTracerFlowPT()
     cout<<"Tracer Flow Time: "<<endTime-startTime<<" s"<<endl;
 }
 
+}

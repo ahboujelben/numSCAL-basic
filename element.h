@@ -15,10 +15,14 @@
 #include <vector>
 #include "tools.h"
 
+namespace PNM {
+
 class element
 {
 public:
     element();
+    virtual ~element() {}
+
     int getId() const;
     void setId(int value);
 
@@ -231,5 +235,7 @@ protected:
 
     char exist;
 };
+
+}
 
 #endif // ELEMENT_H

@@ -8,12 +8,12 @@
 /////////////////////////////////////////////////////////////////////////////
 #include "widget3d.h"
 
-network *widget3d::getNet() const
+PNM::network *widget3d::getNet() const
 {
     return net;
 }
 
-void widget3d::setNet(network *value)
+void widget3d::setNet(PNM::network *value)
 {
     net = value;
 }

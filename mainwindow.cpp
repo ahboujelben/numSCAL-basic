@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    net = new network;
+    net = new PNM::network;
     ui->widget->setNet(net);
 
     //Signals management

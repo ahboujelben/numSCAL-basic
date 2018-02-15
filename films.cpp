@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::assignFilmStability()
 {
@@ -117,4 +117,6 @@ void network::assignFilmStability()
         p->setOilCanFlowViaFilm(oilCanFlowViaFilm);
         p->setWaterCanFlowViaFilm(waterCanFlowViaFilm);
     }
+}
+
 }

@@ -9,7 +9,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "pore.h"
-using namespace std;
+
+namespace PNM {
 
 pore::pore(node *const &pNodeIn,node* const &pNodeOut)
 {
@@ -216,4 +217,6 @@ void pore::assignConductivity()
         nodeOutConductivityInverse=1/(nodeOut->getShapeFactorConstant()*pow(nodeOut->getRadius(),4)/(16*nodeOut->getShapeFactor())/(nodeOut->getViscosity()*nodeOutLength));
 
     conductivity=1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse);
+}
+
 }

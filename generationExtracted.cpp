@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::setupExtractedModel()
 {
@@ -745,4 +745,6 @@ void network::setBoundaries()
             }
         }
     }
+}
+
 }
