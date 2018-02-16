@@ -97,7 +97,7 @@
           <property name="geometry">
            <rect>
             <x>20</x>
-            <y>70</y>
+            <y>50</y>
             <width>161</width>
             <height>21</height>
            </rect>
@@ -126,7 +126,7 @@
           <property name="geometry">
            <rect>
             <x>180</x>
-            <y>70</y>
+            <y>50</y>
             <width>181</width>
             <height>21</height>
            </rect>
@@ -142,7 +142,7 @@
           <property name="geometry">
            <rect>
             <x>20</x>
-            <y>90</y>
+            <y>70</y>
             <width>161</width>
             <height>21</height>
            </rect>
@@ -164,25 +164,6 @@
            <string/>
           </property>
          </widget>
-         <widget class="QCheckBox" name="extendCheckBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>50</y>
-            <width>71</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Extend</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
          <widget class="QRadioButton" name="loadFromFileRadioButton">
           <property name="geometry">
            <rect>
@@ -199,25 +180,6 @@
            <bool>false</bool>
           </property>
          </widget>
-         <widget class="QCheckBox" name="oneDirection">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>90</x>
-            <y>50</y>
-            <width>51</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>1D</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
          <widget class="QComboBox" name="rockList">
           <property name="enabled">
            <bool>false</bool>
@@ -225,7 +187,7 @@
           <property name="geometry">
            <rect>
             <x>180</x>
-            <y>90</y>
+            <y>70</y>
             <width>181</width>
             <height>21</height>
            </rect>
@@ -326,38 +288,6 @@
             <string>S9</string>
            </property>
           </item>
-         </widget>
-         <widget class="QLineEdit" name="extensionNumber">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>180</x>
-            <y>50</y>
-            <width>41</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>2</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_x">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>160</x>
-            <y>50</y>
-            <width>21</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>x</string>
-          </property>
          </widget>
         </widget>
         <widget class="QWidget" name="geometryTab">
@@ -3545,7 +3475,6 @@
   <tabstop>calibratedRadioButton</tabstop>
   <tabstop>loadNetworkButton</tabstop>
   <tabstop>pathToExtractedLineEdit</tabstop>
-  <tabstop>extendCheckBox</tabstop>
   <tabstop>loadFromFileRadioButton</tabstop>
   <tabstop>psdRayleighRadioButton</tabstop>
   <tabstop>minRadiusLineEdit</tabstop>

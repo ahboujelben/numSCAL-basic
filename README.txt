@@ -1,4 +1,4 @@
-numSCAL copyright: Attribution 4.0 International
+numSCAL copyright: Attribution-NonCommercial 4.0 International
 Author: Ahmed Hamdi Boujelben (a.boujelben@hw.ac.uk / ahmed.hamdi.boujelben@gmail.com)
 
 ***How to compile numSCAL using Qt Creator***

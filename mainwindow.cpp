@@ -288,9 +288,6 @@ void MainWindow::on_calibratedRadioButton_clicked()
     ui->pathToExtractedLineEdit->setEnabled(false);
     ui->rockPrefixLabel->setEnabled(false);
     ui->rockList->setEnabled(false);
-    ui->extendCheckBox->setEnabled(false);
-    ui->extensionNumber->setEnabled(false);
-    ui->oneDirection->setEnabled(false);
 }
 
 void MainWindow::on_extractedRadioButton_clicked()
@@ -299,9 +296,6 @@ void MainWindow::on_extractedRadioButton_clicked()
     ui->pathToExtractedLineEdit->setEnabled(true);
     ui->rockPrefixLabel->setEnabled(true);
     ui->rockList->setEnabled(true);
-    ui->extendCheckBox->setEnabled(true);
-    ui->extensionNumber->setEnabled(true);
-    ui->oneDirection->setEnabled(true);
 }
 
 void MainWindow::on_twoPhaseSimButton_clicked()
