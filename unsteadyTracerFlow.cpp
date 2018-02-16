@@ -77,7 +77,7 @@ void network::runTracerFlowPT()
             {  
                 //Diffusion
                 double sumDiffusionSource=0;
-                for(element*e : p->getNeighs())
+                for(element*e : p->getNeighboors())
                 {
                     if(!e->getClosed() && e->getPhaseFlag()=='o')
                     {
@@ -121,7 +121,7 @@ void network::runTracerFlowPT()
             {
                 //Diffusion
                 double sumDiffusionSource=0;
-                for(element*e : p->getNeighs())
+                for(element*e : p->getNeighboors())
                 {
                     if(!e->getClosed() && e->getPhaseFlag()=='o')
                     {
@@ -175,7 +175,7 @@ void network::runTracerFlowPT()
                 //Diffusion
                 double sumDiffusionIn=0;
                 double sumDiffusionOut=0;
-                for(element*e : n->getNeighs())
+                for(element*e : n->getNeighboors())
                 {
                     if(!e->getClosed() && e->getPhaseFlag()=='o')
                     {
@@ -229,7 +229,7 @@ void network::runTracerFlowPT()
                 }
 
                 //Diffusion
-                for(element*e : p->getNeighs())
+                for(element*e : p->getNeighboors())
                 {
                     if(!e->getClosed() && e->getPhaseFlag()=='o')
                     {

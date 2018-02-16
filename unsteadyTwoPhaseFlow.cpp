@@ -341,7 +341,7 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
                 {
                     //pore filling mechanism
                     int oilNeighboorsNumber(0);
-                    for(element* n : nodeOut->getNeighs())
+                    for(element* n : nodeOut->getNeighboors())
                         if(!n->getClosed() && n->getPhaseFlag()=='o')
                             oilNeighboorsNumber++;
 
@@ -357,7 +357,7 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
                 {
                     //pore filling mechanism
                     int oilNeighboorsNumber(0);
-                    for(element* n : nodeIn->getNeighs())
+                    for(element* n : nodeIn->getNeighboors())
                         if(!n->getClosed() && n->getPhaseFlag()=='o')
                             oilNeighboorsNumber++;
 
@@ -373,7 +373,7 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
                 {
                     //pore filling mechanism
                     int oilNeighboorsNumber(0);
-                    for(element* n : nodeIn->getNeighs())
+                    for(element* n : nodeIn->getNeighboors())
                         if(!n->getClosed() && n->getPhaseFlag()=='o')
                             oilNeighboorsNumber++;
 
@@ -398,10 +398,10 @@ void network::solvePressureWithoutCounterImbibitionPT()
 
     while(stillMorePoresToClose)
     {
-        clusterEverythingEverything();
+        clusterActiveElements();
         for(pore* p : accessiblePores)
         {
-            if(p->getActive()=='t' && p->getClusterExist()->getSpanning()==false)
+            if(p->getActive()=='t' && p->getClusterActive()->getSpanning()==false)
             {
                 p->setConductivity(1e-200);
                 p->setCapillaryPressure(0);

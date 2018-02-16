@@ -217,7 +217,7 @@ void network::setNeighboors()
                 if(neighboorsOut[j]!=p->getId())
                     neighboors.push_back(getPore(neighboorsOut[j]-1));
         }
-        p->setNeighboors(neighboors);
+        p->setConnectedPores(neighboors);
     }
 }
 
@@ -602,16 +602,16 @@ void network::assignWettability()
             pore* p=getPore(i);
             if(!p->getClosed())
             {
-                if(p->getNeighs().size()==1)
+                if(p->getNeighboors().size()==1)
                 {
-                    element* connectedNode=p->getNeighs()[0];
+                    element* connectedNode=p->getNeighboors()[0];
                     p->setWettabilityFlag(connectedNode->getWettabilityFlag());
                     p->setTheta(connectedNode->getTheta());
                 }
                 else
                 {
-                    element* connectedNode1=p->getNeighs()[0];
-                    element* connectedNode2=p->getNeighs()[1];
+                    element* connectedNode1=p->getNeighboors()[0];
+                    element* connectedNode2=p->getNeighboors()[1];
                     if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
                     {
                         p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
@@ -673,16 +673,16 @@ void network::assignWettability()
                 pore* p=getPore(i);
                 if(!p->getClosed())
                 {
-                    if(p->getNeighs().size()==1)
+                    if(p->getNeighboors().size()==1)
                     {
-                        element* connectedNode=p->getNeighs()[0];
+                        element* connectedNode=p->getNeighboors()[0];
                         p->setWettabilityFlag(connectedNode->getWettabilityFlag());
                         p->setTheta(connectedNode->getTheta());
                     }
                     else
                     {
-                        element* connectedNode1=p->getNeighs()[0];
-                        element* connectedNode2=p->getNeighs()[1];
+                        element* connectedNode1=p->getNeighboors()[0];
+                        element* connectedNode2=p->getNeighboors()[1];
                         if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
                         {
                             p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
@@ -744,16 +744,16 @@ void network::assignWettability()
                 pore* p=getPore(i);
                 if(!p->getClosed())
                 {
-                    if(p->getNeighs().size()==1)
+                    if(p->getNeighboors().size()==1)
                     {
-                        element* connectedNode=p->getNeighs()[0];
+                        element* connectedNode=p->getNeighboors()[0];
                         p->setWettabilityFlag(connectedNode->getWettabilityFlag());
                         p->setTheta(connectedNode->getTheta());
                     }
                     else
                     {
-                        element* connectedNode1=p->getNeighs()[0];
-                        element* connectedNode2=p->getNeighs()[1];
+                        element* connectedNode1=p->getNeighboors()[0];
+                        element* connectedNode2=p->getNeighboors()[1];
                         if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
                         {
                             p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
@@ -932,7 +932,7 @@ void network::setNeighs()
         vector<element*> neighs;
         if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());
         if(p->getNodeOut()!=0)neighs.push_back(p->getNodeOut());
-        p->setNeighs(neighs);
+        p->setNeighboors(neighs);
     }
 
     for(int i=0;i<totalNodes;++i)
@@ -942,7 +942,7 @@ void network::setNeighs()
         const vector<int>& neighboors=n->getConnectedPores();
         for(unsigned j=0;j<neighboors.size();++j)
            neighs.push_back(getPore(neighboors[j]-1));
-        n->setNeighs(neighs);
+        n->setNeighboors(neighs);
     }
 }
 

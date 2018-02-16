@@ -69,7 +69,7 @@ void network::clusterPores(cluster*(pore::*getter)(void) const,void(pore::*sette
         if((p->*status)()==flag)
         {
             vector<int> neighboorsClusters;
-            vector<pore*> neighboors=p->getNeighboors();
+            vector<pore*> neighboors=p->getConnectedPores();
             for(unsigned j=0;j<neighboors.size();j++)
             {
                 if((neighboors[j]->*status)()==flag && neighboors[j]->getClusterTemp()!=0)
@@ -189,7 +189,7 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
         if((e->*status)()==flag)
         {
             vector<int> neighboorsClusters;
-            vector<element*> neighboors=e->getNeighs();
+            vector<element*> neighboors=e->getNeighboors();
             for(unsigned j=0;j<neighboors.size();j++)
             {
                 if((neighboors[j]->*status)()==flag && neighboors[j]->getClusterTemp()!=0)
@@ -299,24 +299,6 @@ void network::clusterOilElements()
     }
 }
 
-void network::clusterGasElements()
-{
-    cluster* (element::*getter)() const =&element::getClusterGas;
-    void (element::*setter)(cluster*) =&element::setClusterGas;
-    char (element::*status)(void) const=&element::getPhaseFlag;
-    clusterElements(getter,setter,status,'g',gasClusters);
-    isGasSpanning=false;
-    for(unsigned i=0;i<gasClusters.size();++i)
-    {
-        cluster* cls=gasClusters[i];
-        if(cls->getSpanning())
-        {
-            isGasSpanning=true;
-            break;
-        }
-    }
-}
-
 void network::clusterOilFlowingElements()
 {
     cluster* (element::*getter)() const =&element::getClusterOilFilm;
@@ -356,17 +338,17 @@ void network::clusterWaterFlowingElements()
     }
 }
 
-void network::clusterEverythingEverything()
+void network::clusterActiveElements()
 {
-    cluster* (element::*getter)() const =&element::getClusterExist;
-    void (element::*setter)(cluster*) =&element::setClusterExist;
+    cluster* (element::*getter)() const =&element::getClusterActive;
+    void (element::*setter)(cluster*) =&element::setClusterActive;
     char (element::*status)(void) const=&element::getActive;
-    clusterElements(getter,setter,status,'t',existClusters);
+    clusterElements(getter,setter,status,'t',activeClusters);
 
     isNetworkSpanning=false;
-    for(unsigned i=0;i<existClusters.size();++i)
+    for(unsigned i=0;i<activeClusters.size();++i)
     {
-        cluster* cls=existClusters[i];
+        cluster* cls=activeClusters[i];
         if(cls->getSpanning())
         {
             isNetworkSpanning=true;

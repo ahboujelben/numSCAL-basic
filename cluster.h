@@ -31,10 +31,10 @@ public:
     void setSpanning(bool value);
 
 private:
-    int id;
-    bool inlet;
-    bool outlet;
-    bool spanning;
+    int id; //cluster id
+    bool inlet; // flag on whether the cluster is connected to the inlet
+    bool outlet; // flag on whether the cluster is connected to the outlet
+    bool spanning; // flag on whether the cluster is spanning
 };
 
 }

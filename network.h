@@ -179,11 +179,10 @@ public:
     void clusterGasElements();
     void clusterOilFlowingElements();
     void clusterWaterFlowingElements();
-    void clusterEverythingEverything();
+    void clusterActiveElements();
 
 
     ///////////// Methods for loading data
-    void loadData();
     void loadNetworkData();
     void loadTwoPhaseData();
 
@@ -205,21 +204,14 @@ public:
     int getTotalOpenedNodes() const;
 
 
-    ///////////// Access to clusters
-    cluster *getCluster(int) const;
-
-
-    ///////////// Emitting signals
-    void emitPlotSignal();
-
-
     ///////////// Getters/Setters
     //Getters for network attributes
     double getXEdgeLength() const;
     double getYEdgeLength() const;
     double getZEdgeLength() const;
 
-    //ThreadManagement
+
+    ////////////// ThreadManagement
     bool getReady() const;
     void setCancel(bool value);
     int getNetworkSource() const;
@@ -232,8 +224,14 @@ public:
     int getNz() const;
     void setNz(int value);
 
+
+    ////////////// Display runtime notifications
     string getSimulationNotification() const;
     void setSimulationNotification(const string &value);
+
+
+    ///////////// Emitting signals
+    void emitPlotSignal();
 
 signals:
     void plot();
@@ -392,15 +390,13 @@ private:
     ////////////// Clustering Attributes
     vector<cluster*> waterClusters;
     vector<cluster*> oilClusters;
-    vector<cluster*> gasClusters;
     vector<cluster*> waterWetClusters;
     vector<cluster*> oilWetClusters;
     vector<cluster*> oilFilmClusters;
     vector<cluster*> waterFilmClusters;
     vector<cluster*> oilLayerClusters;
     vector<cluster*> waterLayerClusters;
-    vector<cluster*> allClusters;
-    vector<cluster*> existClusters;
+    vector<cluster*> activeClusters;
     bool isOilSpanning;
     bool isWaterSpanning;
     bool isGasSpanning;

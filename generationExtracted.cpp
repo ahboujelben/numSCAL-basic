@@ -277,7 +277,7 @@ void network::setNeighboorsForExtractedModel()
                 if(neighboorsOut[j]!=p->getId())
                     neighboors.push_back(getPore(neighboorsOut[j]-1));
         }
-        p->setNeighboors(neighboors);
+        p->setConnectedPores(neighboors);
     }
 }
 

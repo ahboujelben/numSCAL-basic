@@ -128,15 +128,15 @@ void network::fillWithPhasePT(char phase, double saturation, int distribution, c
             pore* p=getPore(i);
             if(!p->getClosed())
             {
-                if(p->getNeighs().size()==1)
+                if(p->getNeighboors().size()==1)
                 {
-                    element* connectedNode=p->getNeighs()[0];
+                    element* connectedNode=p->getNeighboors()[0];
                     p->setPhaseFlag(connectedNode->getPhaseFlag());
                 }
                 else
                 {
-                    element* connectedNode1=p->getNeighs()[0];
-                    element* connectedNode2=p->getNeighs()[1];
+                    element* connectedNode1=p->getNeighboors()[0];
+                    element* connectedNode2=p->getNeighboors()[1];
                     if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
                     {
                         p->setPhaseFlag(connectedNode1->getPhaseFlag());
@@ -197,8 +197,8 @@ void network::initialiseCapillaries()
         p->setEffectiveVolume(p->getVolume());
         p->setOilFilmVolume(0);
         p->setWaterFilmVolume(0);
-        p->setOilFilmConductance(0);
-        p->setWaterFilmConductance(0);
+        p->setOilFilmConductivity(0);
+        p->setWaterFilmConductivity(0);
         p->setOilLayerActivated(false);
         p->setWaterCornerActivated(false);
         p->setActive('t');
@@ -231,8 +231,8 @@ void network::initialiseCapillaries()
         n->setEffectiveVolume(n->getVolume());
         n->setOilFilmVolume(0);
         n->setWaterFilmVolume(0);
-        n->setOilFilmConductance(0);
-        n->setWaterFilmConductance(0);
+        n->setOilFilmConductivity(0);
+        n->setWaterFilmConductivity(0);
         n->setOilLayerActivated(false);
         n->setWaterCornerActivated(false);
         n->setActive('t');

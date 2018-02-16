@@ -40,9 +40,6 @@ element::element()
     beta1=0;
     beta2=0;
     beta3=0;
-    film1=false;
-    film2=false;
-    film3=false;
 
     active='t';
 }
@@ -127,14 +124,14 @@ void element::setPhaseFlag(char value)
 {
     phaseFlag = value;
 }
-std::vector<element *> element::getNeighs() const
+std::vector<element *> element::getNeighboors() const
 {
-    return neighs;
+    return neighboors;
 }
 
-void element::setNeighs(const std::vector<element *> &value)
+void element::setNeighboors(const std::vector<element *> &value)
 {
-    neighs = value;
+    neighboors = value;
 }
 int element::getClusterTemp() const
 {
@@ -181,15 +178,7 @@ void element::setClusterOil(cluster *value)
 {
     clusterOil = value;
 }
-cluster *element::getClusterGas() const
-{
-    return clusterGas;
-}
 
-void element::setClusterGas(cluster *value)
-{
-    clusterGas = value;
-}
 bool element::getWaterTrapped() const
 {
     return waterTrapped;
@@ -358,40 +347,13 @@ void element::setEffectiveVolume(double value)
 {
     effectiveVolume = value;
 }
-bool element::getFilm1() const
-{
-    return film1;
-}
 
-void element::setFilm1(bool value)
-{
-    film1 = value;
-}
-bool element::getFilm2() const
-{
-    return film2;
-}
-
-void element::setFilm2(bool value)
-{
-    film2 = value;
-}
-bool element::getFilm3() const
-{
-    return film3;
-}
-
-void element::setFilm3(bool value)
-{
-    film3 = value;
-}
-
-cluster *element::getClusterExist() const
+cluster *element::getClusterActive() const
 {
     return clusterActive;
 }
 
-void element::setClusterExist(cluster *value)
+void element::setClusterActive(cluster *value)
 {
     clusterActive = value;
 }
@@ -529,23 +491,23 @@ void element::setOilLayerActivated(bool value)
 {
     oilLayerActivated = value;
 }
-double element::getOilFilmConductance() const
+double element::getOilFilmConductivity() const
 {
-    return oilFilmConductance;
+    return oilFilmConductivity;
 }
 
-void element::setOilFilmConductance(double value)
+void element::setOilFilmConductivity(double value)
 {
-    oilFilmConductance = value;
+    oilFilmConductivity = value;
 }
-double element::getWaterFilmConductance() const
+double element::getWaterFilmConductivity() const
 {
-    return waterFilmConductance;
+    return waterFilmConductivity;
 }
 
-void element::setWaterFilmConductance(double value)
+void element::setWaterFilmConductivity(double value)
 {
-    waterFilmConductance = value;
+    waterFilmConductivity = value;
 }
 
 }
