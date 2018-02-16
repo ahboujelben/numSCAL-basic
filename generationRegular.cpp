@@ -154,9 +154,15 @@ void network::createPores()
         p->setId(i+1);
         p->setAbsId(totalNodes+i);
         if(p->getNodeOut()==0)
+        {
             p->setInlet(true);
+            inletPores.push_back(p);
+        }
         if(p->getNodeIn()==0)
+        {
             p->setOutlet(true);
+            outletPores.push_back(p);
+        }
         tableOfElements.push_back(p);
     }
     setNeighboors();
@@ -190,7 +196,7 @@ void network::setNeighboors()
         neighboors.push_back(yout->getNodeIn()==0?0:yout->getNodeIn()->getId());
         neighboors.push_back(z->getNodeOut()==0?0:z->getNodeOut()->getId());
         neighboors.push_back(zout->getNodeIn()==0?0:zout->getNodeIn()->getId());
-        n->setNeighboors(neighboors);
+        n->setConnectedNodes(neighboors);
     }
 
     for(int i=0;i<totalPores;++i)

@@ -11,15 +11,15 @@
 #ifndef CLUSTER_H
 #define CLUSTER_H
 
-#include <vector>
-#include <map>
-
 namespace PNM {
 
 class cluster
 {
 public:
     cluster(int);
+
+    int getId() const;
+    void setId(int value);
 
     bool getInlet() const;
     void setInlet(bool value);
@@ -29,10 +29,6 @@ public:
 
     bool getSpanning() const;
     void setSpanning(bool value);
-
-    int getId() const;
-    void setId(int value);
-
 
 private:
     int id;

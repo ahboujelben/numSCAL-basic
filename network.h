@@ -256,6 +256,8 @@ private:
     vector<pore*> accessiblePores;
     vector<node*> accessibleNodes;
     vector<element*> accessibleElements;
+    std::vector<pore*> inletPores;
+    std::vector<pore*> outletPores;
 
     int totalPores;
     int totalOpenedPores;
@@ -294,9 +296,6 @@ private:
     int maxConnectionNumber;
     string extractedNetworkFolderPath;
     string rockPrefix;
-    bool extension;
-    int extensionNumber;
-    bool extensionOneDirection;
 
 
     //Attributes for pressure solving

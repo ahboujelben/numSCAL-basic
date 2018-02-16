@@ -93,8 +93,8 @@ void network::solvePressures()
         node* n=getNode(i);
         if(!n->getClosed())
         {
-            vector<int> neighboors=n->getNeighboors();
-            vector<int> connectedPores=n->getConnectedPores();
+            vector<int>& neighboors=n->getConnectedNodes();
+            vector<int>& connectedPores=n->getConnectedPores();
             double conductivity(0);
             for(unsigned j=0;j<neighboors.size();++j)
             {
@@ -162,7 +162,7 @@ void network::solvePressuresWithCapillaryPressures()
         node* n=getNode(i);
         if(!n->getClosed())
         {
-            vector<int> neighboors=n->getNeighboors();
+            vector<int> neighboors=n->getConnectedNodes();
             vector<int> connectedPores=n->getConnectedPores();
             double conductivity(0);
             for(unsigned j=0;j<neighboors.size();++j)

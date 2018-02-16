@@ -109,9 +109,6 @@ void MainWindow::exportNetworkDataFromGUI()
     settings.setValue("source",source );
     settings.setValue("extractedNetworkPath", ui->pathToExtractedLineEdit->text());
     settings.setValue("rockPrefix", ui->rockList->currentText());
-    settings.setValue("extension", ui->extendCheckBox->isChecked());
-    settings.setValue("extensionNumber", ui->extensionNumber->text());
-    settings.setValue("extensionOneDirection", ui->oneDirection->isChecked());
     settings.endGroup();
 
     settings.beginGroup("NetworkGeneration_Geometry");

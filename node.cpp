@@ -22,10 +22,7 @@ node::node(double X, double Y, double Z)
     zCoordinate=Z;
     connectionNumber=6;
     pressure=0;
-    inletY=false;
-    outletY=false;
-    inletZ=false;
-    outletZ=false;
+    rank=0;
 }
 
 int node::getIndexX() const
@@ -102,14 +99,14 @@ void node::setRank(int value)
 {
     rank = value;
 }
-std::vector<int> &node::getNeighboors()
+std::vector<int> &node::getConnectedNodes()
 {
-    return neighboors;
+    return connectedNodes;
 }
 
-void node::setNeighboors(const std::vector<int> &value)
+void node::setConnectedNodes(const std::vector<int> &value)
 {
-    neighboors = value;
+    connectedNodes = value;
 }
 
 int node::getConnectionNumber() const
@@ -132,41 +129,5 @@ void node::setConnectedPores(const std::vector<int> &value)
     connectedPores = value;
 }
 
-bool node::getInletY() const
-{
-    return inletY;
 }
 
-void node::setInletY(bool value)
-{
-    inletY = value;
-}
-bool node::getOutletY() const
-{
-    return outletY;
-}
-
-void node::setOutletY(bool value)
-{
-    outletY = value;
-}
-bool node::getInletZ() const
-{
-    return inletZ;
-}
-
-void node::setInletZ(bool value)
-{
-    inletZ = value;
-}
-bool node::getOutletZ() const
-{
-    return outletZ;
-}
-
-void node::setOutletZ(bool value)
-{
-    outletZ = value;
-}
-
-}

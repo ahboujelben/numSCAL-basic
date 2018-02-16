@@ -79,6 +79,8 @@ void network::destroy()
     accessiblePores.clear();
     accessibleNodes.clear();
     accessibleElements.clear();
+    inletPores.clear();
+    outletPores.clear();
 
     if(!waterClusters.empty())
         for (unsigned i = 0; i < waterClusters.size(); ++i)
