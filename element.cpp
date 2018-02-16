@@ -282,24 +282,6 @@ void element::setWaterFraction(double value)
 {
     waterFraction = value;
 }
-double element::getOldOilFraction() const
-{
-    return oldOilFraction;
-}
-
-void element::setOldOilFraction(double value)
-{
-    oldOilFraction = value;
-}
-double element::getOldWaterFraction() const
-{
-    return oldWaterFraction;
-}
-
-void element::setOldWaterFraction(double value)
-{
-    oldWaterFraction = value;
-}
 
 double element::getFlow() const
 {

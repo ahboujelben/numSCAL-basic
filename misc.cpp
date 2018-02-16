@@ -174,9 +174,6 @@ void network::initialiseCapillaries()
 
             p->setOilFraction(0.0);
             p->setWaterFraction(1);
-
-            p->setOldOilFraction(0);
-            p->setOldWaterFraction(1);
         }
         if(p->getPhaseFlag()=='o')
         {
@@ -187,9 +184,6 @@ void network::initialiseCapillaries()
 
             p->setOilFraction(1);
             p->setWaterFraction(0);
-
-            p->setOldOilFraction(1);
-            p->setOldWaterFraction(0);
         }
 
         p->setCapillaryPressure(0);
@@ -213,18 +207,12 @@ void network::initialiseCapillaries()
         {
             n->setOilFraction(0);
             n->setWaterFraction(1);
-
-            n->setOldOilFraction(0);
-            n->setOldWaterFraction(1);
         }
 
         if(n->getPhaseFlag()=='o')
         {
             n->setOilFraction(1);
             n->setWaterFraction(0);
-
-            n->setOldOilFraction(1);
-            n->setOldWaterFraction(0);
         }
 
         n->setConcentration(0);

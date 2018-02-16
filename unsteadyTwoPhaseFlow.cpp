@@ -26,7 +26,6 @@ void network::runUSSDrainageModelPT()
     initializeTwoPhaseSimulationPT();
     initializeTwoPhaseOutputs();
     setInitialFlagsPT();
-    setConstantFlowRateAker();
 
     //initialise flags
     double timeSoFar(0);
@@ -35,8 +34,8 @@ void network::runUSSDrainageModelPT()
     double outputPVs(0.0);
     int outputCount(0);
     bool solvePressure=true;
-    bool solvePressureOilFlowing=true;
     bool waterSpanning=isWaterSpanning;
+    deltaP=1;
 
     set<pore*> poresToCheck;
     set<node*> nodesToCheck;
@@ -55,7 +54,6 @@ void network::runUSSDrainageModelPT()
             //Solve pressure distribution and block counter imbibition flow
             solvePressureWithoutCounterImbibitionPT();
             solvePressure=false;
-            solvePressureOilFlowing=true;
         }
 
         //Calculate timestep
@@ -568,7 +566,6 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
             if(p->getFlow()>0 && p->getNodeOutWater() || p->getFlow()<0 && p->getNodeInWater())
             {
                 double incrementalWater=abs(p->getFlow())*timeStep;
-                p->setOldWaterFraction(p->getWaterFraction());
                 p->setWaterFraction(p->getWaterFraction()+incrementalWater/p->getVolume());
                 p->setOilFraction(1-p->getWaterFraction());
 
@@ -579,7 +576,6 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
                     p->setPhaseFlag('w');
                     p->setWaterFraction(1.0);
                     p->setOilFraction(0.0);
-                    p->setOldWaterFraction(p->getWaterFraction());
                     solvePressure=true;
                 }
 
@@ -595,7 +591,6 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
         if(p->getConductivity()!=1e-200 && abs(p->getFlow())>1e-24)
         {
             double incrementalWater=abs(p->getFlow())*timeStep;
-            p->setOldWaterFraction(p->getWaterFraction());
             p->setWaterFraction(p->getWaterFraction()+incrementalWater/p->getVolume());
             p->setOilFraction(1-p->getWaterFraction());
 
@@ -606,7 +601,6 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
                 p->setPhaseFlag('w');
                 p->setWaterFraction(1.0);
                 p->setOilFraction(0.0);
-                p->setOldWaterFraction(p->getWaterFraction());
                 solvePressure=true;
             }
 

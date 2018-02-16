@@ -115,12 +115,6 @@ public:
     double getWaterFraction() const;
     void setWaterFraction(double value);
 
-    double getOldOilFraction() const;
-    void setOldOilFraction(double value);
-
-    double getOldWaterFraction() const;
-    void setOldWaterFraction(double value);
-
     double getFlow() const;
     void setFlow(double value);
 
@@ -200,11 +194,9 @@ protected:
 
     double oilFraction; // oil fraction in the capillary
     double waterFraction; // water fraction in the capillary
-    double oldOilFraction;
-    double oldWaterFraction;
 
-    bool waterTrapped;
-    bool oilTrapped;
+    bool waterTrapped; // a flag to whether water is topologically trapped in the capillary
+    bool oilTrapped; // a flag to whether oil is topologically trapped in the capillary
 
     double flow; // fluid flow (SI) in the capillary
     double massFlow; // mass flow (SI) in the capillary
