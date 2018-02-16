@@ -26,6 +26,9 @@ public:
     int getId() const;
     void setId(int value);
 
+    int getAbsId() const;
+    void setAbsId(int value);
+
     double getRadius() const;
     void setRadius(double value);
 
@@ -137,8 +140,8 @@ public:
     cluster *getClusterExist() const;
     void setClusterExist(cluster *value);
 
-    char getExist() const;
-    void setExist(char value);
+    char getActive() const;
+    void setActive(char value);
 
     cluster *getClusterWaterFilm() const;
     void setClusterWaterFilm(cluster *value);
@@ -183,7 +186,9 @@ public:
 protected:
     int type;
 
+    //Basic attributes
     int id;
+    int absId;
     double radius;
     double length;
     double volume;
@@ -203,20 +208,11 @@ protected:
     bool outlet;
 
     bool closed;
+    char active;
 
     std::vector<element*> neighs;
 
-    //Clustering
-    int clusterTemp;
-    cluster* clusterWaterWet;
-    cluster* clusterOilWet;
-    cluster* clusterWater;
-    cluster* clusterOil;
-    cluster* clusterGas;
-    cluster* clusterWaterFilm;
-    cluster* clusterOilFilm;
-    cluster* clusterExist;
-
+    //Simulation attributes
     bool waterTrapped;
     bool oilTrapped;
 
@@ -228,12 +224,21 @@ protected:
     double effectiveVolume;
 
     bool oilCanFlowViaFilm, waterCanFlowViaFilm;
-    bool waterCornerActivated, oilLayerActivated;
-    double oilFilmVolume,waterFilmVolume;
+    bool oilLayerActivated, waterCornerActivated;
+    double oilFilmVolume, waterFilmVolume;
     double oilFilmConductance, waterFilmConductance;
     double filmAreaCoefficient;
 
-    char exist;
+    //Clustering attributes
+    int clusterTemp;
+    cluster* clusterWaterWet;
+    cluster* clusterOilWet;
+    cluster* clusterWater;
+    cluster* clusterOil;
+    cluster* clusterGas;
+    cluster* clusterWaterFilm;
+    cluster* clusterOilFilm;
+    cluster* clusterActive;
 };
 
 }

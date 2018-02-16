@@ -12,6 +12,8 @@
 
 namespace PNM {
 
+using namespace std;
+
 pore::pore(node *const &pNodeIn,node* const &pNodeOut)
 {
     nodeIn=pNodeIn;

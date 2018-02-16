@@ -44,7 +44,7 @@ element::element()
     film2=false;
     film3=false;
 
-    exist='t';
+    active='t';
 }
 int element::getId() const
 {
@@ -216,7 +216,7 @@ bool element::getClosed() const
 void element::setClosed(bool value)
 {
     closed = value;
-    exist = value==true?'f':'t';
+    active = value==true?'f':'t';
 }
 bool element::getInlet() const
 {
@@ -388,21 +388,21 @@ void element::setFilm3(bool value)
 
 cluster *element::getClusterExist() const
 {
-    return clusterExist;
+    return clusterActive;
 }
 
 void element::setClusterExist(cluster *value)
 {
-    clusterExist = value;
+    clusterActive = value;
 }
-char element::getExist() const
+char element::getActive() const
 {
-    return exist;
+    return active;
 }
 
-void element::setExist(char value)
+void element::setActive(char value)
 {
-    exist = value;
+    active = value;
 }
 
 cluster *element::getClusterWaterFilm() const
@@ -454,6 +454,16 @@ double element::getMassFlow() const
 void element::setMassFlow(double value)
 {
     massFlow = value;
+}
+
+int element::getAbsId() const
+{
+    return absId;
+}
+
+void element::setAbsId(int value)
+{
+    absId = value;
 }
 double element::getOilFilmVolume() const
 {

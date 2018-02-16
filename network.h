@@ -46,8 +46,6 @@
 
 namespace PNM {
 
-using namespace std;
-
 class network : public QObject
 {
     Q_OBJECT
@@ -166,10 +164,14 @@ public:
     int hkUnion(vector<int>&,vector<int>&);
     int hkMakeSet(vector<int>&);
 
-    void clusterPores(cluster*(pore::*)(void) const,void(pore::*)(cluster*),char(pore::*)(void) const,char,vector<cluster *> &);
+    template<typename T>
+    void clusterPores(cluster*(pore::*)(void) const, void(pore::*)(cluster*), T(pore::*)() const, T, vector<cluster *> &);
     void clusterOilPores();
     void clusterWaterPores();
-    void clusterElements(cluster*(element::*)(void) const,void(element::*)(cluster*),char(element::*)(void) const,char,vector<cluster *> &);
+
+    template<typename T>
+    void clusterElements(cluster*(element::*)(void) const,void(element::*)(cluster*),T(element::*)(void) const,T,vector<cluster *> &);
+
     void clusterWaterWetElements();
     void clusterOilWetElements();
     void clusterWaterElements();

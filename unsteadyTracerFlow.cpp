@@ -148,10 +148,11 @@ void network::runTracerFlowPT()
         cout<<"ERROR: Tracer will only flow in the oil. Oil is not spanning in the current configuration."<<endl;
     }
 
-    while(!cancel && timeSoFar<simulationTime)
-    {
-        vector<double> newConcentration;
+    //define working concentration vector
+    vector<double> newConcentration(totalElements);
 
+    while(!cancel && timeSoFar<simulationTime)
+    {       
         for(node* n: accessibleNodes)
         {
             if(n->getPhaseFlag()=='o'  && n->getClusterOil()->getSpanning())
@@ -185,7 +186,7 @@ void network::runTracerFlowPT()
                 }
 
                 //Load new concentration in a temporary vector
-                newConcentration.push_back(n->getConcentration()+(massIn-abs(n->getFlow())*n->getConcentration())*timeStep/n->getVolume()+sumDiffusionIn*timeStep-sumDiffusionOut*timeStep);
+                newConcentration[n->getAbsId()]=(n->getConcentration()+(massIn-abs(n->getFlow())*n->getConcentration())*timeStep/n->getVolume()+sumDiffusionIn*timeStep-sumDiffusionOut*timeStep);
             }
         }
 
@@ -239,36 +240,20 @@ void network::runTracerFlowPT()
                 }
 
                 //Load new concentration in a temporary vector
-                newConcentration.push_back(p->getConcentration()+(abs(p->getFlow())/flowIn*massIn-abs(p->getFlow())*p->getConcentration())*timeStep/p->getVolume()+sumDiffusionIn*timeStep-sumDiffusionOut*timeStep);
+                newConcentration[p->getAbsId()]=(p->getConcentration()+(abs(p->getFlow())/flowIn*massIn-abs(p->getFlow())*p->getConcentration())*timeStep/p->getVolume()+sumDiffusionIn*timeStep-sumDiffusionOut*timeStep);
             }
         }
 
         //Update concentrations
-        unsigned index(0);
-        for(node* n: accessibleNodes)
+        for(element* e: accessibleElements)
         {
-            if(n->getPhaseFlag()=='o' && n->getClusterOil()->getSpanning())
+            if(e->getPhaseFlag()=='o' && e->getClusterOil()->getSpanning())
             {
-                n->setConcentration(newConcentration[index]);
-                index++;
-                if(n->getConcentration()<-0.00001 || n->getConcentration()>1.0001)
+                e->setConcentration(newConcentration[e->getAbsId()]);
+                if(e->getConcentration()<-0.00001 || e->getConcentration()>1.0001)
                 {
                     cancel=true;
-                    cout<<"ERROR: N Concentration out of range: "<< n->getConcentration()<<endl;
-                }
-            }
-        }
-        for(pore* p: accessiblePores)
-        {
-            if(p->getPhaseFlag()=='o' && p->getClusterOil()->getSpanning())
-            {
-                p->setConcentration(newConcentration[index]);
-                index++;
-
-                if(p->getConcentration()<-0.00001 || p->getConcentration()>1.00001)
-                {
-                    cancel=true;
-                    cout<<"ERROR: P Concentration out of range: "<< p->getConcentration()<<endl;
+                    cout<<"ERROR: Concentration out of range: "<< e->getConcentration()<<endl;
                 }
             }
         }
@@ -276,8 +261,7 @@ void network::runTracerFlowPT()
         if(timeStep!=1e50)
         {
             timeSoFar+=timeStep;
-            double injectedVolume=timeStep*flowRate/totalElementsVolume;
-            injectedPVs+=injectedVolume;
+            injectedPVs+=timeStep*flowRate/totalElementsVolume;
         }
 
         //Display notification

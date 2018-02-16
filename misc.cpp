@@ -201,7 +201,7 @@ void network::initialiseCapillaries()
         p->setWaterFilmConductance(0);
         p->setOilLayerActivated(false);
         p->setWaterCornerActivated(false);
-        p->setExist('t');
+        p->setActive('t');
         p->setConductivity(0);
         p->setFlow(0);
         p->setMassFlow(0);
@@ -235,7 +235,7 @@ void network::initialiseCapillaries()
         n->setWaterFilmConductance(0);
         n->setOilLayerActivated(false);
         n->setWaterCornerActivated(false);
-        n->setExist('t');
+        n->setActive('t');
         n->setConductivity(0);
         n->setFlow(0);
         n->setMassFlow(0);

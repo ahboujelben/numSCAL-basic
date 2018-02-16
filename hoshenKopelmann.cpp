@@ -44,7 +44,8 @@ int network::hkMakeSet(vector<int>& labels)
     return labels[0];
 }
 
-void network::clusterPores(cluster*(pore::*getter)(void) const,void(pore::*setter)(cluster*),char(pore::*status)(void) const,char flag, vector<cluster*> &clustersList)
+template<typename T>
+void network::clusterPores(cluster*(pore::*getter)(void) const,void(pore::*setter)(cluster*),T(pore::*status)(void) const,T flag, vector<cluster*> &clustersList)
 {
     if(!clustersList.empty())
         for (unsigned i = 0; i < clustersList.size(); ++i)
@@ -113,14 +114,8 @@ void network::clusterPores(cluster*(pore::*getter)(void) const,void(pore::*sette
                 inletClusters.insert((p->*getter)());
             if((p->*status)()==flag && p->getOutlet())
                 outletClusters.insert((p->*getter)());
-            if((p->*status)()==flag)
-            {
-                cluster* cls=(p->*getter)();
-                cls->setSize(cls->getSize()+1);
-                cls->setVolume(cls->getVolume()+p->getVolume());
-                cls->setPoreId(i+1);
-            }
         }
+
         for (set<cluster*>::iterator iterator = inletClusters.begin(); iterator != inletClusters.end(); ++iterator) {
             (*iterator)->setInlet(true);
         }
@@ -171,7 +166,8 @@ void network::clusterOilPores()
     }
 }
 
-void network::clusterElements(cluster *(element::*getter)() const, void (element::*setter)(cluster *), char (element::*status)() const, char flag, std::vector<cluster *> &clustersList)
+template<typename T>
+void network::clusterElements(cluster *(element::*getter)() const, void (element::*setter)(cluster *), T(element::*status)() const, T flag, std::vector<cluster *> &clustersList)
 {
     if(!clustersList.empty())
         for (unsigned i = 0; i < clustersList.size(); ++i)
@@ -234,13 +230,6 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
         for(int i=0;i<totalElements;++i)
         {
             element* e=getElement(i);
-            if((e->*status)()==flag)
-            {
-                cluster* cls=(e->*getter)();
-                cls->setSize(cls->getSize()+1);
-                cls->setVolume(cls->getVolume()+e->getVolume());
-                cls->setPoreId(i+1);
-            }
 
             if(e->getType()==1)
             {
@@ -375,7 +364,7 @@ void network::clusterEverythingEverything()
 {
     cluster* (element::*getter)() const =&element::getClusterExist;
     void (element::*setter)(cluster*) =&element::setClusterExist;
-    char (element::*status)(void) const=&element::getExist;
+    char (element::*status)(void) const=&element::getActive;
     clusterElements(getter,setter,status,'t',existClusters);
 
     isNetworkSpanning=false;

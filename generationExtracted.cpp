@@ -83,6 +83,7 @@ void network::loadExtractedNetwork()
         tableOfAllNodes[i]= new node(x,y,z);
         node* n=tableOfAllNodes[i];
         n->setId(id);
+        n->setAbsId(i);
         n->setConnectionNumber(numberOfNeighboors);
         averageConnectionNumber+=numberOfNeighboors;
 
@@ -188,6 +189,7 @@ void network::loadExtractedNetwork()
         if(p->getNodeOut()==0)p->setInlet(true);
         if(p->getNodeIn()==0)p->setOutlet(true);
         p->setId(id);
+        p->setAbsId(i+totalNodes);
         p->setShapeFactor(shapeFactor);
         p->setFullLength(poreLength);
         if(p->getNodeIn()!=0 && p->getNodeOut()!=0)

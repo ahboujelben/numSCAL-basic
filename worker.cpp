@@ -8,7 +8,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "worker.h"
-using namespace std;
 
 worker::worker(PNM::network *net, int j, QObject *parent) :
     QObject(parent)

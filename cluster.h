@@ -30,26 +30,15 @@ public:
     bool getSpanning() const;
     void setSpanning(bool value);
 
-    double getVolume() const;
-    void setVolume(double value);
-
     int getId() const;
     void setId(int value);
 
-    int getSize() const;
-    void setSize(int value);
-
-    int getPoreId() const;
-    void setPoreId(int value);
 
 private:
     int id;
     bool inlet;
     bool outlet;
     bool spanning;
-    double volume;
-    int size;
-    int poreId;
 };
 
 }

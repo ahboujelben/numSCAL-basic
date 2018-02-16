@@ -77,6 +77,7 @@ void network::createNodes()
     {
         node* n=getNode(i);
         n->setId(i+1);
+        n->setAbsId(i);
         if(n->getIndexX()==0)n->setInlet(true);
         if(n->getIndexX()==Nx-1)n->setOutlet(true);
         n->setXCoordinate(n->getIndexX()*length);
@@ -151,6 +152,7 @@ void network::createPores()
     {
         pore* p=getPore(i);
         p->setId(i+1);
+        p->setAbsId(totalNodes+i);
         if(p->getNodeOut()==0)
             p->setInlet(true);
         if(p->getNodeIn()==0)
