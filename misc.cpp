@@ -9,7 +9,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::assignViscositiesWithMixedFluids()
 {
@@ -128,15 +128,15 @@ void network::fillWithPhasePT(char phase, double saturation, int distribution, c
             pore* p=getPore(i);
             if(!p->getClosed())
             {
-                if(p->getNeighs().size()==1)
+                if(p->getNeighboors().size()==1)
                 {
-                    element* connectedNode=p->getNeighs()[0];
+                    element* connectedNode=p->getNeighboors()[0];
                     p->setPhaseFlag(connectedNode->getPhaseFlag());
                 }
                 else
                 {
-                    element* connectedNode1=p->getNeighs()[0];
-                    element* connectedNode2=p->getNeighs()[1];
+                    element* connectedNode1=p->getNeighboors()[0];
+                    element* connectedNode2=p->getNeighboors()[1];
                     if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
                     {
                         p->setPhaseFlag(connectedNode1->getPhaseFlag());
@@ -174,9 +174,6 @@ void network::initialiseCapillaries()
 
             p->setOilFraction(0.0);
             p->setWaterFraction(1);
-
-            p->setOldOilFraction(0);
-            p->setOldWaterFraction(1);
         }
         if(p->getPhaseFlag()=='o')
         {
@@ -187,9 +184,6 @@ void network::initialiseCapillaries()
 
             p->setOilFraction(1);
             p->setWaterFraction(0);
-
-            p->setOldOilFraction(1);
-            p->setOldWaterFraction(0);
         }
 
         p->setCapillaryPressure(0);
@@ -197,11 +191,11 @@ void network::initialiseCapillaries()
         p->setEffectiveVolume(p->getVolume());
         p->setOilFilmVolume(0);
         p->setWaterFilmVolume(0);
-        p->setOilFilmConductance(0);
-        p->setWaterFilmConductance(0);
+        p->setOilFilmConductivity(0);
+        p->setWaterFilmConductivity(0);
         p->setOilLayerActivated(false);
         p->setWaterCornerActivated(false);
-        p->setExist('t');
+        p->setActive('t');
         p->setConductivity(0);
         p->setFlow(0);
         p->setMassFlow(0);
@@ -213,29 +207,23 @@ void network::initialiseCapillaries()
         {
             n->setOilFraction(0);
             n->setWaterFraction(1);
-
-            n->setOldOilFraction(0);
-            n->setOldWaterFraction(1);
         }
 
         if(n->getPhaseFlag()=='o')
         {
             n->setOilFraction(1);
             n->setWaterFraction(0);
-
-            n->setOldOilFraction(1);
-            n->setOldWaterFraction(0);
         }
 
         n->setConcentration(0);
         n->setEffectiveVolume(n->getVolume());
         n->setOilFilmVolume(0);
         n->setWaterFilmVolume(0);
-        n->setOilFilmConductance(0);
-        n->setWaterFilmConductance(0);
+        n->setOilFilmConductivity(0);
+        n->setWaterFilmConductivity(0);
         n->setOilLayerActivated(false);
         n->setWaterCornerActivated(false);
-        n->setExist('t');
+        n->setActive('t');
         n->setConductivity(0);
         n->setFlow(0);
         n->setMassFlow(0);
@@ -351,4 +339,6 @@ double network::weibull(double min, double max, double alpha, double beta)
 void network::emitPlotSignal()
 {
     emit plot();
+}
+
 }

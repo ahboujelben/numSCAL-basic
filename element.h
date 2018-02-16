@@ -13,14 +13,20 @@
 
 #include"cluster.h"
 #include <vector>
-#include "tools.h"
+
+namespace PNM {
 
 class element
 {
 public:
     element();
+    virtual ~element() {}
+
     int getId() const;
     void setId(int value);
+
+    int getAbsId() const;
+    void setAbsId(int value);
 
     double getRadius() const;
     void setRadius(double value);
@@ -46,8 +52,8 @@ public:
     char getPhaseFlag() const;
     void setPhaseFlag(char value);
 
-    std::vector<element *> getNeighs() const;
-    void setNeighs(const std::vector<element *> &value);
+    std::vector<element *> getNeighboors() const;
+    void setNeighboors(const std::vector<element *> &value);
 
     int getClusterTemp() const;
     void setClusterTemp(int value);
@@ -64,8 +70,14 @@ public:
     cluster *getClusterOil() const;
     void setClusterOil(cluster *value);
 
-    cluster *getClusterGas() const;
-    void setClusterGas(cluster *value);
+    cluster *getClusterActive() const;
+    void setClusterActive(cluster *value);
+
+    cluster *getClusterWaterFilm() const;
+    void setClusterWaterFilm(cluster *value);
+
+    cluster *getClusterOilFilm() const;
+    void setClusterOilFilm(cluster *value);
 
     bool getWaterTrapped() const;
     void setWaterTrapped(bool value);
@@ -85,6 +97,9 @@ public:
     int getType() const;
     void setType(int value);
 
+    char getActive() const;
+    void setActive(char value);
+
     double getConcentration() const;
     void setConcentration(double value);
 
@@ -100,12 +115,6 @@ public:
     double getWaterFraction() const;
     void setWaterFraction(double value);
 
-    double getOldOilFraction() const;
-    void setOldOilFraction(double value);
-
-    double getOldWaterFraction() const;
-    void setOldWaterFraction(double value);
-
     double getFlow() const;
     void setFlow(double value);
 
@@ -120,27 +129,6 @@ public:
 
     double getEffectiveVolume() const;
     void setEffectiveVolume(double value);
-
-    bool getFilm1() const;
-    void setFilm1(bool value);
-
-    bool getFilm2() const;
-    void setFilm2(bool value);
-
-    bool getFilm3() const;
-    void setFilm3(bool value);
-
-    cluster *getClusterExist() const;
-    void setClusterExist(cluster *value);
-
-    char getExist() const;
-    void setExist(char value);
-
-    cluster *getClusterWaterFilm() const;
-    void setClusterWaterFilm(cluster *value);
-
-    cluster *getClusterOilFilm() const;
-    void setClusterOilFilm(cluster *value);
 
     double getOilFilmVolume() const;
     void setOilFilmVolume(double value);
@@ -163,73 +151,75 @@ public:
     bool getOilLayerActivated() const;
     void setOilLayerActivated(bool value);
 
-    double getOilFilmConductance() const;
-    void setOilFilmConductance(double value);
+    double getOilFilmConductivity() const;
+    void setOilFilmConductivity(double value);
 
-    double getWaterFilmConductance() const;
-    void setWaterFilmConductance(double value);
+    double getWaterFilmConductivity() const;
+    void setWaterFilmConductivity(double value);
 
     char getOilFlowing() const;
     char getWaterFlowing() const;
-    void assignViscosity(double oilViscosity, double oilFraction, double waterViscosity, double waterFraction);
 
     double getMassFlow() const;
     void setMassFlow(double value);
 
+    // defined methods
+    void assignViscosity(double oilViscosity, double oilFraction, double waterViscosity, double waterFraction);
+
 protected:
     int type;
 
-    int id;
-    double radius;
-    double length;
-    double volume;
-    double shapeFactor;
-    double shapeFactorConstant;
-    double conductivity;
-    double theta;
-    char wettabilityFlag;
-    char phaseFlag;
-    double viscosity;
-    double oilFraction;
-    double waterFraction;
-    double oldOilFraction;
-    double oldWaterFraction;
-    double concentration;
-    bool inlet;
-    bool outlet;
+    //Basic attributes
+    int id; // capillary relative ID: from 1 to totalPores (if pore); from 1 to totalNodes (if node)
+    int absId; // capillary absolute ID : from 0 to (totalPores+totalNodes)-1
+    double radius; // capillary radius (SI)
+    double length; // capillary length (SI)
+    double volume; // capillary volume (SI)
+    double shapeFactor; // capillary shape factor (dimensionless)
+    double shapeFactorConstant; // capillary shape factor constant (dimensionless)
+    double conductivity; // capillary conductivity (SI)
+    double theta; // capillary oil-water contact angle
+    char wettabilityFlag; // capillary wettability
+    char phaseFlag; // capillary occupying phase
+    double viscosity; // capillary average viscosity (SI)
+    double concentration; // capillary concentration in tracer (between 0 and 1)
+    bool inlet; // a flag whether the capillary is connected to the inlet boundary
+    bool outlet; // a flag whether the capillary is connected to the outlet boundary
+    bool closed; // a flag whether the capillary is undefinetely closed (i.e. when assigning the coordination number)
+    char active; // a flag whether the capillary is momentarily closed (i.e. when closing the capillaries with counter imbibition flow)
 
-    bool closed;
+    std::vector<element*> neighboors; // a table to the adjacent capillaries
 
-    std::vector<element*> neighs;
+    //Simulation attributes
 
-    //Clustering
+    double oilFraction; // oil fraction in the capillary
+    double waterFraction; // water fraction in the capillary
+
+    bool waterTrapped; // a flag to whether water is topologically trapped in the capillary
+    bool oilTrapped; // a flag to whether oil is topologically trapped in the capillary
+
+    double flow; // fluid flow (SI) in the capillary
+    double massFlow; // mass flow (SI) in the capillary
+
+    double beta1,beta2,beta3; // half angles in the capillary
+    bool oilCanFlowViaFilm, waterCanFlowViaFilm; // flags whether a fluid can flow via layer/film
+    bool oilLayerActivated, waterCornerActivated; // flags whether a fluid can flow via layer/film
+    double oilFilmVolume, waterFilmVolume; // layer/film volumes
+    double oilFilmConductivity, waterFilmConductivity; // layer/film conductivity
+    double effectiveVolume; // bulk volume (volume - (film+layer) volume)
+    double filmAreaCoefficient; // a mathematical coefficient used in the calculation of film area (Oren, 98)
+
+    //Clustering attributes
     int clusterTemp;
     cluster* clusterWaterWet;
     cluster* clusterOilWet;
     cluster* clusterWater;
     cluster* clusterOil;
-    cluster* clusterGas;
     cluster* clusterWaterFilm;
     cluster* clusterOilFilm;
-    cluster* clusterExist;
-
-    bool waterTrapped;
-    bool oilTrapped;
-
-    double flow;
-    double massFlow;
-
-    double beta1,beta2,beta3;
-    bool film1,film2,film3;
-    double effectiveVolume;
-
-    bool oilCanFlowViaFilm, waterCanFlowViaFilm;
-    bool waterCornerActivated, oilLayerActivated;
-    double oilFilmVolume,waterFilmVolume;
-    double oilFilmConductance, waterFilmConductance;
-    double filmAreaCoefficient;
-
-    char exist;
+    cluster* clusterActive;
 };
+
+}
 
 #endif // ELEMENT_H

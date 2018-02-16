@@ -10,13 +10,14 @@
 
 #include "cluster.h"
 
+namespace PNM {
+
 cluster::cluster(int pLabel)
 {
+    id=pLabel;
     inlet=false;
     outlet=false;
     spanning=false;
-    volume=0;
-    size=0;
 }
 
 bool cluster::getInlet() const
@@ -47,16 +48,6 @@ void cluster::setSpanning(bool value)
     spanning = value;
 }
 
-double cluster::getVolume() const
-{
-    return volume;
-}
-
-void cluster::setVolume(double value)
-{
-    volume = value;
-}
-
 int cluster::getId() const
 {
     return id;
@@ -67,22 +58,4 @@ void cluster::setId(int value)
     id = value;
 }
 
-int cluster::getSize() const
-{
-    return size;
-}
-
-void cluster::setSize(int value)
-{
-    size = value;
-}
-
-int cluster::getPoreId() const
-{
-    return poreId;
-}
-
-void cluster::setPoreId(int value)
-{
-    poreId = value;
 }

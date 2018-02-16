@@ -18,7 +18,7 @@ class worker : public QObject
 {
     Q_OBJECT
 public:
-    explicit worker(network* net, int j=0, QObject *parent = 0);
+    explicit worker(PNM::network* net, int j=0, QObject *parent = 0);
 
     int getJob() const;
     void setJob(int value);
@@ -30,7 +30,7 @@ signals:
     void finished();
 
 private:
-    network* n;
+    PNM::network* n;
     int job;
 };
 

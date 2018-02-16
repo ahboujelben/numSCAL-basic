@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM{
 
 network::network(QObject *parent):
     QObject(parent)
@@ -32,9 +32,6 @@ network::~network()
     if(!oilClusters.empty())
         for (unsigned i = 0; i < oilClusters.size(); ++i)
             delete oilClusters[i];
-    if(!gasClusters.empty())
-        for (unsigned i = 0; i < gasClusters.size(); ++i)
-            delete gasClusters[i];
     if(!waterWetClusters.empty())
         for (unsigned i = 0; i < waterWetClusters.size(); ++i)
             delete waterWetClusters[i];
@@ -53,9 +50,9 @@ network::~network()
     if(!oilLayerClusters.empty())
         for (unsigned i = 0; i < oilLayerClusters.size(); ++i)
             delete oilLayerClusters[i];
-    if(!existClusters.empty())
-        for (unsigned i = 0; i < existClusters.size(); ++i)
-            delete existClusters[i];
+    if(!activeClusters.empty())
+        for (unsigned i = 0; i < activeClusters.size(); ++i)
+            delete activeClusters[i];
 
     tools::cleanVideosFolder();
 }
@@ -79,6 +76,8 @@ void network::destroy()
     accessiblePores.clear();
     accessibleNodes.clear();
     accessibleElements.clear();
+    inletPores.clear();
+    outletPores.clear();
 
     if(!waterClusters.empty())
         for (unsigned i = 0; i < waterClusters.size(); ++i)
@@ -86,9 +85,6 @@ void network::destroy()
     if(!oilClusters.empty())
         for (unsigned i = 0; i < oilClusters.size(); ++i)
             delete oilClusters[i];
-    if(!gasClusters.empty())
-        for (unsigned i = 0; i < gasClusters.size(); ++i)
-            delete gasClusters[i];
     if(!waterWetClusters.empty())
         for (unsigned i = 0; i < waterWetClusters.size(); ++i)
             delete waterWetClusters[i];
@@ -107,20 +103,19 @@ void network::destroy()
     if(!oilLayerClusters.empty())
         for (unsigned i = 0; i < oilLayerClusters.size(); ++i)
             delete oilLayerClusters[i];
-    if(!existClusters.empty())
-        for (unsigned i = 0; i < existClusters.size(); ++i)
-            delete existClusters[i];
+    if(!activeClusters.empty())
+        for (unsigned i = 0; i < activeClusters.size(); ++i)
+            delete activeClusters[i];
 
     waterClusters.clear();
     oilClusters.clear();
-    gasClusters.clear();
     waterWetClusters.clear();
     oilWetClusters.clear();
     waterFilmClusters.clear();
     oilFilmClusters.clear();
     waterLayerClusters.clear();
     oilLayerClusters.clear();
-    existClusters.clear();
+    activeClusters.clear();
 
     tools::cleanVideosFolder();
 }
@@ -271,13 +266,6 @@ int network::getTotalOpenedPores() const
     return totalOpenedPores;
 }
 
-cluster *network::getCluster(int i) const
-{
-    if(i<0 || i>totalClusters-1)
-        return 0;
-    return allClusters[i];
-}
-
 double network::getXEdgeLength() const
 {
     return xEdgeLength;
@@ -360,4 +348,6 @@ bool network::getReady() const
 void network::setCancel(bool value)
 {
     cancel = value;
+}
+
 }

@@ -44,6 +44,8 @@
 
 #include <QObject>
 
+namespace PNM {
+
 class network : public QObject
 {
     Q_OBJECT
@@ -117,11 +119,11 @@ public:
     void runUSSDrainageModelPT();
     void setInitialFlagsPT();
     void setAdvancedTrappingPT();
-    void updateCapillaryPropertiesPT(std::set<pore*>&, std::set<node*>&);
+    void updateCapillaryPropertiesPT(set<pore*>&, set<node*>&);
     void solvePressureWithoutCounterImbibitionPT();
-    void calculateTimeStepUSSPT(std::set<pore *> &, std::set<node *> &, bool);
-    double updateElementaryFluidFractionsPT(std::set<pore*>&, std::set<node*>&, bool &);
-    void updateElementaryFluidFlagsPT(std::set<pore*>&, std::set<node *> &nodesToCheck);
+    void calculateTimeStepUSSPT(set<pore *> &, set<node *> &, bool);
+    double updateElementaryFluidFractionsPT(set<pore*>&, set<node*>&, bool &);
+    void updateElementaryFluidFlagsPT(set<pore*>&, set<node *> &nodesToCheck);
     void setConstantFlowRateAker();
     //Output data
     void initializeTwoPhaseOutputs();
@@ -158,14 +160,18 @@ public:
     double weibull(double,double,double,double);
 
     ///////////// Methods for clustering
-    int hkFind(int, std::vector<int>&);
-    int hkUnion(std::vector<int>&,std::vector<int>&);
-    int hkMakeSet(std::vector<int>&);
+    int hkFind(int, vector<int>&);
+    int hkUnion(vector<int>&,vector<int>&);
+    int hkMakeSet(vector<int>&);
 
-    void clusterPores(cluster*(pore::*)(void) const,void(pore::*)(cluster*),char(pore::*)(void) const,char,std::vector<cluster *> &);
+    template<typename T>
+    void clusterPores(cluster*(pore::*)(void) const, void(pore::*)(cluster*), T(pore::*)() const, T, vector<cluster *> &);
     void clusterOilPores();
     void clusterWaterPores();
-    void clusterElements(cluster*(element::*)(void) const,void(element::*)(cluster*),char(element::*)(void) const,char,std::vector<cluster *> &);
+
+    template<typename T>
+    void clusterElements(cluster*(element::*)(void) const,void(element::*)(cluster*),T(element::*)(void) const,T,vector<cluster *> &);
+
     void clusterWaterWetElements();
     void clusterOilWetElements();
     void clusterWaterElements();
@@ -173,11 +179,10 @@ public:
     void clusterGasElements();
     void clusterOilFlowingElements();
     void clusterWaterFlowingElements();
-    void clusterEverythingEverything();
+    void clusterActiveElements();
 
 
     ///////////// Methods for loading data
-    void loadData();
     void loadNetworkData();
     void loadTwoPhaseData();
 
@@ -199,21 +204,14 @@ public:
     int getTotalOpenedNodes() const;
 
 
-    ///////////// Access to clusters
-    cluster *getCluster(int) const;
-
-
-    ///////////// Emitting signals
-    void emitPlotSignal();
-
-
     ///////////// Getters/Setters
     //Getters for network attributes
     double getXEdgeLength() const;
     double getYEdgeLength() const;
     double getZEdgeLength() const;
 
-    //ThreadManagement
+
+    ////////////// ThreadManagement
     bool getReady() const;
     void setCancel(bool value);
     int getNetworkSource() const;
@@ -226,8 +224,14 @@ public:
     int getNz() const;
     void setNz(int value);
 
-    std::string getSimulationNotification() const;
-    void setSimulationNotification(const std::string &value);
+
+    ////////////// Display runtime notifications
+    string getSimulationNotification() const;
+    void setSimulationNotification(const string &value);
+
+
+    ///////////// Emitting signals
+    void emitPlotSignal();
 
 signals:
     void plot();
@@ -240,16 +244,18 @@ private:
     int Nx;
     int Ny;
     int Nz;
-    std::vector<std::vector<std::vector<node*> > > tableOfNodes;
-    std::vector<std::vector<std::vector<pore*> > > tableOfPoresX;
-    std::vector<std::vector<std::vector<pore*> > > tableOfPoresY;
-    std::vector<std::vector<std::vector<pore*> > > tableOfPoresZ;
-    std::vector<pore*> tableOfAllPores;
-    std::vector<node*> tableOfAllNodes;
-    std::vector<element*> tableOfElements;
-    std::vector<pore*> accessiblePores;
-    std::vector<node*> accessibleNodes;
-    std::vector<element*> accessibleElements;
+    vector<vector<vector<node*> > > tableOfNodes;
+    vector<vector<vector<pore*> > > tableOfPoresX;
+    vector<vector<vector<pore*> > > tableOfPoresY;
+    vector<vector<vector<pore*> > > tableOfPoresZ;
+    vector<pore*> tableOfAllPores;
+    vector<node*> tableOfAllNodes;
+    vector<element*> tableOfElements;
+    vector<pore*> accessiblePores;
+    vector<node*> accessibleNodes;
+    vector<element*> accessibleElements;
+    std::vector<pore*> inletPores;
+    std::vector<pore*> outletPores;
 
     int totalPores;
     int totalOpenedPores;
@@ -286,11 +292,8 @@ private:
     double yEdgeLength;
     double zEdgeLength;
     int maxConnectionNumber;
-    std::string extractedNetworkFolderPath;
-    std::string rockPrefix;
-    bool extension;
-    int extensionNumber;
-    bool extensionOneDirection;
+    string extractedNetworkFolderPath;
+    string rockPrefix;
 
 
     //Attributes for pressure solving
@@ -312,7 +315,7 @@ private:
     double minOilWetTheta;
     double maxOilWetTheta;
     double oilWetFraction;
-    std::map<element*,double> wettabiltyThetaBackup;
+    map<element*,double> wettabiltyThetaBackup;
 
 
     ////////////// Fluid injection Simulations
@@ -363,7 +366,7 @@ private:
     double extractionTimestep;
     int outputCount;
     bool record;
-    std::string simulationNotification;
+    string simulationNotification;
 
 
     ////////////// fluids properties
@@ -385,17 +388,15 @@ private:
 
 
     ////////////// Clustering Attributes
-    std::vector<cluster*> waterClusters;
-    std::vector<cluster*> oilClusters;
-    std::vector<cluster*> gasClusters;
-    std::vector<cluster*> waterWetClusters;
-    std::vector<cluster*> oilWetClusters;
-    std::vector<cluster*> oilFilmClusters;
-    std::vector<cluster*> waterFilmClusters;
-    std::vector<cluster*> oilLayerClusters;
-    std::vector<cluster*> waterLayerClusters;
-    std::vector<cluster*> allClusters;
-    std::vector<cluster*> existClusters;
+    vector<cluster*> waterClusters;
+    vector<cluster*> oilClusters;
+    vector<cluster*> waterWetClusters;
+    vector<cluster*> oilWetClusters;
+    vector<cluster*> oilFilmClusters;
+    vector<cluster*> waterFilmClusters;
+    vector<cluster*> oilLayerClusters;
+    vector<cluster*> waterLayerClusters;
+    vector<cluster*> activeClusters;
     bool isOilSpanning;
     bool isWaterSpanning;
     bool isGasSpanning;
@@ -412,5 +413,7 @@ private:
     ////////// Random generator
     boost::random::mt19937 gen;
 };
+
+}
 
 #endif // NETWORK_H

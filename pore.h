@@ -11,13 +11,11 @@
 #ifndef PORE_H
 #define PORE_H
 
-#include <iostream>
 #include <vector>
 #include <cmath>
 #include "node.h"
-#include "tools.h"
-#include "cluster.h"
-#include "element.h"
+
+namespace PNM {
 
 class pore : public element
 {
@@ -28,30 +26,14 @@ public:
     node *getNodeOut() const;
     void setNodeOut(node *value);
 
-    std::vector<pore *> getNeighboors() const;
-    void setNeighboors(const std::vector<pore *> &value);
-
-    double getDeltaPViscous() const;
-    void setDeltaPViscous(double value);
+    std::vector<pore *> getConnectedPores() const;
+    void setConnectedPores(const std::vector<pore *> &value);
 
     double getNodeInLength() const;
     void setNodeInLength(double value);
 
     double getNodeOutLength() const;
     void setNodeOutLength(double value);
-
-    double getMinXCoordinate() const;
-    double getMaxXCoordinate() const;
-
-    double getMinYCoordinate() const;
-    double getMaxYCoordinate() const;
-
-    double getMinZCoordinate() const;
-    double getMaxZCoordinate() const;
-
-    double getXCoordinate() const;
-    double getYCoordinate() const;
-    double getZCoordinate() const;
 
     double getFullLength() const;
     void setFullLength(double value);
@@ -71,26 +53,44 @@ public:
     bool getNodeOutOil() const;
     void setNodeOutOil(bool value);
 
-    void assignConductivity();
+    //defined methods
+
+    double getMinXCoordinate() const;
+    double getMaxXCoordinate() const;
+
+    double getMinYCoordinate() const;
+    double getMaxYCoordinate() const;
+
+    double getMinZCoordinate() const;
+    double getMaxZCoordinate() const;
+
+    double getXCoordinate() const;
+    double getYCoordinate() const;
+    double getZCoordinate() const;
+
+    void assignConductivity(); //calculate pore conductivity
 
 protected:
 
-    node *nodeIn;
-    node *nodeOut;
+    node *nodeIn; // node pointer at the first end of the pore
+    node *nodeOut; // node pointer at the second end of the pore
 
-    double fullLength;
-    double nodeInLength;
-    double nodeOutLength;
+    double fullLength; // distance (SI) between both connecting nodes center: fullLength=length+nodeInLength+nodeOutLength
+    double nodeInLength; //distance (SI) between nodeIn center and pore extremity at nodeIn
+    double nodeOutLength; //distance (SI) between nodeOut center and pore extremity at nodeOut
 
-    std::vector<pore*> neighboors;
+    std::vector<pore*> connectedPores; // table of connected pores pointers
 
-    double deltaPViscous;
-    double capillaryPressure;
+    // simulation related attributes
 
-    bool nodeInOil;
-    bool nodeOutWater;
-    bool nodeInWater;
-    bool nodeOutOil;
+    double capillaryPressure; //capillary pressure across the pore
+
+    bool nodeInOil; // flag on oil existence at nodeIn
+    bool nodeOutWater; // flag on water existence at nodeOut
+    bool nodeInWater; // flag on water existence at nodeIn
+    bool nodeOutOil; // flag on oil existence at nodeOut
 };
+
+}
 
 #endif // PORE_H

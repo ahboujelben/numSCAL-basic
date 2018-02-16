@@ -10,8 +10,9 @@
 
 #include "network.h"
 
-using namespace std;
 using namespace Eigen;
+
+namespace PNM {
 
 void network::solvePressuresForRegularModel()
 {
@@ -92,8 +93,8 @@ void network::solvePressures()
         node* n=getNode(i);
         if(!n->getClosed())
         {
-            vector<int> neighboors=n->getNeighboors();
-            vector<int> connectedPores=n->getConnectedPores();
+            vector<int>& neighboors=n->getConnectedNodes();
+            vector<int>& connectedPores=n->getConnectedPores();
             double conductivity(0);
             for(unsigned j=0;j<neighboors.size();++j)
             {
@@ -161,7 +162,7 @@ void network::solvePressuresWithCapillaryPressures()
         node* n=getNode(i);
         if(!n->getClosed())
         {
-            vector<int> neighboors=n->getNeighboors();
+            vector<int> neighboors=n->getConnectedNodes();
             vector<int> connectedPores=n->getConnectedPores();
             double conductivity(0);
             for(unsigned j=0;j<neighboors.size();++j)
@@ -236,18 +237,15 @@ double network::updateFlows()
             if(p->getOutlet())
             {
                 p->setFlow((p->getNodeOut()->getPressure()-pressureOut)*p->getConductivity());
-                p->setDeltaPViscous(p->getNodeOut()->getPressure()-pressureOut);
                 outletFlow+=p->getFlow();
             }
             if(p->getInlet())
             {
                 p->setFlow((pressureIn-p->getNodeIn()->getPressure())*p->getConductivity());
-                p->setDeltaPViscous(pressureIn-p->getNodeIn()->getPressure());
             }
             if(!p->getInlet() && !p->getOutlet())
             {
                 p->setFlow((p->getNodeOut()->getPressure()-p->getNodeIn()->getPressure())*p->getConductivity());
-                p->setDeltaPViscous(p->getNodeOut()->getPressure()-p->getNodeIn()->getPressure());
             }
         }
     }
@@ -263,18 +261,15 @@ double network::updateFlowsWithCapillaryPressure()
             if(p->getOutlet())
             {
                 p->setFlow((p->getNodeOut()->getPressure()-pressureOut-p->getCapillaryPressure())*p->getConductivity());
-                p->setDeltaPViscous(p->getNodeOut()->getPressure()-pressureOut);
                 outletFlow+=p->getFlow();
             }
             if(p->getInlet())
             {
                 p->setFlow((pressureIn-p->getNodeIn()->getPressure()-p->getCapillaryPressure())*p->getConductivity());
-                p->setDeltaPViscous(pressureIn-p->getNodeIn()->getPressure());
             }
             if(!p->getInlet() && !p->getOutlet())
             {
                 p->setFlow((p->getNodeOut()->getPressure()-p->getNodeIn()->getPressure()-p->getCapillaryPressure())*p->getConductivity());
-                p->setDeltaPViscous(p->getNodeOut()->getPressure()-p->getNodeIn()->getPressure());
             }
         }
     }
@@ -320,4 +315,6 @@ void network::setConstantFlowRateAker()
     pressureOut=0;
     solvePressures();
     updateFlows();
+}
+
 }

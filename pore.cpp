@@ -9,6 +9,9 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "pore.h"
+
+namespace PNM {
+
 using namespace std;
 
 pore::pore(node *const &pNodeIn,node* const &pNodeOut)
@@ -21,24 +24,14 @@ pore::pore(node *const &pNodeIn,node* const &pNodeOut)
     capillaryPressure=0;
 }
 
-std::vector<pore *> pore::getNeighboors() const
+std::vector<pore *> pore::getConnectedPores() const
 {
-    return neighboors;
+    return connectedPores;
 }
 
-void pore::setNeighboors(const std::vector<pore *> &value)
+void pore::setConnectedPores(const std::vector<pore *> &value)
 {
-    neighboors = value;
-}
-
-double pore::getDeltaPViscous() const
-{
-    return deltaPViscous;
-}
-
-void pore::setDeltaPViscous(double value)
-{
-    deltaPViscous = value;
+    connectedPores = value;
 }
 
 double pore::getNodeInLength() const
@@ -216,4 +209,6 @@ void pore::assignConductivity()
         nodeOutConductivityInverse=1/(nodeOut->getShapeFactorConstant()*pow(nodeOut->getRadius(),4)/(16*nodeOut->getShapeFactor())/(nodeOut->getViscosity()*nodeOutLength));
 
     conductivity=1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse);
+}
+
 }

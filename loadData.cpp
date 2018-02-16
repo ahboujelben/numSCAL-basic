@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::loadNetworkData()
 {
@@ -20,9 +20,6 @@ void network::loadNetworkData()
     networkSource=pt.get<int>("NetworkGeneration_Source.source");
     extractedNetworkFolderPath=pt.get<std::string>("NetworkGeneration_Source.extractedNetworkPath");
     rockPrefix=pt.get<std::string>("NetworkGeneration_Source.rockPrefix");
-    extension=pt.get<bool>("NetworkGeneration_Source.extension");
-    extensionNumber=pt.get<int>("NetworkGeneration_Source.extensionNumber");
-    extensionOneDirection=pt.get<bool>("NetworkGeneration_Source.extensionOneDirection");
 
     Nx=pt.get<int>("NetworkGeneration_Geometry.Nx");
     Ny=pt.get<int>("NetworkGeneration_Geometry.Ny");
@@ -92,4 +89,6 @@ void network::loadTwoPhaseData()
 
     relativePermeabilitiesCalculation=pt.get<bool>("FluidInjection_Misc.relativePermeabilitiesCalculation");
     videoRecording=pt.get<bool>("FluidInjection_Misc.videoRecording");
+}
+
 }

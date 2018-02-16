@@ -11,13 +11,15 @@
 #ifndef CLUSTER_H
 #define CLUSTER_H
 
-#include <vector>
-#include <map>
+namespace PNM {
 
 class cluster
 {
 public:
     cluster(int);
+
+    int getId() const;
+    void setId(int value);
 
     bool getInlet() const;
     void setInlet(bool value);
@@ -28,26 +30,13 @@ public:
     bool getSpanning() const;
     void setSpanning(bool value);
 
-    double getVolume() const;
-    void setVolume(double value);
-
-    int getId() const;
-    void setId(int value);
-
-    int getSize() const;
-    void setSize(int value);
-
-    int getPoreId() const;
-    void setPoreId(int value);
-
 private:
-    int id;
-    bool inlet;
-    bool outlet;
-    bool spanning;
-    double volume;
-    int size;
-    int poreId;
+    int id; //cluster id
+    bool inlet; // flag on whether the cluster is connected to the inlet
+    bool outlet; // flag on whether the cluster is connected to the outlet
+    bool spanning; // flag on whether the cluster is spanning
 };
+
+}
 
 #endif // CLUSTER_H

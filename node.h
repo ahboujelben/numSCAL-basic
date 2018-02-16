@@ -11,11 +11,10 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include <iostream>
 #include <vector>
-#include "tools.h"
 #include "element.h"
 
+namespace PNM {
 
 class node : public element
 {
@@ -46,8 +45,8 @@ public:
     int getRank() const;
     void setRank(int value);
 
-    std::vector<int> &getNeighboors();
-    void setNeighboors(const std::vector<int> &value);
+    std::vector<int> &getConnectedNodes();
+    void setConnectedNodes(const std::vector<int> &value);
 
     std::vector<int> &getConnectedPores();
     void setConnectedPores(const std::vector<int> &value);
@@ -55,40 +54,25 @@ public:
     int getConnectionNumber() const;
     void setConnectionNumber(int value);
 
-    bool getInletY() const;
-    void setInletY(bool value);
-
-    bool getOutletY() const;
-    void setOutletY(bool value);
-
-    bool getInletZ() const;
-    void setInletZ(bool value);
-
-    bool getOutletZ() const;
-    void setOutletZ(bool value);
-
 private:
-    int x;
-    int y;
-    int z;
+    int x; // relative x coordinate
+    int y; // relative y coordinate
+    int z; // relative z coordinate
 
-    int rank;
+    double xCoordinate; // absolute x coordinate
+    double yCoordinate; // absolute y coordinate
+    double zCoordinate; // absolute z coordinate
 
-    double xCoordinate;
-    double yCoordinate;
-    double zCoordinate;
+    int connectionNumber; //coordination number
 
-    bool inletY;
-    bool outletY;
-    bool inletZ;
-    bool outletZ;
+    int rank; // solver ranking
 
-    int connectionNumber;
+    std::vector<int> connectedNodes; // table of connected nodes ID
+    std::vector<int> connectedPores; // table of connected pores ID
 
-    std::vector<int> neighboors;
-    std::vector<int> connectedPores;
-
-    double pressure;
+    double pressure; // pressure (SI)
 };
+
+}
 
 #endif // NODE_H

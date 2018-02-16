@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 //clustering
 
@@ -44,7 +44,8 @@ int network::hkMakeSet(vector<int>& labels)
     return labels[0];
 }
 
-void network::clusterPores(cluster*(pore::*getter)(void) const,void(pore::*setter)(cluster*),char(pore::*status)(void) const,char flag, vector<cluster*> &clustersList)
+template<typename T>
+void network::clusterPores(cluster*(pore::*getter)(void) const,void(pore::*setter)(cluster*),T(pore::*status)(void) const,T flag, vector<cluster*> &clustersList)
 {
     if(!clustersList.empty())
         for (unsigned i = 0; i < clustersList.size(); ++i)
@@ -68,7 +69,7 @@ void network::clusterPores(cluster*(pore::*getter)(void) const,void(pore::*sette
         if((p->*status)()==flag)
         {
             vector<int> neighboorsClusters;
-            vector<pore*> neighboors=p->getNeighboors();
+            vector<pore*> neighboors=p->getConnectedPores();
             for(unsigned j=0;j<neighboors.size();j++)
             {
                 if((neighboors[j]->*status)()==flag && neighboors[j]->getClusterTemp()!=0)
@@ -82,55 +83,49 @@ void network::clusterPores(cluster*(pore::*getter)(void) const,void(pore::*sette
                 p->setClusterTemp(hkUnion(neighboorsClusters,labels));
         }
     }
-      /* apply the relabeling to the matrix */
-      /* Create a mapping from the canonical labels determined by union/find into a new set of canonical labels, which are guaranteed to be sequential. */
 
-        vector<int> new_labels(labels.size(),0);
+    // Create a mapping from the canonical labels determined by union/find into a new set of canonical labels, which are guaranteed to be sequential.
 
-        for(int i=0; i<totalPores; ++i)
+    vector<int> new_labels(labels.size(),0);
+
+    for(int i=0; i<totalPores; ++i)
+    {
+        pore* p=getPore(i);
+        if((p->*status)()==flag)
         {
-            pore* p=getPore(i);
-            if((p->*status)()==flag)
+            int x=hkFind(p->getClusterTemp(),labels);
+            if (new_labels[x] == 0)
             {
-                int x=hkFind(p->getClusterTemp(),labels);
-                if (new_labels[x] == 0)
-                {
-                    new_labels[0]++;
-                    new_labels[x] = new_labels[0];
-                    clustersList.push_back(new cluster(new_labels[0]));
-                }
-                (p->*setter)(clustersList[new_labels[x]-1]);
+                new_labels[0]++;
+                new_labels[x] = new_labels[0];
+                clustersList.push_back(new cluster(new_labels[0]));
             }
+            (p->*setter)(clustersList[new_labels[x]-1]);
         }
+    }
 
-        //Identify sepecial clusters
-        set<cluster*> inletClusters,outletClusters,spanningClusters;
+    //Identify sepecial clusters
+    set<cluster*> inletClusters,outletClusters,spanningClusters;
 
-        for(int i=0;i<totalPores;++i)
-        {
-            pore* p=getPore(i);
-            if((p->*status)()==flag && p->getInlet())
-                inletClusters.insert((p->*getter)());
-            if((p->*status)()==flag && p->getOutlet())
-                outletClusters.insert((p->*getter)());
-            if((p->*status)()==flag)
-            {
-                cluster* cls=(p->*getter)();
-                cls->setSize(cls->getSize()+1);
-                cls->setVolume(cls->getVolume()+p->getVolume());
-                cls->setPoreId(i+1);
-            }
-        }
-        for (set<cluster*>::iterator iterator = inletClusters.begin(); iterator != inletClusters.end(); ++iterator) {
-            (*iterator)->setInlet(true);
-        }
-        for (set<cluster*>::iterator iterator = outletClusters.begin(); iterator != outletClusters.end(); ++iterator) {
-            (*iterator)->setOutlet(true);
-        }
-        std::set_intersection( inletClusters.begin(), inletClusters.end(), outletClusters.begin(), outletClusters.end(), std::inserter( spanningClusters, spanningClusters.begin() ) );
-        for (set<cluster*>::iterator iterator = spanningClusters.begin(); iterator != spanningClusters.end(); ++iterator) {
-            (*iterator)->setSpanning(true);
-        }
+    for(pore* p: inletPores)
+        if((p->*status)()==flag)
+            inletClusters.insert((p->*getter)());
+
+    for(pore* p: outletPores)
+        if((p->*status)()==flag)
+            outletClusters.insert((p->*getter)());
+
+
+    for (cluster* c: inletClusters)
+        c->setInlet(true);
+
+    for (cluster* c: outletClusters)
+        c->setOutlet(true);
+
+    set_intersection( inletClusters.begin(), inletClusters.end(), outletClusters.begin(), outletClusters.end(), std::inserter( spanningClusters, spanningClusters.begin() ) );
+
+    for (cluster* c: spanningClusters)
+        c->setSpanning(true);
 }
 
 void network::clusterWaterPores()
@@ -171,7 +166,8 @@ void network::clusterOilPores()
     }
 }
 
-void network::clusterElements(cluster *(element::*getter)() const, void (element::*setter)(cluster *), char (element::*status)() const, char flag, std::vector<cluster *> &clustersList)
+template<typename T>
+void network::clusterElements(cluster *(element::*getter)() const, void (element::*setter)(cluster *), T(element::*status)() const, T flag, std::vector<cluster *> &clustersList)
 {
     if(!clustersList.empty())
         for (unsigned i = 0; i < clustersList.size(); ++i)
@@ -193,7 +189,7 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
         if((e->*status)()==flag)
         {
             vector<int> neighboorsClusters;
-            vector<element*> neighboors=e->getNeighs();
+            vector<element*> neighboors=e->getNeighboors();
             for(unsigned j=0;j<neighboors.size();j++)
             {
                 if((neighboors[j]->*status)()==flag && neighboors[j]->getClusterTemp()!=0)
@@ -207,59 +203,48 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
                 e->setClusterTemp(hkUnion(neighboorsClusters,labels));
         }
     }
-      /* apply the relabeling to the matrix */
-      /* Create a mapping from the canonical labels determined by union/find into a new set of canonical labels, which are guaranteed to be sequential. */
 
-        vector<int> new_labels(labels.size(),0);
+    //Create a mapping from the canonical labels determined by union/find into a new set of canonical labels, which are guaranteed to be sequential.
 
-        for(int i=0; i<totalElements; ++i)
+    vector<int> new_labels(labels.size(),0);
+
+    for(int i=0; i<totalElements; ++i)
+    {
+        if((getElement(i)->*status)()==flag)
         {
-            if((getElement(i)->*status)()==flag)
+            int x=hkFind(getElement(i)->getClusterTemp(),labels);
+            if (new_labels[x] == 0)
             {
-                int x=hkFind(getElement(i)->getClusterTemp(),labels);
-                if (new_labels[x] == 0)
-                {
-                    new_labels[0]++;
-                    new_labels[x] = new_labels[0];
-                    clustersList.push_back(new cluster(new_labels[0]));
-                }
-                (getElement(i)->*setter)(clustersList[new_labels[x]-1]);
-                //getPore(i)->setClusterTemp(new_labels[x]);
+                new_labels[0]++;
+                new_labels[x] = new_labels[0];
+                clustersList.push_back(new cluster(new_labels[0]));
             }
+            (getElement(i)->*setter)(clustersList[new_labels[x]-1]);
         }
+    }
 
-        //Identify sepecial clusters
-        set<cluster*> inletClusters,outletClusters,spanningClusters;
+    //Identify sepecial clusters
+    set<cluster*> inletClusters,outletClusters,spanningClusters;
 
-        for(int i=0;i<totalElements;++i)
-        {
-            element* e=getElement(i);
-            if((e->*status)()==flag)
-            {
-                cluster* cls=(e->*getter)();
-                cls->setSize(cls->getSize()+1);
-                cls->setVolume(cls->getVolume()+e->getVolume());
-                cls->setPoreId(i+1);
-            }
+    for(pore* p: inletPores)
+        if((p->*status)()==flag)
+            inletClusters.insert((p->*getter)());
 
-            if(e->getType()==1)
-            {
-                if((e->*status)()==flag && e->getInlet())
-                    inletClusters.insert((e->*getter)());
-                if((e->*status)()==flag && e->getOutlet())
-                    outletClusters.insert((e->*getter)());
-            }
-        }
-        for (set<cluster*>::iterator iterator = inletClusters.begin(); iterator != inletClusters.end(); ++iterator) {
-            (*iterator)->setInlet(true);
-        }
-        for (set<cluster*>::iterator iterator = outletClusters.begin(); iterator != outletClusters.end(); ++iterator) {
-            (*iterator)->setOutlet(true);
-        }
-        std::set_intersection( inletClusters.begin(), inletClusters.end(), outletClusters.begin(), outletClusters.end(), std::inserter( spanningClusters, spanningClusters.begin() ) );
-        for (set<cluster*>::iterator iterator = spanningClusters.begin(); iterator != spanningClusters.end(); ++iterator) {
-            (*iterator)->setSpanning(true);
-        }
+    for(pore* p: outletPores)
+        if((p->*status)()==flag)
+            outletClusters.insert((p->*getter)());
+
+
+    for (cluster* c: inletClusters)
+        c->setInlet(true);
+
+    for (cluster* c: outletClusters)
+        c->setOutlet(true);
+
+    set_intersection( inletClusters.begin(), inletClusters.end(), outletClusters.begin(), outletClusters.end(), std::inserter( spanningClusters, spanningClusters.begin() ) );
+
+    for (cluster* c: spanningClusters)
+        c->setSpanning(true);
 }
 
 void network::clusterWaterWetElements()
@@ -314,24 +299,6 @@ void network::clusterOilElements()
     }
 }
 
-void network::clusterGasElements()
-{
-    cluster* (element::*getter)() const =&element::getClusterGas;
-    void (element::*setter)(cluster*) =&element::setClusterGas;
-    char (element::*status)(void) const=&element::getPhaseFlag;
-    clusterElements(getter,setter,status,'g',gasClusters);
-    isGasSpanning=false;
-    for(unsigned i=0;i<gasClusters.size();++i)
-    {
-        cluster* cls=gasClusters[i];
-        if(cls->getSpanning())
-        {
-            isGasSpanning=true;
-            break;
-        }
-    }
-}
-
 void network::clusterOilFlowingElements()
 {
     cluster* (element::*getter)() const =&element::getClusterOilFilm;
@@ -371,21 +338,23 @@ void network::clusterWaterFlowingElements()
     }
 }
 
-void network::clusterEverythingEverything()
+void network::clusterActiveElements()
 {
-    cluster* (element::*getter)() const =&element::getClusterExist;
-    void (element::*setter)(cluster*) =&element::setClusterExist;
-    char (element::*status)(void) const=&element::getExist;
-    clusterElements(getter,setter,status,'t',existClusters);
+    cluster* (element::*getter)() const =&element::getClusterActive;
+    void (element::*setter)(cluster*) =&element::setClusterActive;
+    char (element::*status)(void) const=&element::getActive;
+    clusterElements(getter,setter,status,'t',activeClusters);
 
     isNetworkSpanning=false;
-    for(unsigned i=0;i<existClusters.size();++i)
+    for(unsigned i=0;i<activeClusters.size();++i)
     {
-        cluster* cls=existClusters[i];
+        cluster* cls=activeClusters[i];
         if(cls->getSpanning())
         {
             isNetworkSpanning=true;
             break;
         }
     }
+}
+
 }

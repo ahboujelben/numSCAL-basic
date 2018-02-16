@@ -10,6 +10,8 @@
 
 #include "element.h"
 
+namespace PNM {
+
 element::element()
 {
     radius=0;
@@ -38,11 +40,8 @@ element::element()
     beta1=0;
     beta2=0;
     beta3=0;
-    film1=false;
-    film2=false;
-    film3=false;
 
-    exist='t';
+    active='t';
 }
 int element::getId() const
 {
@@ -125,14 +124,14 @@ void element::setPhaseFlag(char value)
 {
     phaseFlag = value;
 }
-std::vector<element *> element::getNeighs() const
+std::vector<element *> element::getNeighboors() const
 {
-    return neighs;
+    return neighboors;
 }
 
-void element::setNeighs(const std::vector<element *> &value)
+void element::setNeighboors(const std::vector<element *> &value)
 {
-    neighs = value;
+    neighboors = value;
 }
 int element::getClusterTemp() const
 {
@@ -179,15 +178,7 @@ void element::setClusterOil(cluster *value)
 {
     clusterOil = value;
 }
-cluster *element::getClusterGas() const
-{
-    return clusterGas;
-}
 
-void element::setClusterGas(cluster *value)
-{
-    clusterGas = value;
-}
 bool element::getWaterTrapped() const
 {
     return waterTrapped;
@@ -214,7 +205,7 @@ bool element::getClosed() const
 void element::setClosed(bool value)
 {
     closed = value;
-    exist = value==true?'f':'t';
+    active = value==true?'f':'t';
 }
 bool element::getInlet() const
 {
@@ -291,24 +282,6 @@ void element::setWaterFraction(double value)
 {
     waterFraction = value;
 }
-double element::getOldOilFraction() const
-{
-    return oldOilFraction;
-}
-
-void element::setOldOilFraction(double value)
-{
-    oldOilFraction = value;
-}
-double element::getOldWaterFraction() const
-{
-    return oldWaterFraction;
-}
-
-void element::setOldWaterFraction(double value)
-{
-    oldWaterFraction = value;
-}
 
 double element::getFlow() const
 {
@@ -356,51 +329,24 @@ void element::setEffectiveVolume(double value)
 {
     effectiveVolume = value;
 }
-bool element::getFilm1() const
+
+cluster *element::getClusterActive() const
 {
-    return film1;
+    return clusterActive;
 }
 
-void element::setFilm1(bool value)
+void element::setClusterActive(cluster *value)
 {
-    film1 = value;
+    clusterActive = value;
 }
-bool element::getFilm2() const
+char element::getActive() const
 {
-    return film2;
-}
-
-void element::setFilm2(bool value)
-{
-    film2 = value;
-}
-bool element::getFilm3() const
-{
-    return film3;
+    return active;
 }
 
-void element::setFilm3(bool value)
+void element::setActive(char value)
 {
-    film3 = value;
-}
-
-cluster *element::getClusterExist() const
-{
-    return clusterExist;
-}
-
-void element::setClusterExist(cluster *value)
-{
-    clusterExist = value;
-}
-char element::getExist() const
-{
-    return exist;
-}
-
-void element::setExist(char value)
-{
-    exist = value;
+    active = value;
 }
 
 cluster *element::getClusterWaterFilm() const
@@ -452,6 +398,16 @@ double element::getMassFlow() const
 void element::setMassFlow(double value)
 {
     massFlow = value;
+}
+
+int element::getAbsId() const
+{
+    return absId;
+}
+
+void element::setAbsId(int value)
+{
+    absId = value;
 }
 double element::getOilFilmVolume() const
 {
@@ -517,22 +473,23 @@ void element::setOilLayerActivated(bool value)
 {
     oilLayerActivated = value;
 }
-double element::getOilFilmConductance() const
+double element::getOilFilmConductivity() const
 {
-    return oilFilmConductance;
+    return oilFilmConductivity;
 }
 
-void element::setOilFilmConductance(double value)
+void element::setOilFilmConductivity(double value)
 {
-    oilFilmConductance = value;
+    oilFilmConductivity = value;
 }
-double element::getWaterFilmConductance() const
+double element::getWaterFilmConductivity() const
 {
-    return waterFilmConductance;
-}
-
-void element::setWaterFilmConductance(double value)
-{
-    waterFilmConductance = value;
+    return waterFilmConductivity;
 }
 
+void element::setWaterFilmConductivity(double value)
+{
+    waterFilmConductivity = value;
+}
+
+}

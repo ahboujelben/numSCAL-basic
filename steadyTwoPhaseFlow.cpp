@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::runTwoPhaseSSModelPT()
 {
@@ -171,7 +171,7 @@ void network::primaryDrainagePT(double finalSaturation)
                 currentWaterVolume-=e->getVolume();
                 elementsToInvade.erase(e);
 
-                for(element* n:e->getNeighs())
+                for(element* n:e->getNeighboors())
                     if(!n->getClosed() && n->getPhaseFlag()=='w' && e->getClusterWaterFilm()->getOutlet())
                         elementsToInvade.insert(n);
 
@@ -213,7 +213,7 @@ void network::primaryDrainagePT(double finalSaturation)
                     double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*tools::pi()*e->getShapeFactor())*e->getVolume());
                     double filmConductance=rSquared*filmVolume/e->getLength()/(waterViscosity*e->getLength());
                     e->setWaterFilmVolume(filmVolume);
-                    e->setWaterFilmConductance(filmConductance);//cout<<filmConductance<<endl;
+                    e->setWaterFilmConductivity(filmConductance);//cout<<filmConductance<<endl;
                     e->setEffectiveVolume(e->getVolume()-e->getWaterFilmVolume());
                     if(e->getWaterFilmVolume()>e->getVolume()){cout<<"FATAL EROOR in PD: water film > capillary volume."<<endl;cancel=true;}
                     waterVolume+=e->getWaterFilmVolume();
@@ -369,7 +369,7 @@ void network::spontaneousImbibitionPT()
             for(element* e:elementsToInvade)
             {
                 bool connectedToInletWaterCluster=false;
-                for(element* n : e->getNeighs())
+                for(element* n : e->getNeighboors())
                     if(!n->getClosed() && n->getPhaseFlag()=='w' && n->getClusterWaterFilm()->getInlet())
                     {connectedToInletWaterCluster=true;break;}
 
@@ -387,7 +387,7 @@ void network::spontaneousImbibitionPT()
                 {
                     int oilNeighboorsNumber(0);
                     int totalNeighboorsNumber(0);
-                    for(element* n : e->getNeighs())
+                    for(element* n : e->getNeighboors())
                     {
                         if(!n->getClosed() && n->getPhaseFlag()=='o')
                             oilNeighboorsNumber++;
@@ -446,7 +446,7 @@ void network::spontaneousImbibitionPT()
                     double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*tools::pi()*e->getShapeFactor())*e->getVolume());
                     double filmConductance=rSquared*filmVolume/e->getLength()/(waterViscosity*e->getLength());
                     e->setWaterFilmVolume(filmVolume);
-                    e->setWaterFilmConductance(filmConductance);
+                    e->setWaterFilmConductivity(filmConductance);
                     e->setEffectiveVolume(e->getVolume()-e->getWaterFilmVolume());
                 }
                 waterVolume+=e->getWaterFilmVolume();
@@ -561,7 +561,7 @@ void network::forcedWaterInjectionPT()
             for(element* e: elementsToInvade)
             {
                 bool connectedToInletWaterCluster=false;
-                for(element* n : e->getNeighs())
+                for(element* n : e->getNeighboors())
                     if(!n->getClosed() && n->getPhaseFlag()=='w' && n->getClusterWaterFilm()->getInlet())
                     {connectedToInletWaterCluster=true;break;}
 
@@ -623,7 +623,7 @@ void network::forcedWaterInjectionPT()
                     double filmConductance=rSquared*effectiveOilFilmVolume/e->getLength()/(oilViscosity*e->getLength());
 
                     e->setOilFilmVolume(effectiveOilFilmVolume);
-                    e->setOilFilmConductance(filmConductance);
+                    e->setOilFilmConductivity(filmConductance);
                     //if(effectiveOilFilmVolume==0) // oil layer collapse
                     //    e->setOilLayerActivated(false);
                     e->setEffectiveVolume(e->getVolume()-e->getOilFilmVolume()-e->getWaterFilmVolume());
@@ -762,7 +762,7 @@ void network::spontaneousOilInvasionPT()
             for(element* e:elementsToInvade)
             {
                 bool connectedToInletOilCluster=false;
-                for(element* n : e->getNeighs())
+                for(element* n : e->getNeighboors())
                     if(!n->getClosed() && n->getPhaseFlag()=='o' && n->getClusterOilFilm()->getInlet())
                     {connectedToInletOilCluster=true;break;}
 
@@ -780,7 +780,7 @@ void network::spontaneousOilInvasionPT()
                 {
                     int waterNeighboorsNumber(0);
                     int totalNeighboorsNumber(0);
-                    for(element* n : e->getNeighs())
+                    for(element* n : e->getNeighboors())
                     {
                         if(!n->getClosed() && n->getPhaseFlag()=='w')
                             waterNeighboorsNumber++;
@@ -843,7 +843,7 @@ void network::spontaneousOilInvasionPT()
                     double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*tools::pi()*e->getShapeFactor())*e->getVolume()-e->getWaterFilmVolume());
                     double filmConductance=rSquared*filmVolume/e->getLength()/(oilViscosity*e->getLength());
                     e->setOilFilmVolume(filmVolume);//if(e->getType()==0 && e->getId()==177)cout<<e->getOilFilmVolume()/e->getVolume()<<endl;
-                    e->setOilFilmConductance(filmConductance);
+                    e->setOilFilmConductivity(filmConductance);
                     e->setEffectiveVolume(e->getVolume()-e->getOilFilmVolume()-e->getWaterFilmVolume());
                 }
                 waterVolume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
@@ -954,7 +954,7 @@ void network::secondaryOilDrainagePT()
             for(element* e: elementsToInvade)
             {
                 bool connectedToInletOilCluster=false;
-                for(element* n : e->getNeighs())
+                for(element* n : e->getNeighboors())
                     if(!n->getClosed() && n->getPhaseFlag()=='o' && n->getClusterOilFilm()->getInlet())
                     {connectedToInletOilCluster=true;break;}
 
@@ -1039,4 +1039,6 @@ void network::secondaryOilDrainagePT()
 
     endTime=tools::getCPUTime();
     //cout<<"Secondary Oil Drainage Time: "<<endTime-startTime<<" s"<<endl;
+}
+
 }

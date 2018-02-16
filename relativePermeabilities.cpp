@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::calculateRelativePermeabilities()
 {
@@ -38,7 +38,7 @@ void network::calculateRelativePermeabilities()
                 if(p->getWettabilityFlag()=='o')
                 {
                     if(p->getOilLayerActivated() && p->getOilFilmVolume()>0 && p->getClusterOilFilm()->getSpanning())
-                        p->setConductivity(max(1e-200,min(p->getOilFilmConductance()/filmConductanceResistivity,p->getConductivity()/10.)));
+                        p->setConductivity(max(1e-200,min(p->getOilFilmConductivity()/filmConductanceResistivity,p->getConductivity()/10.)));
                     else
                         p->setConductivity(1e-200);
                 }
@@ -71,7 +71,7 @@ void network::calculateRelativePermeabilities()
             {
                 {
                     if(p->getWaterCornerActivated() && p->getWaterFilmVolume()>0 && p->getClusterWaterFilm()->getSpanning())
-                       p->setConductivity(max(1e-200,min(p->getWaterFilmConductance()/filmConductanceResistivity,p->getConductivity()/10.)));
+                       p->setConductivity(max(1e-200,min(p->getWaterFilmConductivity()/filmConductanceResistivity,p->getConductivity()/10.)));
                     else
                         p->setConductivity(1e-200);
                 }
@@ -148,3 +148,4 @@ void network::calculateRelativePermeabilitiesUSS()
     waterRelativePermeability=waterFlow*waterViscosity/flow;
 }
 
+}

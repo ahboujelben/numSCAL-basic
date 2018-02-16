@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-using namespace std;
+namespace PNM {
 
 void network::setupExtractedModel()
 {
@@ -83,6 +83,7 @@ void network::loadExtractedNetwork()
         tableOfAllNodes[i]= new node(x,y,z);
         node* n=tableOfAllNodes[i];
         n->setId(id);
+        n->setAbsId(i);
         n->setConnectionNumber(numberOfNeighboors);
         averageConnectionNumber+=numberOfNeighboors;
 
@@ -93,7 +94,7 @@ void network::loadExtractedNetwork()
             node1>>neighboor;
             neighboors.push_back(neighboor);
         }
-        n->setNeighboors(neighboors);
+        n->setConnectedNodes(neighboors);
 
         node1>>isInlet>>isOutlet;
         n->setInlet(isInlet);
@@ -185,9 +186,18 @@ void network::loadExtractedNetwork()
         tableOfAllPores[i]=new pore(nodeIn,nodeOut);
         pore* p=tableOfAllPores[i];
 
-        if(p->getNodeOut()==0)p->setInlet(true);
-        if(p->getNodeIn()==0)p->setOutlet(true);
+        if(p->getNodeOut()==0)
+        {
+            p->setInlet(true);
+            inletPores.push_back(p);
+        }
+        if(p->getNodeIn()==0)
+        {
+            p->setOutlet(true);
+            outletPores.push_back(p);
+        }
         p->setId(id);
+        p->setAbsId(i+totalNodes);
         p->setShapeFactor(shapeFactor);
         p->setFullLength(poreLength);
         if(p->getNodeIn()!=0 && p->getNodeOut()!=0)
@@ -240,21 +250,6 @@ void network::loadExtractedNetwork()
         p->setEffectiveVolume(volume);
     }
 
-    //extension
-    if(extension)
-    {
-        setBoundaries();
-        for(int i=0;i<extensionNumber-1;++i)
-        {
-            extendCustomModel('x');
-            if(!extensionOneDirection)
-            {
-                extendCustomModel('y');
-                extendCustomModel('z');
-            }
-        }
-    }
-
     assignShapeFactorConstants();
     assignConductivities();
 
@@ -282,7 +277,7 @@ void network::setNeighboorsForExtractedModel()
                 if(neighboorsOut[j]!=p->getId())
                     neighboors.push_back(getPore(neighboorsOut[j]-1));
         }
-        p->setNeighboors(neighboors);
+        p->setConnectedPores(neighboors);
     }
 }
 
@@ -332,417 +327,4 @@ void network::cleanExtractedNetwork()
     }
 }
 
-
-void network::extendCustomModel(char direction)
-{
-    double shiftX=xEdgeLength;
-    double shiftY=yEdgeLength;
-    double shiftZ=zEdgeLength;
-
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-
-        double newXCoordinate(n->getXCoordinate());
-        double newYCoordinate(n->getYCoordinate());
-        double newZCoordinate(n->getZCoordinate());
-
-        if (direction=='x')
-            newXCoordinate=2*shiftX-n->getXCoordinate();
-        if (direction=='y')
-            newYCoordinate=2*shiftY-n->getYCoordinate();
-        if (direction=='z')
-            newZCoordinate=2*shiftZ-n->getZCoordinate();
-
-        tableOfAllNodes.push_back(new node(newXCoordinate,newYCoordinate,newZCoordinate));
-        node* newNode=tableOfAllNodes[totalNodes+i];
-        newNode->setId(n->getId()+totalNodes);
-        newNode->setConnectionNumber(n->getConnectionNumber());
-
-        vector<int> neighboors;
-        for(unsigned j=0;j<n->getNeighboors().size();++j)
-        {
-            int neighboor=n->getNeighboors()[j];
-            if(neighboor!=0 && neighboor!=-1)
-                neighboors.push_back(neighboor+totalNodes);
-            else
-                neighboors.push_back(neighboor);
-        }
-        newNode->setNeighboors(neighboors);
-
-        vector<int> poreNeighboors;
-        for(unsigned j=0;j<n->getConnectedPores().size();++j)
-        {
-            int poreNeighboor=n->getConnectedPores()[j];
-            poreNeighboors.push_back(poreNeighboor+totalPores);
-        }
-        newNode->setConnectedPores(poreNeighboors);
-
-        newNode->setInlet(n->getInlet());
-        newNode->setOutlet(n->getOutlet());
-        newNode->setInletY(n->getInletY());
-        newNode->setOutletY(n->getOutletY());
-        newNode->setInletZ(n->getInletZ());
-        newNode->setOutletZ(n->getOutletZ());
-        newNode->setVolume(n->getVolume()*(1+uniform_real(-0.001,0.001)));
-        newNode->setEffectiveVolume(newNode->getVolume());
-        newNode->setRadius(n->getRadius()*(1+uniform_real(-0.001,0.001)));
-        newNode->setLength(n->getLength()*(1+uniform_real(-0.001,0.001)));
-        newNode->setShapeFactor(n->getShapeFactor()*(1+uniform_real(-0.001,0.001)));
-    }
-
-    for(int i=0;i<totalPores;++i)
-    {
-        pore* p=getPore(i);
-        node* nodeIn=p->getNodeIn();
-        node* nodeOut=p->getNodeOut();
-        node* newNodeIn=(nodeIn==0 ? 0 : tableOfAllNodes[nodeIn->getId()-1+totalNodes]);
-        node* newNodeOut=(nodeOut==0 ? 0 : tableOfAllNodes[nodeOut->getId()-1+totalNodes]);
-
-        tableOfAllPores.push_back(new pore(newNodeIn,newNodeOut));
-        pore* newPore=tableOfAllPores[totalPores+i];
-
-        newPore->setId(p->getId()+totalPores);
-        newPore->setInlet(p->getInlet());
-        newPore->setOutlet(p->getOutlet());
-        newPore->setShapeFactor(p->getShapeFactor());
-        newPore->setLength(p->getLength()*(1+uniform_real(-0.001,0.001)));
-        newPore->setRadius(p->getRadius()*(1+uniform_real(-0.001,0.001)));
-        newPore->setFullLength(p->getFullLength()*(1+uniform_real(-0.001,0.001)));
-        newPore->setNodeInLength(p->getNodeInLength()*(1+uniform_real(-0.001,0.001)));
-        newPore->setNodeOutLength(p->getNodeOutLength()*(1+uniform_real(-0.001,0.001)));
-        newPore->setVolume(p->getVolume()*(1+uniform_real(-0.001,0.001)));
-        newPore->setEffectiveVolume(newPore->getVolume());
-        newPore->setClosed(p->getClosed());
-    }
-
-    stitchCustomModel(direction);
-}
-
-void network::stitchCustomModel(char direction)
-{
-    int newAddedPoresNumber(0);
-
-    if(direction=='x')
-    {
-        for(int i=0;i<totalNodes;++i)
-        {
-            node* n=getNode(i);
-            node* newNode=tableOfAllNodes[totalNodes+i];
-
-            if(n->getOutlet())
-            {
-                n->setOutlet(false);
-                newNode->setOutlet(false);
-                for(unsigned j=0;j<n->getNeighboors().size();++j)
-                    if(n->getNeighboors()[j]==0)
-                    {
-                        n->getNeighboors()[j]=newNode->getId();
-                        newNode->getNeighboors()[j]=n->getId();
-
-                        double averageRadius(0);
-                        double averageShapeFactor(0);
-                        double averageNodeInLength(0);
-                        double averageNodeOutLength(0);
-                        double averageVolume(0);
-                        double neighboorsNumber(0);
-                        for(unsigned k=0;k<n->getConnectedPores().size();++k)
-                        {
-                            pore* p=getPore(n->getConnectedPores()[k]-1);
-                            averageRadius+=p->getRadius();
-                            averageShapeFactor+=p->getShapeFactor();
-                            averageNodeInLength+=p->getNodeInLength();
-                            averageNodeOutLength+=p->getNodeOutLength();
-                            averageVolume+=p->getVolume();
-                            neighboorsNumber++;
-                        }
-
-                        if(neighboorsNumber!=0)
-                        {
-                            tableOfAllPores.push_back(new pore(newNode,n));
-                            pore* poreToBeAdded=tableOfAllPores[2*totalPores+newAddedPoresNumber];
-
-                            n->getConnectedPores()[j]=2*totalPores+newAddedPoresNumber+1;
-                            newNode->getConnectedPores()[j]=2*totalPores+newAddedPoresNumber+1;
-
-                            poreToBeAdded->setId(2*totalPores+newAddedPoresNumber+1);
-                            poreToBeAdded->setRadius(averageRadius/neighboorsNumber);
-                            poreToBeAdded->setShapeFactor(averageShapeFactor/neighboorsNumber);
-                            poreToBeAdded->setFullLength(sqrt(pow(poreToBeAdded->getNodeIn()->getXCoordinate()-poreToBeAdded->getNodeOut()->getXCoordinate(),2)+pow(poreToBeAdded->getNodeIn()->getYCoordinate()-poreToBeAdded->getNodeOut()->getYCoordinate(),2)+pow(poreToBeAdded->getNodeIn()->getZCoordinate()-poreToBeAdded->getNodeOut()->getZCoordinate(),2)));
-                            poreToBeAdded->setNodeInLength(averageNodeInLength/neighboorsNumber);
-                            poreToBeAdded->setNodeOutLength(averageNodeOutLength/neighboorsNumber);
-                            poreToBeAdded->setLength(poreToBeAdded->getFullLength()/3);
-                            poreToBeAdded->setVolume(averageVolume/neighboorsNumber);
-                            newAddedPoresNumber++;
-                        }
-
-                        break;
-                    }
-            }
-
-            if(n->getInlet())
-            {
-                newNode->setInlet(false);
-                newNode->setOutlet(true);
-                for(unsigned j=0;j<n->getNeighboors().size();++j)
-                    if(n->getNeighboors()[j]==-1)
-                    {
-                        newNode->getNeighboors()[j]=0;
-                    }
-            }
-        }
-
-        for(int i=0;i<totalPores;++i)
-        {
-            pore* p=getPore(i);
-            pore* newPore=tableOfAllPores[totalPores+i];
-
-            if(p->getOutlet())
-            {
-                p->setOutlet(false);
-                p->setClosed(true);
-                p->setNodeOut(0);
-                newPore->setOutlet(false);
-                newPore->setNodeOut(0);
-                newPore->setClosed(true);
-            }
-
-            node* tmp=newPore->getNodeIn();
-            newPore->setNodeIn(newPore->getNodeOut());
-            newPore->setNodeOut(tmp);
-        }
-
-        for(int i=0;i<totalPores;++i)
-        {
-            pore* p=getPore(i);
-            pore* newPore=tableOfAllPores[totalPores+i];
-            if(p->getInlet())
-            {
-                newPore->setInlet(false);
-                newPore->setOutlet(true);
-            }
-        }
-    }
-
-    if(direction=='y')
-    {
-        for(int i=0;i<totalNodes;++i)
-        {
-            node* n=getNode(i);
-            node* newNode=tableOfAllNodes[totalNodes+i];
-
-            if(n->getOutletY())
-            {
-                n->setOutletY(false);
-                newNode->setOutletY(false);
-
-                n->getNeighboors().push_back(newNode->getId());
-                newNode->getNeighboors().push_back(n->getId());
-
-                double averageRadius(0);
-                double averageShapeFactor(0);
-                double averageNodeInLength(0);
-                double averageNodeOutLength(0);
-                double averageVolume(0);
-                int neighboorsNumber(0);
-
-                for(unsigned j=0;j<n->getConnectedPores().size();++j)
-                {
-                    pore* p=getPore(n->getConnectedPores()[j]-1);
-                    averageRadius+=p->getRadius();
-                    averageShapeFactor+=p->getShapeFactor();
-                    averageNodeInLength+=p->getNodeInLength();
-                    averageNodeOutLength+=p->getNodeOutLength();
-                    averageVolume+=p->getVolume();
-                    neighboorsNumber++;
-                }
-
-                if(neighboorsNumber!=0)
-                {
-                    tableOfAllPores.push_back(new pore(newNode,n));
-                    pore* poreToBeAdded=tableOfAllPores[2*totalPores+newAddedPoresNumber];
-
-                    n->getConnectedPores().push_back(2*totalPores+newAddedPoresNumber+1);
-                    newNode->getConnectedPores().push_back(2*totalPores+newAddedPoresNumber+1);
-                    n->setConnectionNumber(n->getConnectionNumber()+1);
-                    newNode->setConnectionNumber(newNode->getConnectionNumber()+1);
-
-                    poreToBeAdded->setId(2*totalPores+newAddedPoresNumber+1);
-                    poreToBeAdded->setRadius(averageRadius/neighboorsNumber);
-                    poreToBeAdded->setShapeFactor(averageShapeFactor/neighboorsNumber);
-                    poreToBeAdded->setFullLength(sqrt(pow(poreToBeAdded->getNodeIn()->getXCoordinate()-poreToBeAdded->getNodeOut()->getXCoordinate(),2)+pow(poreToBeAdded->getNodeIn()->getYCoordinate()-poreToBeAdded->getNodeOut()->getYCoordinate(),2)+pow(poreToBeAdded->getNodeIn()->getZCoordinate()-poreToBeAdded->getNodeOut()->getZCoordinate(),2)));
-                    poreToBeAdded->setNodeInLength(averageNodeInLength/neighboorsNumber);
-                    poreToBeAdded->setNodeOutLength(averageNodeOutLength/neighboorsNumber);
-                    poreToBeAdded->setLength(poreToBeAdded->getFullLength()/3);
-                    poreToBeAdded->setVolume(averageVolume/neighboorsNumber);
-
-                    newAddedPoresNumber++;
-                }
-
-            }
-
-            if(n->getInletY())
-            {
-                newNode->setInletY(false);
-                newNode->setOutletY(true);
-            }
-        }
-
-    }
-
-    if(direction=='z')
-    {
-        for(int i=0;i<totalNodes;++i)
-        {
-            node* n=getNode(i);
-            node* newNode=tableOfAllNodes[totalNodes+i];
-
-            if(n->getOutletZ())
-            {
-                n->setOutletZ(false);
-                newNode->setOutletZ(false);
-
-                n->getNeighboors().push_back(newNode->getId());
-                newNode->getNeighboors().push_back(n->getId());
-
-                double averageRadius(0);
-                double averageShapeFactor(0);
-                double averageNodeInLength(0);
-                double averageNodeOutLength(0);
-                double averageVolume(0);
-                int neighboorsNumber(0);
-
-                for(unsigned j=0;j<n->getConnectedPores().size();++j)
-                {
-                    pore* p=getPore(n->getConnectedPores()[j]-1);
-                    averageRadius+=p->getRadius();
-                    averageShapeFactor+=p->getShapeFactor();
-                    averageNodeInLength+=p->getNodeInLength();
-                    averageNodeOutLength+=p->getNodeOutLength();
-                    averageVolume+=p->getVolume();
-                    neighboorsNumber++;
-                }
-
-                if(neighboorsNumber!=0)
-                {
-                    tableOfAllPores.push_back(new pore(newNode,n));
-                    pore* poreToBeAdded=tableOfAllPores[2*totalPores+newAddedPoresNumber];
-
-                    n->getConnectedPores().push_back(2*totalPores+newAddedPoresNumber+1);
-                    newNode->getConnectedPores().push_back(2*totalPores+newAddedPoresNumber+1);
-                    n->setConnectionNumber(n->getConnectionNumber()+1);
-                    newNode->setConnectionNumber(newNode->getConnectionNumber()+1);
-
-                    poreToBeAdded->setId(2*totalPores+newAddedPoresNumber+1);
-                    poreToBeAdded->setRadius(averageRadius/neighboorsNumber);
-                    poreToBeAdded->setShapeFactor(averageShapeFactor/neighboorsNumber);
-                    poreToBeAdded->setFullLength(sqrt(pow(poreToBeAdded->getNodeIn()->getXCoordinate()-poreToBeAdded->getNodeOut()->getXCoordinate(),2)+pow(poreToBeAdded->getNodeIn()->getYCoordinate()-poreToBeAdded->getNodeOut()->getYCoordinate(),2)+pow(poreToBeAdded->getNodeIn()->getZCoordinate()-poreToBeAdded->getNodeOut()->getZCoordinate(),2)));
-                    poreToBeAdded->setNodeInLength(averageNodeInLength/neighboorsNumber);
-                    poreToBeAdded->setNodeOutLength(averageNodeOutLength/neighboorsNumber);
-                    poreToBeAdded->setLength(poreToBeAdded->getFullLength()/3);
-                    poreToBeAdded->setVolume(averageVolume/neighboorsNumber);
-                    poreToBeAdded->setEffectiveVolume(poreToBeAdded->getVolume());
-
-                    newAddedPoresNumber++;
-                }
-            }
-
-            if(n->getInletZ())
-            {
-                newNode->setInletZ(false);
-                newNode->setOutletZ(true);
-            }
-        }
-    }
-
-    totalPores=2*totalPores+newAddedPoresNumber;
-    totalOpenedPores=totalPores;
-    totalNodes*=2;
-    totalOpenedNodes=totalNodes;
-    if(direction=='x')xEdgeLength*=2;
-    if(direction=='y')yEdgeLength*=2;
-    if(direction=='z')zEdgeLength*=2;
-}
-
-void network::setBoundaries()
-{
-    int averageBoundryNodesNumber(0);
-
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        if(n->getInlet() || n->getOutlet())
-            averageBoundryNodesNumber++;
-    }
-
-    int inletYSoFar(0),outletYSoFar(0);
-    double currentY=0;
-    double yStep=yEdgeLength/(cbrt(totalNodes)*10);
-
-    while(inletYSoFar<averageBoundryNodesNumber/2)
-    {
-        currentY+=yStep;
-        for (int i = 0; i < totalNodes; ++i)
-        {
-            node* n=getNode(i);
-            if(n->getYCoordinate()<=currentY && !n->getInletY() && n->getNeighboors().size()!=0)
-            {
-                n->setInletY(true);
-                inletYSoFar++;
-                if(inletYSoFar>=averageBoundryNodesNumber/2)break;
-            }
-        }
-    }
-
-    currentY=0;
-    while(outletYSoFar<averageBoundryNodesNumber/2)
-    {
-        currentY+=yStep;
-        for (int i = 0; i < totalNodes; ++i)
-        {
-            node* n=getNode(i);
-            if(n->getYCoordinate()>=yEdgeLength-currentY && !n->getOutletY() && n->getNeighboors().size()!=0)
-            {
-                n->setOutletY(true);
-                outletYSoFar++;
-                if(outletYSoFar>=averageBoundryNodesNumber/2)break;
-            }
-        }
-    }
-
-    int inletZSoFar(0),outletZSoFar(0);
-    double currentZ=0;
-    double zStep=zEdgeLength/(cbrt(totalNodes)*10);
-
-    while(inletZSoFar<averageBoundryNodesNumber/2)
-    {
-        currentZ+=zStep;
-        for (int i = 0; i < totalNodes; ++i)
-        {
-            node* n=getNode(i);
-            if(n->getZCoordinate()<=currentZ && !n->getInletZ() && n->getNeighboors().size()!=0)
-            {
-                n->setInletZ(true);
-                inletZSoFar++;
-                if(inletZSoFar>=averageBoundryNodesNumber/2)break;
-            }
-        }
-    }
-
-    currentZ=0;
-    while(outletZSoFar<averageBoundryNodesNumber/2)
-    {
-        currentZ+=zStep;
-        for (int i = 0; i < totalNodes; ++i)
-        {
-            node* n=getNode(i);
-
-            if(n->getZCoordinate()>=zEdgeLength-currentZ && !n->getOutletZ() && n->getNeighboors().size()!=0)
-            {
-                n->setOutletZ(true);
-                outletZSoFar++;
-                if(outletZSoFar>=averageBoundryNodesNumber/2)break;
-            }
-        }
-    }
 }
