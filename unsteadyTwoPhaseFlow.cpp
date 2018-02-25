@@ -250,28 +250,28 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
 
     for(node* p : accessibleNodes)
     {
-        p->assignViscosity(oilViscosity, p->getOilFraction(), waterViscosity, p->getWaterFraction());
+        p->assignViscosity(oilViscosity, waterViscosity);
 
-        p->setActive('t');
+        p->setActive(true);
         if(p->getPhaseFlag()=='o' && p->getOilTrapped())
         {
             p->setConductivity(1e-200);
-            p->setActive('f');
+            p->setActive(false);
         }
 
         if(p->getPhaseFlag()=='w' && p->getWaterTrapped())
         {
             p->setConductivity(1e-200);
-            p->setActive('f');
+            p->setActive(false);
         }
     }
 
     for(pore* p : accessiblePores)
     {
-        p->assignViscosity(oilViscosity, p->getOilFraction(), waterViscosity, p->getWaterFraction());
+        p->assignViscosity(oilViscosity, waterViscosity);
         p->assignConductivity();
 
-        p->setActive('t');
+        p->setActive(true);
         p->setCapillaryPressure(0);
         if(p->getPhaseFlag()=='o')
         {
@@ -279,7 +279,7 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
             if(p->getOilTrapped())
             {
                 p->setConductivity(1e-200);
-                p->setActive('f');
+                p->setActive(false);
             }
             else
             {
@@ -322,7 +322,7 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
             if(p->getWaterTrapped())
             {
                 p->setConductivity(1e-200);
-                p->setActive('f');
+                p->setActive(false);
             }
             else
             {
@@ -399,11 +399,11 @@ void network::solvePressureWithoutCounterImbibitionPT()
         clusterActiveElements();
         for(pore* p : accessiblePores)
         {
-            if(p->getActive()=='t' && p->getClusterActive()->getSpanning()==false)
+            if(p->getActive() && p->getClusterActive()->getSpanning()==false)
             {
                 p->setConductivity(1e-200);
                 p->setCapillaryPressure(0);
-                p->setActive('f');
+                p->setActive(false);
             }
         }
 
@@ -444,14 +444,14 @@ void network::solvePressureWithoutCounterImbibitionPT()
             {
                 p->setConductivity(1e-200);
                 p->setCapillaryPressure(0);
-                p->setActive('f');
+                p->setActive(false);
                 stillMorePoresToClose=true;
             }
             if(p->getConductivity()!=1e-200 && (p->getInlet() || p->getOutlet()) &&  p->getFlow()<0)
             {
                 p->setConductivity(1e-200);
                 p->setCapillaryPressure(0);
-                p->setActive('f');
+                p->setActive(false);
                 stillMorePoresToClose=true;
             }
         }
