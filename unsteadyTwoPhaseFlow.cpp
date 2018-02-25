@@ -440,14 +440,14 @@ void network::solvePressureWithoutCounterImbibitionPT()
 
         for(pore* p : accessiblePores)
         {
-            if(p->getConductivity()!=1e-200 && p->getNodeIn()!=0 && p->getNodeOut()!=0 && ((p->getFlow()>0 && p->getNodeOut()->getPhaseFlag()=='o' && p->getNodeIn()->getPhaseFlag()=='w') || (p->getFlow()<0 && p->getNodeOut()->getPhaseFlag()=='w' && p->getNodeIn()->getPhaseFlag()=='o')))
+            if(p->getActive() && p->getNodeIn()!=0 && p->getNodeOut()!=0 && ((p->getFlow()>0 && p->getNodeOut()->getPhaseFlag()=='o' && p->getNodeIn()->getPhaseFlag()=='w') || (p->getFlow()<0 && p->getNodeOut()->getPhaseFlag()=='w' && p->getNodeIn()->getPhaseFlag()=='o')))
             {
                 p->setConductivity(1e-200);
                 p->setCapillaryPressure(0);
                 p->setActive(false);
                 stillMorePoresToClose=true;
             }
-            if(p->getConductivity()!=1e-200 && (p->getInlet() || p->getOutlet()) &&  p->getFlow()<0)
+            if(p->getActive() && (p->getInlet() || p->getOutlet()) &&  p->getFlow()<0)
             {
                 p->setConductivity(1e-200);
                 p->setCapillaryPressure(0);
@@ -466,7 +466,7 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
     timeStep=1e50;
     for(pore* p : poresToCheck)
     {
-        if(p->getConductivity()!=1e-200 && abs(p->getFlow())>1e-24)
+        if(p->getActive() && abs(p->getFlow())>1e-24)
         {
             double step=p->getVolume()*p->getOilFraction()/abs(p->getFlow());
             if(step<timeStep)
@@ -487,7 +487,7 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
 
         if(p->getPhaseFlag()=='w')
         {
-            if(p->getFlow()>1e-24 && p->getConductivity()!=1e-200)
+            if(p->getFlow()>1e-24 && p->getActive())
             {
                 node* n=p->getNodeIn();
                 if(n!=0)
@@ -495,7 +495,7 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
                     n->setFlow((n->getFlow()+abs(p->getFlow())));
                 }
             }
-            if(p->getFlow()<-1e-24 && p->getConductivity()!=1e-200)
+            if(p->getFlow()<-1e-24 && p->getActive())
             {
                 node* n=p->getNodeOut();
                 if(n!=0)
@@ -508,7 +508,7 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
 
     for(node* p : nodesToCheck)
     {
-        if(abs(p->getFlow())>1e-24 && p->getConductivity()!=1e-200)
+        if(abs(p->getFlow())>1e-24 && p->getActive())
         {
             double step=p->getVolume()*p->getOilFraction()/abs(p->getFlow());
             if(step<timeStep)
@@ -524,7 +524,7 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
     {
         for(pore* p: accessiblePores)
         {
-            if(p->getConductivity()!=1e-200 && p->getPhaseFlag()=='w' && abs(p->getFlow())>1e-24)
+            if(p->getActive() && p->getPhaseFlag()=='w' && abs(p->getFlow())>1e-24)
             {
                 double step=p->getVolume()/abs(p->getFlow());
                 if(step<timeStep)
@@ -536,7 +536,7 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
 
         for(node* p : accessibleNodes)
         {
-            if(p->getConductivity()!=1e-200 && p->getPhaseFlag()=='w' && abs(p->getFlow())>1e-24)
+            if(p->getActive() && p->getPhaseFlag()=='w' && abs(p->getFlow())>1e-24)
             {
                 double step=p->getVolume()/abs(p->getFlow());
                 if(step<timeStep)
@@ -561,7 +561,7 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
     double additionalWater(0);
     for(pore* p : poresToCheck)
     {
-        if(p->getConductivity()!=1e-200 && abs(p->getFlow())>1e-24)
+        if(p->getActive() && abs(p->getFlow())>1e-24)
         {
             if(p->getFlow()>0 && p->getNodeOutWater() || p->getFlow()<0 && p->getNodeInWater())
             {
@@ -588,7 +588,7 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
 
     for(node* p : nodesToCheck)
     {
-        if(p->getConductivity()!=1e-200 && abs(p->getFlow())>1e-24)
+        if(p->getActive() && abs(p->getFlow())>1e-24)
         {
             double incrementalWater=abs(p->getFlow())*timeStep;
             p->setWaterFraction(p->getWaterFraction()+incrementalWater/p->getVolume());
