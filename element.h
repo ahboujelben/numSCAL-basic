@@ -97,8 +97,8 @@ public:
     int getType() const;
     void setType(int value);
 
-    char getActive() const;
-    void setActive(char value);
+    bool getActive() const;
+    void setActive(bool value);
 
     double getConcentration() const;
     void setConcentration(double value);
@@ -164,7 +164,7 @@ public:
     void setMassFlow(double value);
 
     // defined methods
-    void assignViscosity(double oilViscosity, double oilFraction, double waterViscosity, double waterFraction);
+    void assignViscosity(double oilViscosity, double waterViscosity);
 
 protected:
     int type;
@@ -186,7 +186,7 @@ protected:
     bool inlet; // a flag whether the capillary is connected to the inlet boundary
     bool outlet; // a flag whether the capillary is connected to the outlet boundary
     bool closed; // a flag whether the capillary is undefinetely closed (i.e. when assigning the coordination number)
-    char active; // a flag whether the capillary is momentarily closed (i.e. when closing the capillaries with counter imbibition flow)
+    bool active; // a flag whether the capillary is momentarily closed (i.e. when closing the capillaries with counter imbibition flow)
 
     std::vector<element*> neighboors; // a table to the adjacent capillaries
 

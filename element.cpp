@@ -25,6 +25,7 @@ element::element()
     concentration=0;
     flow=0;
     closed=false;
+    active=true;
     inlet=false;
     outlet=false;
 
@@ -40,8 +41,6 @@ element::element()
     beta1=0;
     beta2=0;
     beta3=0;
-
-    active='t';
 }
 int element::getId() const
 {
@@ -205,8 +204,15 @@ bool element::getClosed() const
 void element::setClosed(bool value)
 {
     closed = value;
-    active = value==true?'f':'t';
+    if(value)
+    {
+        active = false;
+        conductivity=1e-200;
+        wettabilityFlag='c';
+        phaseFlag='c';
+    }
 }
+
 bool element::getInlet() const
 {
     return inlet;
@@ -339,12 +345,12 @@ void element::setClusterActive(cluster *value)
 {
     clusterActive = value;
 }
-char element::getActive() const
+bool element::getActive() const
 {
     return active;
 }
 
-void element::setActive(char value)
+void element::setActive(bool value)
 {
     active = value;
 }
@@ -367,27 +373,6 @@ cluster *element::getClusterOilFilm() const
 void element::setClusterOilFilm(cluster *value)
 {
     clusterOilFilm = value;
-}
-
-char element::getOilFlowing() const
-{
-    if(!closed && (phaseFlag=='o' || oilLayerActivated))
-        return 't';
-    else
-        return 'f';
-}
-
-char element::getWaterFlowing() const
-{
-    if(!closed && (phaseFlag=='w' || waterCornerActivated))
-        return 't';
-    else
-        return 'f';
-}
-
-void element::assignViscosity(double oilViscosity, double oilFraction, double waterViscosity, double waterFraction)
-{
-    viscosity=oilViscosity*oilFraction+waterViscosity*waterFraction;
 }
 
 double element::getMassFlow() const
@@ -491,5 +476,29 @@ void element::setWaterFilmConductivity(double value)
 {
     waterFilmConductivity = value;
 }
+
+// Defined methods
+
+char element::getOilFlowing() const
+{
+    if(!closed && (phaseFlag=='o' || oilLayerActivated))
+        return 't';
+    else
+        return 'f';
+}
+
+char element::getWaterFlowing() const
+{
+    if(!closed && (phaseFlag=='w' || waterCornerActivated))
+        return 't';
+    else
+        return 'f';
+}
+
+void element::assignViscosity(double oilViscosity, double waterViscosity)
+{
+    viscosity=oilViscosity*oilFraction+waterViscosity*waterFraction;
+}
+
 
 }

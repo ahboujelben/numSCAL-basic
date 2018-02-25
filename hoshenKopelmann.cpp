@@ -342,8 +342,8 @@ void network::clusterActiveElements()
 {
     cluster* (element::*getter)() const =&element::getClusterActive;
     void (element::*setter)(cluster*) =&element::setClusterActive;
-    char (element::*status)(void) const=&element::getActive;
-    clusterElements(getter,setter,status,'t',activeClusters);
+    bool (element::*status)(void) const=&element::getActive;
+    clusterElements(getter,setter,status,true,activeClusters);
 
     isNetworkSpanning=false;
     for(unsigned i=0;i<activeClusters.size();++i)
