@@ -143,13 +143,12 @@ protected :
                 if(!p->getClosed())
                 {
                     if(p->getInlet() || p->getOutlet()) continue;
-                    if(p->getPhaseFlag()=='c') continue;
-                    if(p->getPhaseFlag()=='o' && !oilVisible) continue;
-                    if(p->getPhaseFlag()=='m' && !oilVisible) continue;
-                    if(p->getPhaseFlag()=='w' && !waterVisible) continue;
-                    if(p->getPhaseFlag()=='g' && !gasVisible) continue;
-                    if(p->getWettabilityFlag()=='w' && !waterWetVisible) continue;
-                    if(p->getWettabilityFlag()=='o' && !oilWetVisible) continue;
+                    if(p->getPhaseFlag()==phase::invalid) continue;
+                    if(p->getPhaseFlag()==phase::oil && !oilVisible) continue;
+                    if(p->getPhaseFlag()==phase::temp && !oilVisible) continue;
+                    if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
+                    if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
+                    if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
                     if(cutX && p->getMaxXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
                     if(cutY && p->getMaxYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
                     if(cutZ && p->getMaxZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
@@ -169,7 +168,7 @@ protected :
                     h_data[index + 6] = dir[2]; // vertex.z
 
                     // color data
-                    glm::vec3 color= p->getPhaseFlag()=='o'||p->getPhaseFlag()=='m'?phase1Color:phase2Color;
+                    glm::vec3 color= p->getPhaseFlag()==phase::oil ||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
                     color= color+float(p->getConcentration())*(phase3Color-color);
                     h_data[index + 7] = color.x;
                     h_data[index + 8] = color.y;
@@ -205,13 +204,12 @@ protected :
                 if(!p->getClosed())
                 {
                     if(p->getInlet() || p->getOutlet()) continue;
-                    if(p->getPhaseFlag()=='c') continue;
-                    if(p->getPhaseFlag()=='o' && !oilVisible) continue;
-                    if(p->getPhaseFlag()=='m' && !oilVisible) continue;
-                    if(p->getPhaseFlag()=='w' && !waterVisible) continue;
-                    if(p->getPhaseFlag()=='g' && !gasVisible) continue;
-                    if(p->getWettabilityFlag()=='w' && !waterWetVisible) continue;
-                    if(p->getWettabilityFlag()=='o' && !oilWetVisible) continue;
+                    if(p->getPhaseFlag()==phase::invalid) continue;
+                    if(p->getPhaseFlag()==phase::oil && !oilVisible) continue;
+                    if(p->getPhaseFlag()==phase::temp && !oilVisible) continue;
+                    if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
+                    if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
+                    if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
                     if(cutX && p->getMaxXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
                     if(cutY && p->getMaxYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
                     if(cutZ && p->getMaxZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
@@ -222,7 +220,7 @@ protected :
                     h_data[index + 2] = (p->getNodeIn()->getZCoordinate())/aspect;; // vertex.z
 
                     // color data
-                    glm::vec3 color= p->getPhaseFlag()=='o'||p->getPhaseFlag()=='m'?phase1Color:phase2Color;
+                    glm::vec3 color= p->getPhaseFlag()==phase::oil||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
                     color= color+float(p->getConcentration())*(phase3Color-color);
                     h_data[index + 3] = color.x;
                     h_data[index + 4] = color.y;
@@ -237,7 +235,7 @@ protected :
                     h_data[index + 2] = (p->getNodeOut()->getZCoordinate())/aspect;; // vertex.z
 
                     // color data
-                    color= p->getPhaseFlag()=='o'||p->getPhaseFlag()=='m'?phase1Color:phase2Color;
+                    color= p->getPhaseFlag()==phase::oil||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
                     color= color+float(p->getConcentration())*(phase3Color-color);
                     h_data[index + 3] = color.x;
                     h_data[index + 4] = color.y;
@@ -270,12 +268,12 @@ protected :
                 node* p=net->getNode(i);
                 if(!p->getClosed())
                 {
-                    if(p->getPhaseFlag()=='c') continue;
-                    if(p->getPhaseFlag()=='o' && !oilVisible) continue;
-                    if(p->getPhaseFlag()=='w' && !waterVisible) continue;
-                    if(p->getPhaseFlag()=='g' && !gasVisible) continue;
-                    if(p->getWettabilityFlag()=='w' && !waterWetVisible) continue;
-                    if(p->getWettabilityFlag()=='o' && !oilWetVisible) continue;
+                    if(p->getPhaseFlag()==phase::invalid) continue;
+                    if(p->getPhaseFlag()==phase::oil && !oilVisible) continue;
+                    if(p->getPhaseFlag()==phase::temp && !oilVisible) continue;
+                    if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
+                    if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
+                    if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
                     if(cutX && p->getXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
                     if(cutY && p->getYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
                     if(cutZ && p->getZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
@@ -289,7 +287,7 @@ protected :
                     h_data[index + 3] = p->getRadius()/aspect;
 
                     // color data
-                    glm::vec3 color= p->getPhaseFlag()=='o'||p->getPhaseFlag()=='m'?phase1Color:phase2Color;
+                    glm::vec3 color= p->getPhaseFlag()==phase::oil||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
                     color= color+float(p->getConcentration())*(phase3Color-color);
                     h_data[index + 4] = color.x;
                     h_data[index + 5] = color.y;
@@ -715,7 +713,8 @@ public slots:
                     pore* p=net->getPore(value-1);
                     {
                         file>>phase>>concentration;
-                        p->setPhaseFlag(phase);
+                        auto phaseFlag=phase=='o'?phase::oil:phase::water;
+                        p->setPhaseFlag(phaseFlag);
                         p->setConcentration(concentration);
                     }
                 }
@@ -733,7 +732,8 @@ public slots:
                             node* p=net->getNode(value-1);
                             {
                                 file>>phase>>concentration;
-                                p->setPhaseFlag(phase);
+                                auto phaseFlag=phase=='o'?phase::oil:phase::water;
+                                p->setPhaseFlag(phaseFlag);
                                 p->setConcentration(concentration);
                             }
                         }
@@ -779,7 +779,8 @@ public slots:
                     pore* p=net->getPore(value-1);
                     {
                         file>>phase>>concentration;
-                        p->setPhaseFlag(phase);
+                        auto phaseFlag=phase=='o'?phase::oil:phase::water;
+                        p->setPhaseFlag(phaseFlag);
                         p->setConcentration(concentration);
                     }
                 }
@@ -796,7 +797,8 @@ public slots:
                             node* p=net->getNode(value-1);
                             {
                                 file>>phase>>concentration;
-                                p->setPhaseFlag(phase);
+                                auto phaseFlag=phase=='o'?phase::oil:phase::water;
+                                p->setPhaseFlag(phaseFlag);
                                 p->setConcentration(concentration);
                             }
                         }

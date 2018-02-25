@@ -180,7 +180,7 @@ void network::outputTwoPhaseData(double injectedPVs, int& outputCount, double wa
     //Output Fract Flow
     double fractionalOil(0),fractionalWater(0);
     for(pore* p : accessiblePores)
-        if(p->getPhaseFlag()=='o' && p->getConductivity()!=1e-200 && p->getOutlet())
+        if(p->getPhaseFlag()==phase::oil && p->getConductivity()!=1e-200 && p->getOutlet())
             fractionalOil+=abs(p->getFlow());
     fractionalOil/=flowRate;
     fractionalWater=abs(1-fractionalOil)<0.0001?0:abs(1-fractionalOil);
@@ -198,7 +198,8 @@ void network::outputTwoPhaseData(double injectedPVs, int& outputCount, double wa
         ofstream file1(path.c_str());
         for(pore* p : accessiblePores)
         {
-             file1<<p->getId()<<" "<<p->getPhaseFlag()<<" "<<p->getConcentration()<<endl;
+             char phaseFlag=p->getPhaseFlag()==phase::oil?'o':'w';
+             file1<<p->getId()<<" "<<phaseFlag<<" "<<p->getConcentration()<<endl;
         }
 
         if(networkSource!=1)
@@ -207,7 +208,8 @@ void network::outputTwoPhaseData(double injectedPVs, int& outputCount, double wa
             ofstream file2(path.c_str());
             for(node* n : accessibleNodes)
             {
-                file2<<n->getId()<<" "<<n->getPhaseFlag()<<" "<<n->getConcentration()<<endl;
+                char phaseFlag=n->getPhaseFlag()==phase::oil?'o':'w';
+                file2<<n->getId()<<" "<<phaseFlag<<" "<<n->getConcentration()<<endl;
             }
         }
         outputCount++;

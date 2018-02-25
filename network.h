@@ -20,27 +20,18 @@
 #include <queue>
 #include <map>
 #include <set>
-#include <stack>
 #include <string>
 #include <fstream>
 #include <unistd.h>
 #include <math.h>
 
-//Eigen library
-#include <Eigen/Sparse>
-#include <Eigen/IterativeLinearSolvers>
-#include <Eigen/SparseCholesky>
-
 //Boost library
 #include <boost/random/mersenne_twister.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/random.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
-#include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/heap/fibonacci_heap.hpp>
 
 #include <QObject>
 
@@ -138,7 +129,7 @@ public:
     void assignViscositiesWithMixedFluids();
 
     //Filling Network with fluids
-    void fillWithPhasePT(char phase, double saturation=1,int distribution=1, char otherPhase='o');
+    void fillWithPhasePT(PNM::phase phase, double saturation=1, int distribution=1, PNM::phase otherPhase=phase::oil);
 
     //Setting initial attributes
     void initialiseCapillaries();

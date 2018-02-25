@@ -31,11 +31,11 @@ void network::calculateRelativePermeabilities()
 
         for (pore* p: accessiblePores)
         {
-            if(p->getPhaseFlag()=='w')
+            if(p->getPhaseFlag()==phase::water)
             {
-                if(p->getWettabilityFlag()=='w')
+                if(p->getWettabilityFlag()==wettability::waterWet)
                     p->setConductivity(1e-200);
-                if(p->getWettabilityFlag()=='o')
+                if(p->getWettabilityFlag()==wettability::oilWet)
                 {
                     if(p->getOilLayerActivated() && p->getOilFilmVolume()>0 && p->getClusterOilFilm()->getSpanning())
                         p->setConductivity(max(1e-200,min(p->getOilFilmConductivity()/filmConductanceResistivity,p->getConductivity()/10.)));
@@ -43,9 +43,9 @@ void network::calculateRelativePermeabilities()
                         p->setConductivity(1e-200);
                 }
             }
-            if(p->getPhaseFlag()=='o' && !p->getClusterOilFilm()->getSpanning())
+            if(p->getPhaseFlag()==phase::oil && !p->getClusterOilFilm()->getSpanning())
                p->setConductivity(1e-200);
-            if(p->getPhaseFlag()=='o' && p->getClusterOilFilm()->getSpanning())
+            if(p->getPhaseFlag()==phase::oil && p->getClusterOilFilm()->getSpanning())
                 p->setConductivity(max(1e-200,p->getConductivity()*pow(p->getEffectiveVolume()/p->getVolume(),2)));
         }
 
@@ -67,7 +67,7 @@ void network::calculateRelativePermeabilities()
 
         for (pore* p: accessiblePores)
         {
-            if(p->getPhaseFlag()=='o')
+            if(p->getPhaseFlag()==phase::oil)
             {
                 {
                     if(p->getWaterCornerActivated() && p->getWaterFilmVolume()>0 && p->getClusterWaterFilm()->getSpanning())
@@ -76,9 +76,9 @@ void network::calculateRelativePermeabilities()
                         p->setConductivity(1e-200);
                 }
             }
-            if(p->getPhaseFlag()=='w' && !p->getClusterWaterFilm()->getSpanning())
+            if(p->getPhaseFlag()==phase::water && !p->getClusterWaterFilm()->getSpanning())
                p->setConductivity(1e-200);
-            if(p->getPhaseFlag()=='w' && p->getClusterWaterFilm()->getSpanning())
+            if(p->getPhaseFlag()==phase::water && p->getClusterWaterFilm()->getSpanning())
                p->setConductivity(max(1e-200,p->getConductivity()*pow(p->getEffectiveVolume()/p->getVolume(),2)));
 
         }
@@ -112,9 +112,9 @@ void network::calculateRelativePermeabilitiesUSS()
         assignConductivities();
         for (pore* p :accessiblePores)
         {
-            if(p->getPhaseFlag()=='w')
+            if(p->getPhaseFlag()==phase::water)
                p->setConductivity(1e-200);
-            if(p->getPhaseFlag()=='o' && !p->getClusterOil()->getSpanning())
+            if(p->getPhaseFlag()==phase::oil && !p->getClusterOil()->getSpanning())
                p->setConductivity(1e-200);
         }
         solvePressures();
@@ -131,9 +131,9 @@ void network::calculateRelativePermeabilitiesUSS()
         assignConductivities();
         for (pore* p :accessiblePores)
         {
-            if(p->getPhaseFlag()=='o')
+            if(p->getPhaseFlag()==phase::oil)
                p->setConductivity(1e-200);
-            if(p->getPhaseFlag()=='w' && !p->getClusterWater()->getSpanning())
+            if(p->getPhaseFlag()==phase::water && !p->getClusterWater()->getSpanning())
                p->setConductivity(1e-200);
         }
         solvePressures();

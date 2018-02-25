@@ -29,6 +29,7 @@
 using namespace std;
 
 class tools {
+
 public:
     static double pi(){return 3.14159265358979323846264;}
     static double g(){return 9.8;}

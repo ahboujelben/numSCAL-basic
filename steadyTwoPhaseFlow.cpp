@@ -61,18 +61,18 @@ void network::initializeTwoPhaseSimulationPT()
 
     if(twoPhaseSS)
     {
-        fillWithPhasePT('w');
+        fillWithPhasePT(phase::water);
     }
 
     else
     {
         if(waterDistribution!=4)
         {
-            fillWithPhasePT('w',initialWaterSaturation,waterDistribution,'o');
+            fillWithPhasePT(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
         }
         else
         {
-            fillWithPhasePT('w');
+            fillWithPhasePT(phase::water);
             primaryDrainagePT(initialWaterSaturation);
         }
 
@@ -136,7 +136,7 @@ void network::primaryDrainagePT(double finalSaturation)
     clusterWaterFlowingElements();
     set<element*> elementsToInvade;
     for(pore* e:accessiblePores)
-        if(e->getPhaseFlag()=='w' && e->getInlet())
+        if(e->getPhaseFlag()==phase::water && e->getInlet())
             elementsToInvade.insert(e);
 
     int loop(0);
@@ -165,14 +165,14 @@ void network::primaryDrainagePT(double finalSaturation)
 
             for(element* e : invadedElements)
             {
-                e->setPhaseFlag('o');
+                e->setPhaseFlag(phase::oil);
                 if(e->getWaterCanFlowViaFilm())
                     e->setWaterCornerActivated(true);
                 currentWaterVolume-=e->getVolume();
                 elementsToInvade.erase(e);
 
                 for(element* n:e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()=='w' && e->getClusterWaterFilm()->getOutlet())
+                    if(!n->getClosed() && n->getPhaseFlag()==phase::water && e->getClusterWaterFilm()->getOutlet())
                         elementsToInvade.insert(n);
 
                 stillMore=true;
@@ -206,7 +206,7 @@ void network::primaryDrainagePT(double finalSaturation)
         for(element* e: accessibleElements)
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
-            if(e->getPhaseFlag()=='o')
+            if(e->getPhaseFlag()==phase::oil)
             {
                 if(e->getWaterCornerActivated() && e->getClusterWaterFilm()->getOutlet())
                 {
@@ -219,7 +219,7 @@ void network::primaryDrainagePT(double finalSaturation)
                     waterVolume+=e->getWaterFilmVolume();
                 }
             }
-            if(e->getPhaseFlag()=='w')
+            if(e->getPhaseFlag()==phase::water)
                 waterVolume+=e->getVolume();
         }
         currentWaterVolume=waterVolume;
@@ -322,7 +322,7 @@ void network::spontaneousImbibitionPT()
     //Look for capillaries connected to water
     set<element*> elementsToInvade;
     for(element* e:accessibleElements)
-        if(e->getPhaseFlag()=='o' && e->getWettabilityFlag()=='w')
+        if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::waterWet)
             elementsToInvade.insert(e);
 
     int loop(0);
@@ -349,7 +349,7 @@ void network::spontaneousImbibitionPT()
 
         for(element* e:invadedElements)
         {
-            e->setPhaseFlag('w');
+            e->setPhaseFlag(phase::water);
             elementsToInvade.erase(e);
         }
 
@@ -370,7 +370,7 @@ void network::spontaneousImbibitionPT()
             {
                 bool connectedToInletWaterCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()=='w' && n->getClusterWaterFilm()->getInlet())
+                    if(!n->getClosed() && n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
                     {connectedToInletWaterCluster=true;break;}
 
                 //throat
@@ -389,7 +389,7 @@ void network::spontaneousImbibitionPT()
                     int totalNeighboorsNumber(0);
                     for(element* n : e->getNeighboors())
                     {
-                        if(!n->getClosed() && n->getPhaseFlag()=='o')
+                        if(!n->getClosed() && n->getPhaseFlag()==phase::oil)
                             oilNeighboorsNumber++;
 
                         if(!n->getClosed())
@@ -409,7 +409,7 @@ void network::spontaneousImbibitionPT()
 
             for(element* e:invadedElements)
             {
-                e->setPhaseFlag('w');
+                e->setPhaseFlag(phase::water);
                 elementsToInvade.erase(e);
                 stillMore=true;
             }
@@ -439,7 +439,7 @@ void network::spontaneousImbibitionPT()
         for(element* e: accessibleElements)
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
-            if(e->getPhaseFlag()=='o' && e->getWettabilityFlag()=='w')
+            if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::waterWet)
             {
                 if(e->getWaterCornerActivated() && e->getClusterWaterFilm()->getInlet() && e->getClusterOilFilm()->getOutlet())
                 {
@@ -451,11 +451,11 @@ void network::spontaneousImbibitionPT()
                 }
                 waterVolume+=e->getWaterFilmVolume();
             }
-            if(e->getPhaseFlag()=='o' && e->getWettabilityFlag()=='o')
+            if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::oilWet)
                 waterVolume+=e->getWaterFilmVolume();
-            if(e->getPhaseFlag()=='w' && e->getWettabilityFlag()=='o')
+            if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::oilWet)
                 waterVolume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
-            if(e->getPhaseFlag()=='w' && e->getWettabilityFlag()=='w')
+            if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::waterWet)
                 waterVolume+=e->getVolume();
         }
         currentWaterVolume=waterVolume;
@@ -537,7 +537,7 @@ void network::forcedWaterInjectionPT()
     set<element*> elementsToInvade;
     for(element* e: accessibleElements)
     {
-        if(e->getPhaseFlag()=='o')
+        if(e->getPhaseFlag()==phase::oil)
             elementsToInvade.insert(e);
     }
 
@@ -562,7 +562,7 @@ void network::forcedWaterInjectionPT()
             {
                 bool connectedToInletWaterCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()=='w' && n->getClusterWaterFilm()->getInlet())
+                    if(!n->getClosed() && n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
                     {connectedToInletWaterCluster=true;break;}
 
                 if((e->getType()==1 && (e->getInlet() || connectedToInletWaterCluster)) || (e->getType()==0 && connectedToInletWaterCluster))
@@ -578,7 +578,7 @@ void network::forcedWaterInjectionPT()
 
             for(element* e: invadedElements)
             {
-                e->setPhaseFlag('w');
+                e->setPhaseFlag(phase::water);
                 if(e->getOilCanFlowViaFilm())
                     e->setOilLayerActivated(true);
                 elementsToInvade.erase(e);
@@ -610,11 +610,11 @@ void network::forcedWaterInjectionPT()
         for(element* e: accessibleElements)
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
-            if(e->getPhaseFlag()=='o' && e->getWettabilityFlag()=='o')
+            if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::oilWet)
                 waterVolume+=e->getWaterFilmVolume();
-            if(e->getPhaseFlag()=='o' && e->getWettabilityFlag()=='w')
+            if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::waterWet)
                 waterVolume+=e->getWaterFilmVolume();
-            if(e->getPhaseFlag()=='w' && e->getWettabilityFlag()=='o')
+            if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::oilWet)
             {
                 if(e->getClusterWaterFilm()->getInlet() && e->getOilLayerActivated() && e->getClusterOilFilm()->getOutlet())
                 {
@@ -631,7 +631,7 @@ void network::forcedWaterInjectionPT()
                 }
                 waterVolume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
             }
-            if(e->getPhaseFlag()=='w' && e->getWettabilityFlag()=='w')
+            if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::waterWet)
                 waterVolume+=e->getVolume();
         }
         currentWaterVolume=waterVolume;
@@ -715,7 +715,7 @@ void network::spontaneousOilInvasionPT()
     clusterWaterFlowingElements();
     set<element*> elementsToInvade;
     for(element* e:accessibleElements)
-        if(e->getPhaseFlag()=='w' && e->getWettabilityFlag()=='o')
+        if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::oilWet)
             elementsToInvade.insert(e);
 
     int loop(0);
@@ -742,7 +742,7 @@ void network::spontaneousOilInvasionPT()
 
         for(element* e:invadedElements)
         {
-            e->setPhaseFlag('o');
+            e->setPhaseFlag(phase::oil);
             elementsToInvade.erase(e);
         }
 
@@ -763,7 +763,7 @@ void network::spontaneousOilInvasionPT()
             {
                 bool connectedToInletOilCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()=='o' && n->getClusterOilFilm()->getInlet())
+                    if(!n->getClosed() && n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
                     {connectedToInletOilCluster=true;break;}
 
                 //throat
@@ -782,7 +782,7 @@ void network::spontaneousOilInvasionPT()
                     int totalNeighboorsNumber(0);
                     for(element* n : e->getNeighboors())
                     {
-                        if(!n->getClosed() && n->getPhaseFlag()=='w')
+                        if(!n->getClosed() && n->getPhaseFlag()==phase::water)
                             waterNeighboorsNumber++;
 
                         if(!n->getClosed())
@@ -802,7 +802,7 @@ void network::spontaneousOilInvasionPT()
 
             for(element* e:invadedElements)
             {
-                e->setPhaseFlag('o');
+                e->setPhaseFlag(phase::oil);
                 elementsToInvade.erase(e);
                 stillMore=true;
             }
@@ -832,11 +832,11 @@ void network::spontaneousOilInvasionPT()
         for(element* e: accessibleElements)
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
-            if(e->getPhaseFlag()=='o' && e->getWettabilityFlag()=='o')
+            if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::oilWet)
                 waterVolume+=e->getWaterFilmVolume();
-            if(e->getPhaseFlag()=='o' && e->getWettabilityFlag()=='w')
+            if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::waterWet)
                 waterVolume+=e->getWaterFilmVolume();
-            if(e->getPhaseFlag()=='w' && e->getWettabilityFlag()=='o')
+            if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::oilWet)
             {
                 if(e->getOilLayerActivated() && e->getClusterOilFilm()->getInlet() && e->getClusterWaterFilm()->getOutlet() )
                 {
@@ -848,7 +848,7 @@ void network::spontaneousOilInvasionPT()
                 }
                 waterVolume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
             }
-            if(e->getPhaseFlag()=='w' && e->getWettabilityFlag()=='w')
+            if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::waterWet)
                 waterVolume+=e->getVolume();
             //cout<<currentPc<<" "<<currentRadius<<" "<<e->getEffectiveVolume()<<" "<<e->getWaterFilmVolume()<<endl;
         }
@@ -930,7 +930,7 @@ void network::secondaryOilDrainagePT()
     set<element*> elementsToInvade;
     for(element* e: accessibleElements)
     {
-        if(e->getPhaseFlag()=='w')
+        if(e->getPhaseFlag()==phase::water)
             elementsToInvade.insert(e);
     }
 
@@ -955,7 +955,7 @@ void network::secondaryOilDrainagePT()
             {
                 bool connectedToInletOilCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()=='o' && n->getClusterOilFilm()->getInlet())
+                    if(!n->getClosed() && n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
                     {connectedToInletOilCluster=true;break;}
 
                 if((e->getType()==1 && (e->getInlet() || connectedToInletOilCluster)) || (e->getType()==0 && connectedToInletOilCluster))
@@ -971,7 +971,7 @@ void network::secondaryOilDrainagePT()
 
             for(element* e: invadedElements)
             {
-                e->setPhaseFlag('o');
+                e->setPhaseFlag(phase::oil);
                 if(e->getWaterCanFlowViaFilm())
                     e->setWaterCornerActivated(true);
                 elementsToInvade.erase(e);
@@ -999,11 +999,11 @@ void network::secondaryOilDrainagePT()
         double waterVolume(0);
         for(element* e: accessibleElements)
         {
-            if(e->getPhaseFlag()=='o')
+            if(e->getPhaseFlag()==phase::oil)
                 waterVolume+=e->getWaterFilmVolume();
-            if(e->getPhaseFlag()=='w' && e->getWettabilityFlag()=='o')
+            if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::oilWet)
                 waterVolume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
-            if(e->getPhaseFlag()=='w' && e->getWettabilityFlag()=='w')
+            if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::waterWet)
                 waterVolume+=e->getVolume();
         }
         currentWaterVolume=waterVolume;

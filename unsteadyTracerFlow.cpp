@@ -37,9 +37,9 @@ void network::runTracerFlowPT()
         assignConductivities();
         for (pore* p :accessiblePores)
         {
-            if(p->getPhaseFlag()=='w')
+            if(p->getPhaseFlag()==phase::water)
                p->setConductivity(1e-200);
-            if((p->getPhaseFlag()=='o' && !p->getClusterOil()->getSpanning()) || (p->getNodeIn()!=0 && !p->getNodeIn()->getClosed() && p->getNodeIn()->getPhaseFlag()=='w') || (p->getNodeOut()!=0 && !p->getNodeOut()->getClosed() && p->getNodeOut()->getPhaseFlag()=='w'))
+            if((p->getPhaseFlag()==phase::oil && !p->getClusterOil()->getSpanning()) || (p->getNodeIn()!=0 && !p->getNodeIn()->getClosed() && p->getNodeIn()->getPhaseFlag()==phase::water) || (p->getNodeOut()!=0 && !p->getNodeOut()->getClosed() && p->getNodeOut()->getPhaseFlag()==phase::water))
                p->setConductivity(1e-200);
         }
 
@@ -73,13 +73,13 @@ void network::runTracerFlowPT()
 
         for(pore* p : accessiblePores)
         {
-            if(p->getPhaseFlag()=='o' && p->getClusterOil()->getSpanning())
+            if(p->getPhaseFlag()==phase::oil && p->getClusterOil()->getSpanning())
             {  
                 //Diffusion
                 double sumDiffusionSource=0;
                 for(element*e : p->getNeighboors())
                 {
-                    if(!e->getClosed() && e->getPhaseFlag()=='o')
+                    if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
                     {
                         double area=min(e->getVolume()/e->getLength(), p->getVolume()/p->getLength());
                         sumDiffusionSource+=tracerDiffusionCoef/area;
@@ -117,13 +117,13 @@ void network::runTracerFlowPT()
 
         for(node* p : accessibleNodes)
         {
-            if(p->getPhaseFlag()=='o' && p->getClusterOil()->getSpanning())
+            if(p->getPhaseFlag()==phase::oil && p->getClusterOil()->getSpanning())
             {
                 //Diffusion
                 double sumDiffusionSource=0;
                 for(element*e : p->getNeighboors())
                 {
-                    if(!e->getClosed() && e->getPhaseFlag()=='o')
+                    if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
                     {
                         double area=min(e->getVolume()/e->getLength(), p->getVolume()/p->getLength());
                         sumDiffusionSource+=tracerDiffusionCoef/area;
@@ -155,14 +155,14 @@ void network::runTracerFlowPT()
     {       
         for(node* n: accessibleNodes)
         {
-            if(n->getPhaseFlag()=='o'  && n->getClusterOil()->getSpanning())
+            if(n->getPhaseFlag()==phase::oil  && n->getClusterOil()->getSpanning())
             {
                 //Convection
                 double massIn=0;
                 for(unsigned j : n->getConnectedPores())
                 {
                     pore* p=getPore(j-1);
-                    if(!p->getClosed() && p->getPhaseFlag()=='o' && p->getConductivity()!=1e-200)
+                    if(!p->getClosed() && p->getPhaseFlag()==phase::oil && p->getConductivity()!=1e-200)
                     {
                         if((p->getNodeIn()==n && p->getFlow()>1e-24) || (p->getNodeOut()==n && p->getFlow()<-1e-24))
                         {
@@ -177,7 +177,7 @@ void network::runTracerFlowPT()
                 double sumDiffusionOut=0;
                 for(element*e : n->getNeighboors())
                 {
-                    if(!e->getClosed() && e->getPhaseFlag()=='o')
+                    if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
                     {
                         double area=min(e->getVolume()/e->getLength(), n->getVolume()/n->getLength());
                         sumDiffusionIn+=e->getConcentration()*tracerDiffusionCoef/area;
@@ -192,7 +192,7 @@ void network::runTracerFlowPT()
 
         for(pore* p : accessiblePores)
         { 
-            if(p->getPhaseFlag()=='o'  && p->getClusterOil()->getSpanning())
+            if(p->getPhaseFlag()==phase::oil  && p->getClusterOil()->getSpanning())
             {
                 double massIn=0;
                 double flowIn=0;
@@ -210,12 +210,12 @@ void network::runTracerFlowPT()
                 }
                 else
                 {
-                    if(p->getFlow()>1e-24 && p->getConductivity()!=1e-200 && p->getNodeOut()->getPhaseFlag()=='o')
+                    if(p->getFlow()>1e-24 && p->getConductivity()!=1e-200 && p->getNodeOut()->getPhaseFlag()==phase::oil)
                     {
                         massIn=p->getNodeOut()->getMassFlow();
                         flowIn=p->getNodeOut()->getFlow();
                     }
-                    if(p->getFlow()<1e-24 && p->getConductivity()!=1e-200 && p->getNodeIn()->getPhaseFlag()=='o')
+                    if(p->getFlow()<1e-24 && p->getConductivity()!=1e-200 && p->getNodeIn()->getPhaseFlag()==phase::oil)
                     {
                         massIn=p->getNodeIn()->getMassFlow();
                         flowIn=p->getNodeIn()->getFlow();
@@ -231,7 +231,7 @@ void network::runTracerFlowPT()
                 //Diffusion
                 for(element*e : p->getNeighboors())
                 {
-                    if(!e->getClosed() && e->getPhaseFlag()=='o')
+                    if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
                     {
                         double area=min(e->getVolume()/e->getLength(), p->getVolume()/p->getLength());
                         sumDiffusionIn+=e->getConcentration()*tracerDiffusionCoef/area;
@@ -247,7 +247,7 @@ void network::runTracerFlowPT()
         //Update concentrations
         for(element* e: accessibleElements)
         {
-            if(e->getPhaseFlag()=='o' && e->getClusterOil()->getSpanning())
+            if(e->getPhaseFlag()==phase::oil && e->getClusterOil()->getSpanning())
             {
                 e->setConcentration(newConcentration[e->getAbsId()]);
                 if(e->getConcentration()<-0.00001 || e->getConcentration()>1.0001)

@@ -132,8 +132,8 @@ void network::clusterWaterPores()
 {
     cluster* (pore::*getter)() const =&pore::getClusterWater;
     void (pore::*setter)(cluster*) =&pore::setClusterWater;
-    char (pore::*status)(void) const=&pore::getPhaseFlag;
-    clusterPores(getter,setter,status,'w',waterClusters);
+    phase (pore::*status)(void) const=&pore::getPhaseFlag;
+    clusterPores(getter,setter,status, phase::water,waterClusters);
 
     isWaterSpanning=false;
     for(unsigned i=0;i<waterClusters.size();++i)
@@ -151,8 +151,8 @@ void network::clusterOilPores()
 {
     cluster* (pore::*getter)() const =&pore::getClusterOil;
     void (pore::*setter)(cluster*) =&pore::setClusterOil;
-    char (pore::*status)(void) const=status=&pore::getPhaseFlag;
-    clusterPores(getter,setter,status,'o',oilClusters);
+    phase (pore::*status)(void) const=status=&pore::getPhaseFlag;
+    clusterPores(getter,setter,status,phase::oil,oilClusters);
 
     isOilSpanning=false;
     for(unsigned i=0;i<oilClusters.size();++i)
@@ -251,24 +251,24 @@ void network::clusterWaterWetElements()
 {
     cluster* (element::*getter)() const =&element::getClusterWaterWet;
     void (element::*setter)(cluster*) =&element::setClusterWaterWet;
-    char (element::*status)(void) const=&element::getWettabilityFlag;
-    clusterElements(getter,setter,status,'w',waterWetClusters);
+    wettability (element::*status)(void) const=&element::getWettabilityFlag;
+    clusterElements(getter,setter,status,wettability::waterWet,waterWetClusters);
 }
 
 void network::clusterOilWetElements()
 {
     cluster* (element::*getter)() const =&element::getClusterOilWet;
     void (element::*setter)(cluster*) =&element::setClusterOilWet;
-    char (element::*status)(void) const=&element::getWettabilityFlag;
-    clusterElements(getter,setter,status,'o',oilWetClusters);
+    wettability (element::*status)(void) const=&element::getWettabilityFlag;
+    clusterElements(getter,setter,status,wettability::oilWet,oilWetClusters);
 }
 
 void network::clusterWaterElements()
 {
     cluster* (element::*getter)() const =&element::getClusterWater;
     void (element::*setter)(cluster*) =&element::setClusterWater;
-    char (element::*status)(void) const=&element::getPhaseFlag;
-    clusterElements(getter,setter,status,'w',waterClusters);
+    phase (element::*status)(void) const=&element::getPhaseFlag;
+    clusterElements(getter,setter,status,phase::water,waterClusters);
     isWaterSpanning=false;
     for(unsigned i=0;i<waterClusters.size();++i)
     {
@@ -285,8 +285,8 @@ void network::clusterOilElements()
 {
     cluster* (element::*getter)() const =&element::getClusterOil;
     void (element::*setter)(cluster*) =&element::setClusterOil;
-    char (element::*status)(void) const=&element::getPhaseFlag;
-    clusterElements(getter,setter,status,'o',oilClusters);
+    phase (element::*status)(void) const=&element::getPhaseFlag;
+    clusterElements(getter,setter,status,phase::oil,oilClusters);
     isOilSpanning=false;
     for(unsigned i=0;i<oilClusters.size();++i)
     {
@@ -303,8 +303,8 @@ void network::clusterOilFlowingElements()
 {
     cluster* (element::*getter)() const =&element::getClusterOilFilm;
     void (element::*setter)(cluster*) =&element::setClusterOilFilm;
-    char (element::*status)(void) const=&element::getOilFlowing;
-    clusterElements(getter,setter,status,'t',oilFilmClusters);
+    bool (element::*status)(void) const=&element::getOilFlowing;
+    clusterElements(getter,setter,status,true,oilFilmClusters);
 
     isOilSpanning=false;
     for(unsigned i=0;i<oilFilmClusters.size();++i)
@@ -323,8 +323,8 @@ void network::clusterWaterFlowingElements()
 {
     cluster* (element::*getter)() const =&element::getClusterWaterFilm;
     void (element::*setter)(cluster*) =&element::setClusterWaterFilm;
-    char (element::*status)(void) const=&element::getWaterFlowing;
-    clusterElements(getter,setter,status,'t',waterFilmClusters);
+    bool (element::*status)(void) const=&element::getWaterFlowing;
+    clusterElements(getter,setter,status,true,waterFilmClusters);
 
     isWaterSpanning=false;
     for(unsigned i=0;i<waterFilmClusters.size();++i)
@@ -342,8 +342,8 @@ void network::clusterActiveElements()
 {
     cluster* (element::*getter)() const =&element::getClusterActive;
     void (element::*setter)(cluster*) =&element::setClusterActive;
-    char (element::*status)(void) const=&element::getActive;
-    clusterElements(getter,setter,status,'t',activeClusters);
+    bool (element::*status)(void) const=&element::getActive;
+    clusterElements(getter,setter,status,true,activeClusters);
 
     isNetworkSpanning=false;
     for(unsigned i=0;i<activeClusters.size();++i)

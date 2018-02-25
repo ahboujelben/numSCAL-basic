@@ -20,7 +20,7 @@ void network::assignFilmStability()
         if(p->getShapeFactor()<=sqrt(3)/36.)
         {
             double theta=p->getTheta();
-            if(p->getWettabilityFlag()=='w')
+            if(p->getWettabilityFlag()==wettability::waterWet)
             {
                 double sum(0);
                 if(theta<tools::pi()/2-p->getBeta1())
@@ -41,7 +41,7 @@ void network::assignFilmStability()
                 p->setFilmAreaCoefficient(sum);
             }
 
-            if(p->getWettabilityFlag()=='o')
+            if(p->getWettabilityFlag()==wettability::oilWet)
             {
                 double sum(0);
                 if(tools::pi()-theta<tools::pi()/2-p->getBeta1())
@@ -72,7 +72,7 @@ void network::assignFilmStability()
         if(p->getShapeFactor()<=sqrt(3)/36.)
         {
             double theta=p->getTheta();
-            if(p->getWettabilityFlag()=='w')
+            if(p->getWettabilityFlag()==wettability::waterWet)
             {
                 double sum(0);
                 if(theta<tools::pi()/2-p->getBeta1())
@@ -93,7 +93,7 @@ void network::assignFilmStability()
                 p->setFilmAreaCoefficient(sum);
             }
 
-            if(p->getWettabilityFlag()=='o')
+            if(p->getWettabilityFlag()==wettability::oilWet)
             {
                 double sum(0);
                 if(tools::pi()-theta<tools::pi()/2-p->getBeta1())

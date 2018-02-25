@@ -9,10 +9,14 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
-
-using namespace Eigen;
+//Eigen library
+#include <Eigen/Sparse>
+#include <Eigen/IterativeLinearSolvers>
+#include <Eigen/SparseCholesky>
 
 namespace PNM {
+
+using namespace Eigen;
 
 void network::solvePressuresForRegularModel()
 {

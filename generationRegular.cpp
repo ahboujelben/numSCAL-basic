@@ -228,15 +228,9 @@ void network::applyCoordinationNumber()
         {
             pore* zIn=getPoreZ(i,j,0);
             pore* zOut=getPoreZ(i,j,Nz);
-            zIn->setPhaseFlag('c');
-            zIn->setWettabilityFlag('c');
             zIn->setClosed(true);
-            zIn->setConductivity(1e-200);
             zIn->getNodeIn()->setConnectionNumber(zIn->getNodeIn()->getConnectionNumber()-1);
-            zOut->setPhaseFlag('c');
-            zOut->setWettabilityFlag('c');
             zOut->setClosed(true);
-            zOut->setConductivity(1e-200);
             zOut->getNodeOut()->setConnectionNumber(zOut->getNodeOut()->getConnectionNumber()-1);
         }
     for (int i = 0; i < Nx; ++i)
@@ -244,15 +238,9 @@ void network::applyCoordinationNumber()
         {
             pore* yIn=getPoreY(i,0,k);
             pore* yOut=getPoreY(i,Ny,k);
-            yIn->setPhaseFlag('c');
-            yIn->setWettabilityFlag('c');
             yIn->setClosed(true);
-            yIn->setConductivity(1e-200);
             yIn->getNodeIn()->setConnectionNumber(yIn->getNodeIn()->getConnectionNumber()-1);
-            yOut->setPhaseFlag('c');
-            yOut->setWettabilityFlag('c');
             yOut->setClosed(true);
-            yOut->setConductivity(1e-200);
             yOut->getNodeOut()->setConnectionNumber(yOut->getNodeOut()->getConnectionNumber()-1);
         }
 
@@ -269,9 +257,6 @@ void network::applyCoordinationNumber()
             if(!p->getClosed())
             {
                 p->setClosed(true);
-                p->setPhaseFlag('c');
-                p->setWettabilityFlag('c');
-                p->setConductivity(1e-200);
                 node* in=p->getNodeIn();
                 node* out=p->getNodeOut();
                 if(in!=0)in->setConnectionNumber(in->getConnectionNumber()-1);
@@ -289,9 +274,6 @@ void network::applyCoordinationNumber()
             if(!p->getClosed() && !p->getClusterOil()->getSpanning())
             {
                 p->setClosed(true);
-                p->setPhaseFlag('c');
-                p->setWettabilityFlag('c');
-                p->setConductivity(1e-200);
                 node* in=p->getNodeIn();
                 node* out=p->getNodeOut();
                 if(in!=0)in->setConnectionNumber(in->getConnectionNumber()-1);
@@ -306,8 +288,6 @@ void network::applyCoordinationNumber()
             if(n->getConnectionNumber()==0)
             {
                 n->setClosed(true);
-                n->setPhaseFlag('c');
-                n->setWettabilityFlag('c');
             }
         }
 
@@ -554,7 +534,7 @@ void network::assignWettability()
             if(!e->getClosed())
             {
                 e->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                e->setWettabilityFlag('w');
+                e->setWettabilityFlag(wettability::waterWet);
             }
         }
     }
@@ -567,7 +547,7 @@ void network::assignWettability()
             if(!e->getClosed())
             {
                 e->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                e->setWettabilityFlag('o');
+                e->setWettabilityFlag(wettability::oilWet);
             }
         }
     }
@@ -580,7 +560,7 @@ void network::assignWettability()
             if(!p->getClosed())
             {
                 p->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                p->setWettabilityFlag('w');
+                p->setWettabilityFlag(wettability::waterWet);
             }
         }
 
@@ -589,10 +569,10 @@ void network::assignWettability()
         {
             int index=uniform_int(0,totalNodes-1);
             node* p=getNode(index);
-            if(!p->getClosed() && p->getWettabilityFlag()!='o')
+            if(!p->getClosed() && p->getWettabilityFlag()!=wettability::oilWet)
                 {
                     p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                    p->setWettabilityFlag('o');
+                    p->setWettabilityFlag(wettability::oilWet);
                     oilWetSoFar++;
                 }
         }
@@ -645,7 +625,7 @@ void network::assignWettability()
                 if(!p->getClosed())
                 {
                     p->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                    p->setWettabilityFlag('w');
+                    p->setWettabilityFlag(wettability::waterWet);
                 }
             }
 
@@ -659,10 +639,10 @@ void network::assignWettability()
                 for (int i = 0; i < totalNodes; ++i)
                 {
                     element* p=getNode(i);
-                    if(!p->getClosed() && p->getRadius()<=currentRadius && p->getWettabilityFlag()!='o')
+                    if(!p->getClosed() && p->getRadius()<=currentRadius && p->getWettabilityFlag()!=wettability::oilWet)
                     {
                         p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                        p->setWettabilityFlag('o');
+                        p->setWettabilityFlag(wettability::oilWet);
                         oilWetSoFar++;
                     }
                 }
@@ -716,7 +696,7 @@ void network::assignWettability()
                 if(!p->getClosed())
                 {
                     p->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                    p->setWettabilityFlag('w');
+                    p->setWettabilityFlag(wettability::waterWet);
                 }
             }
 
@@ -730,10 +710,10 @@ void network::assignWettability()
                 for (int i = 0; i < totalNodes; ++i)
                 {
                     element* p=getNode(i);
-                    if(!p->getClosed() && p->getRadius()>=currentRadius && p->getWettabilityFlag()!='o')
+                    if(!p->getClosed() && p->getRadius()>=currentRadius && p->getWettabilityFlag()!=wettability::oilWet)
                     {
                         p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                        p->setWettabilityFlag('o');
+                        p->setWettabilityFlag(wettability::oilWet);
                         oilWetSoFar++;
                     }
                 }
@@ -800,7 +780,7 @@ void network::assignWWWettabilityPT(double theta)
         if(!e->getClosed())
         {
             e->setTheta(theta);
-            e->setWettabilityFlag('w');
+            e->setWettabilityFlag(wettability::waterWet);
         }
     }
     clusterWaterWetElements();
@@ -812,16 +792,16 @@ void network::restoreWettabilityPT()
     for(int i=0;i<totalElements;++i)
     {
         element* e=getElement(i);
-        if(!e->getClosed() && e->getPhaseFlag()=='o')
+        if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
         {
             e->setTheta(wettabiltyThetaBackup[e]);
             if(e->getTheta()<tools::pi()/2)
             {
-                e->setWettabilityFlag('w');
+                e->setWettabilityFlag(wettability::waterWet);
             }
             else
             {
-                e->setWettabilityFlag('o');
+                e->setWettabilityFlag(wettability::oilWet);
                 e->setWaterCornerActivated(false);
             }
         }
