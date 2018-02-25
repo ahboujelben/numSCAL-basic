@@ -16,8 +16,8 @@
 
 namespace PNM {
 
-enum class phase{oil, water, temp, invalid};
-enum class wettability{oilWet, waterWet, invalid};
+enum class phase {oil, water, temp, invalid};
+enum class wettability {oilWet, waterWet, invalid};
 
 class element
 {

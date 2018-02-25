@@ -9,6 +9,10 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+//Eigen library
+#include <Eigen/Sparse>
+#include <Eigen/IterativeLinearSolvers>
+#include <Eigen/SparseCholesky>
 
 namespace PNM {
 
