@@ -459,24 +459,6 @@ void network::solvePressureWithoutCounterImbibitionPT()
         if(cancel)break;
         //file<<endl;
     }
-}
-
-void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<node *> &nodesToCheck,bool includeWater)
-{
-    timeStep=1e50;
-    for(pore* p : poresToCheck)
-    {
-        if(p->getActive() && abs(p->getFlow())>1e-24)
-        {
-            double step=p->getVolume()*p->getOilFraction()/abs(p->getFlow());
-            if(step<timeStep)
-            {
-                timeStep=step;
-            }
-        }
-    }
-
-    //cout<<"timestep after pores"<<timeStep<< endl;
 
     for(node* n : accessibleNodes)
     {
@@ -505,6 +487,22 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
             }
         }
     }
+}
+
+void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<node *> &nodesToCheck,bool includeWater)
+{
+    timeStep=1e50;
+    for(pore* p : poresToCheck)
+    {
+        if(p->getActive() && abs(p->getFlow())>1e-24)
+        {
+            double step=p->getVolume()*p->getOilFraction()/abs(p->getFlow());
+            if(step<timeStep)
+            {
+                timeStep=step;
+            }
+        }
+    }
 
     for(node* p : nodesToCheck)
     {
@@ -518,9 +516,7 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
         }
     }
 
-    //cout<<"timestep after nodes"<<timeStep<< endl;
-
-    if(includeWater)
+    if(includeWater) //if water is forming a spanning cluster
     {
         for(pore* p: accessiblePores)
         {
@@ -546,8 +542,6 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
             }
         }
     }
-
-    //cout<<"timestep after spann"<<timeStep<< endl;
 
     if(timeStep==1e50)
     {
