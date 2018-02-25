@@ -17,10 +17,10 @@ element::element()
     radius=0;
     length=0;
     theta=0;
-    wettabilityFlag='c';
-    viscosity=1;
-    phaseFlag='o';
+    wettabilityFlag=wettability::oilWet;
+    phaseFlag=phase::oil;
     volume=0;
+    viscosity=1;
     conductivity=0;
     concentration=0;
     flow=0;
@@ -105,21 +105,21 @@ void element::setTheta(double value)
 {
     theta = value;
 }
-char element::getWettabilityFlag() const
+wettability element::getWettabilityFlag() const
 {
     return wettabilityFlag;
 }
 
-void element::setWettabilityFlag(char value)
+void element::setWettabilityFlag(wettability value)
 {
     wettabilityFlag = value;
 }
-char element::getPhaseFlag() const
+phase element::getPhaseFlag() const
 {
     return phaseFlag;
 }
 
-void element::setPhaseFlag(char value)
+void element::setPhaseFlag(phase value)
 {
     phaseFlag = value;
 }
@@ -207,9 +207,9 @@ void element::setClosed(bool value)
     if(value)
     {
         active = false;
+        wettabilityFlag=wettability::invalid;
+        phaseFlag=phase::invalid;
         conductivity=1e-200;
-        wettabilityFlag='c';
-        phaseFlag='c';
     }
 }
 
@@ -479,20 +479,20 @@ void element::setWaterFilmConductivity(double value)
 
 // Defined methods
 
-char element::getOilFlowing() const
+bool element::getOilFlowing() const
 {
-    if(!closed && (phaseFlag=='o' || oilLayerActivated))
-        return 't';
+    if(!closed && (phaseFlag==phase::oil || oilLayerActivated))
+        return true;
     else
-        return 'f';
+        return false;
 }
 
-char element::getWaterFlowing() const
+bool element::getWaterFlowing() const
 {
-    if(!closed && (phaseFlag=='w' || waterCornerActivated))
-        return 't';
+    if(!closed && (phaseFlag==phase::water || waterCornerActivated))
+        return true;
     else
-        return 'f';
+        return false;
 }
 
 void element::assignViscosity(double oilViscosity, double waterViscosity)

@@ -296,9 +296,6 @@ void network::cleanExtractedNetwork()
             if(nodeIn!=0)nodeIn->setConnectionNumber(0);
             if(nodeOut!=0)nodeOut->setConnectionNumber(0);
             p->setClosed(true);
-            p->setPhaseFlag('c');
-            p->setWettabilityFlag('c');
-            p->setConductivity(1e-100);
         }
     }
 
@@ -309,8 +306,6 @@ void network::cleanExtractedNetwork()
         if(n->getConnectionNumber()==0)
         {
             n->setClosed(true);
-            n->setPhaseFlag('c');
-            n->setWettabilityFlag('c');
         }
     }
 

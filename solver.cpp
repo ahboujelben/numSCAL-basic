@@ -10,9 +10,9 @@
 
 #include "network.h"
 
-using namespace Eigen;
-
 namespace PNM {
+
+using namespace Eigen;
 
 void network::solvePressuresForRegularModel()
 {

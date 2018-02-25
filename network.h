@@ -138,7 +138,7 @@ public:
     void assignViscositiesWithMixedFluids();
 
     //Filling Network with fluids
-    void fillWithPhasePT(char phase, double saturation=1,int distribution=1, char otherPhase='o');
+    void fillWithPhasePT(PNM::phase phase, double saturation=1, int distribution=1, PNM::phase otherPhase=phase::oil);
 
     //Setting initial attributes
     void initialiseCapillaries();

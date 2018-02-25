@@ -16,6 +16,9 @@
 
 namespace PNM {
 
+enum class phase{oil, water, temp, invalid};
+enum class wettability{oilWet, waterWet, invalid};
+
 class element
 {
 public:
@@ -46,11 +49,11 @@ public:
     double getTheta() const;
     void setTheta(double value);
 
-    char getWettabilityFlag() const;
-    void setWettabilityFlag(char value);
+    wettability getWettabilityFlag() const;
+    void setWettabilityFlag(wettability value);
 
-    char getPhaseFlag() const;
-    void setPhaseFlag(char value);
+    phase getPhaseFlag() const;
+    void setPhaseFlag(phase value);
 
     std::vector<element *> getNeighboors() const;
     void setNeighboors(const std::vector<element *> &value);
@@ -157,8 +160,8 @@ public:
     double getWaterFilmConductivity() const;
     void setWaterFilmConductivity(double value);
 
-    char getOilFlowing() const;
-    char getWaterFlowing() const;
+    bool getOilFlowing() const;
+    bool getWaterFlowing() const;
 
     double getMassFlow() const;
     void setMassFlow(double value);
@@ -179,8 +182,8 @@ protected:
     double shapeFactorConstant; // capillary shape factor constant (dimensionless)
     double conductivity; // capillary conductivity (SI)
     double theta; // capillary oil-water contact angle
-    char wettabilityFlag; // capillary wettability
-    char phaseFlag; // capillary occupying phase
+    wettability wettabilityFlag; // capillary wettability
+    phase phaseFlag; // capillary occupying phase
     double viscosity; // capillary average viscosity (SI)
     double concentration; // capillary concentration in tracer (between 0 and 1)
     bool inlet; // a flag whether the capillary is connected to the inlet boundary
