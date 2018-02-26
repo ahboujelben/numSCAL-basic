@@ -713,7 +713,7 @@ public slots:
                     pore* p=net->getPore(value-1);
                     {
                         file>>phase>>concentration;
-                        auto phaseFlag=phase=='o'?phase::oil:phase::water;
+                        PNM::phase phaseFlag=phase=='o'?PNM::phase::oil:PNM::phase::water;
                         p->setPhaseFlag(phaseFlag);
                         p->setConcentration(concentration);
                     }
@@ -732,7 +732,7 @@ public slots:
                             node* p=net->getNode(value-1);
                             {
                                 file>>phase>>concentration;
-                                auto phaseFlag=phase=='o'?phase::oil:phase::water;
+                                PNM::phase phaseFlag=phase=='o'?PNM::phase::oil:PNM::phase::water;
                                 p->setPhaseFlag(phaseFlag);
                                 p->setConcentration(concentration);
                             }
@@ -779,7 +779,7 @@ public slots:
                     pore* p=net->getPore(value-1);
                     {
                         file>>phase>>concentration;
-                        auto phaseFlag=phase=='o'?phase::oil:phase::water;
+                        PNM::phase phaseFlag=phase=='o'?PNM::phase::oil:PNM::phase::water;
                         p->setPhaseFlag(phaseFlag);
                         p->setConcentration(concentration);
                     }
@@ -797,7 +797,7 @@ public slots:
                             node* p=net->getNode(value-1);
                             {
                                 file>>phase>>concentration;
-                                auto phaseFlag=phase=='o'?phase::oil:phase::water;
+                                PNM::phase phaseFlag=phase=='o'?PNM::phase::oil:PNM::phase::water;
                                 p->setPhaseFlag(phaseFlag);
                                 p->setConcentration(concentration);
                             }
