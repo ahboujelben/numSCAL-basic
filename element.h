@@ -18,6 +18,7 @@ namespace PNM {
 
 enum class phase {oil, water, temp, invalid};
 enum class wettability {oilWet, waterWet, invalid};
+enum class capillaryType {throat, poreBody};
 
 class element
 {
@@ -25,152 +26,155 @@ public:
     element();
     virtual ~element() {}
 
-    int getId() const;
-    void setId(int value);
+    int getId() const {return id;}
+    void setId(int value) {id = value;}
 
-    int getAbsId() const;
-    void setAbsId(int value);
+    int getAbsId() const {return absId;}
+    void setAbsId(int value) {absId=value;}
 
-    double getRadius() const;
-    void setRadius(double value);
+    capillaryType getType() const {return type;}
 
-    double getLength() const;
-    void setLength(double value);
-
-    double getVolume() const;
-    void setVolume(double value);
-
-    double getShapeFactor() const;
-    void setShapeFactor(double value);
-
-    double getConductivity() const;
-    void setConductivity(double value);
-
-    double getTheta() const;
-    void setTheta(double value);
-
-    wettability getWettabilityFlag() const;
-    void setWettabilityFlag(wettability value);
-
-    phase getPhaseFlag() const;
-    void setPhaseFlag(phase value);
-
-    std::vector<element *> getNeighboors() const;
-    void setNeighboors(const std::vector<element *> &value);
-
-    int getClusterTemp() const;
-    void setClusterTemp(int value);
-
-    cluster *getClusterWaterWet() const;
-    void setClusterWaterWet(cluster *value);
-
-    cluster *getClusterOilWet() const;
-    void setClusterOilWet(cluster *value);
-
-    cluster *getClusterWater() const;
-    void setClusterWater(cluster *value);
-
-    cluster *getClusterOil() const;
-    void setClusterOil(cluster *value);
-
-    cluster *getClusterActive() const;
-    void setClusterActive(cluster *value);
-
-    cluster *getClusterWaterFilm() const;
-    void setClusterWaterFilm(cluster *value);
-
-    cluster *getClusterOilFilm() const;
-    void setClusterOilFilm(cluster *value);
-
-    bool getWaterTrapped() const;
-    void setWaterTrapped(bool value);
-
-    bool getOilTrapped() const;
-    void setOilTrapped(bool value);
-
-    bool getClosed() const;
+    bool getClosed() const {return closed;}
     void setClosed(bool value);
 
-    bool getInlet() const;
-    void setInlet(bool value);
+    bool getActive() const {return active;}
+    void setActive(bool value) {active=value;}
 
-    bool getOutlet() const;
-    void setOutlet(bool value);
+    bool getInlet() const {return inlet;}
+    void setInlet(bool value) {inlet=value;}
 
-    int getType() const;
-    void setType(int value);
+    bool getOutlet() const {return outlet;}
+    void setOutlet(bool value) {outlet=value;}
 
-    bool getActive() const;
-    void setActive(bool value);
+    double getRadius() const {return radius;}
+    void setRadius(double value) {radius=value;}
 
-    double getConcentration() const;
-    void setConcentration(double value);
+    double getLength() const {return length;}
+    void setLength(double value) {length=value;}
 
-    double getViscosity() const;
-    void setViscosity(double value);
+    double getVolume() const {return volume;}
+    void setVolume(double value) {volume=value;}
 
-    double getShapeFactorConstant() const;
-    void setShapeFactorConstant(double value);
+    double getShapeFactor() const {return shapeFactor;}
+    void setShapeFactor(double value) {shapeFactor=value;}
 
-    double getOilFraction() const;
-    void setOilFraction(double value);
+    double getShapeFactorConstant() const {return shapeFactorConstant;}
+    void setShapeFactorConstant(double value) {shapeFactorConstant=value;}
 
-    double getWaterFraction() const;
-    void setWaterFraction(double value);
+    double getConductivity() const {return conductivity;}
+    void setConductivity(double value) {conductivity=value;}
 
-    double getFlow() const;
-    void setFlow(double value);
+    double getTheta() const {return theta;}
+    void setTheta(double value) {theta=value;}
 
-    double getBeta1() const;
-    void setBeta1(double value);
+    wettability getWettabilityFlag() const {return wettabilityFlag;}
+    void setWettabilityFlag(wettability value) {wettabilityFlag=value;}
 
-    double getBeta2() const;
-    void setBeta2(double value);
+    phase getPhaseFlag() const {return phaseFlag;}
+    void setPhaseFlag(phase value) {phaseFlag=value;}
 
-    double getBeta3() const;
-    void setBeta3(double value);
+    std::vector<element *> getNeighboors() const {return neighboors;}
+    void setNeighboors(const std::vector<element *> &value) {neighboors=value;}
 
-    double getEffectiveVolume() const;
-    void setEffectiveVolume(double value);
+    double getConcentration() const {return concentration;}
+    void setConcentration(double value) {concentration=value;}
 
-    double getOilFilmVolume() const;
-    void setOilFilmVolume(double value);
+    double getViscosity() const {return viscosity;}
+    void setViscosity(double value) {viscosity=value;}
 
-    double getWaterFilmVolume() const;
-    void setWaterFilmVolume(double value);
+    double getOilFraction() const {return oilFraction;}
+    void setOilFraction(double value) {oilFraction=value;}
 
-    double getFilmAreaCoefficient() const;
-    void setFilmAreaCoefficient(double value);
+    double getWaterFraction() const {return waterFraction;}
+    void setWaterFraction(double value) {waterFraction=value;}
 
-    bool getOilCanFlowViaFilm() const;
-    void setOilCanFlowViaFilm(bool value);
+    bool getWaterTrapped() const {return waterTrapped;}
+    void setWaterTrapped(bool value) {waterTrapped=value;}
 
-    bool getWaterCanFlowViaFilm() const;
-    void setWaterCanFlowViaFilm(bool value);
+    bool getOilTrapped() const {return oilTrapped;}
+    void setOilTrapped(bool value) {oilTrapped=value;}
 
-    bool getWaterCornerActivated() const;
-    void setWaterCornerActivated(bool value);
+    double getFlow() const {return flow;}
+    void setFlow(double value) {flow=value;}
 
-    bool getOilLayerActivated() const;
-    void setOilLayerActivated(bool value);
+    double getMassFlow() const {return massFlow;}
+    void setMassFlow(double value) {massFlow=value;}
 
-    double getOilFilmConductivity() const;
-    void setOilFilmConductivity(double value);
+    double getBeta1() const {return beta1;}
+    void setBeta1(double value) {beta1=value;}
 
-    double getWaterFilmConductivity() const;
-    void setWaterFilmConductivity(double value);
+    double getBeta2() const {return beta2;}
+    void setBeta2(double value) {beta2=value;}
 
-    bool getOilFlowing() const;
-    bool getWaterFlowing() const;
+    double getBeta3() const {return beta3;}
+    void setBeta3(double value) {beta3=value;}
 
-    double getMassFlow() const;
-    void setMassFlow(double value);
+    double getEffectiveVolume() const {return effectiveVolume;}
+    void setEffectiveVolume(double value) {effectiveVolume=value;}
+
+    double getOilFilmVolume() const {return oilFilmVolume;}
+    void setOilFilmVolume(double value) {oilFilmVolume=value;}
+
+    double getWaterFilmVolume() const {return waterFilmVolume;}
+    void setWaterFilmVolume(double value) {waterFilmVolume=value;}
+
+    double getFilmAreaCoefficient() const {return filmAreaCoefficient;}
+    void setFilmAreaCoefficient(double value) {filmAreaCoefficient=value;}
+
+    bool getOilCanFlowViaFilm() const {return oilCanFlowViaFilm;}
+    void setOilCanFlowViaFilm(bool value) {oilCanFlowViaFilm=value;}
+
+    bool getWaterCanFlowViaFilm() const {return waterCanFlowViaFilm;}
+    void setWaterCanFlowViaFilm(bool value) {waterCanFlowViaFilm=value;}
+
+    bool getWaterCornerActivated() const {return waterCornerActivated;}
+    void setWaterCornerActivated(bool value) {waterCornerActivated=value;}
+
+    bool getOilLayerActivated() const {return oilLayerActivated;}
+    void setOilLayerActivated(bool value) {oilLayerActivated=value;}
+
+    bool getWaterConductor() const {return waterConductor;}
+    void setWaterConductor(bool value) {waterConductor=value;}
+
+    bool getOilConductor() const {return oilConductor;}
+    void setOilConductor(bool value) {oilConductor=value;}
+
+    double getOilFilmConductivity() const {return oilFilmConductivity;}
+    void setOilFilmConductivity(double value) {oilFilmConductivity=value;}
+
+    double getWaterFilmConductivity() const {return waterFilmConductivity;}
+    void setWaterFilmConductivity(double value) {waterFilmConductivity=value;}
+
+    // clustering methods
+    int getClusterTemp() const {return clusterTemp;}
+    void setClusterTemp(int value) {clusterTemp=value;}
+
+    cluster *getClusterActive() const {return clusterActive;}
+    void setClusterActive(cluster *value) {clusterActive=value;}
+
+    cluster *getClusterWaterWet() const {return clusterWaterWet;}
+    void setClusterWaterWet(cluster *value) {clusterWaterWet=value;}
+
+    cluster *getClusterOilWet() const {return clusterOilWet;}
+    void setClusterOilWet(cluster *value) {clusterOilWet=value;}
+
+    cluster *getClusterWater() const {return clusterWater;}
+    void setClusterWater(cluster *value) {clusterWater=value;}
+
+    cluster *getClusterOil() const {return clusterOil;}
+    void setClusterOil(cluster *value) {clusterOil=value;}
+
+    cluster *getClusterWaterFilm() const {return clusterWaterFilm;}
+    void setClusterWaterFilm(cluster *value) {clusterWaterFilm=value;}
+
+    cluster *getClusterOilFilm() const {return clusterOilFilm;}
+    void setClusterOilFilm(cluster *value) {clusterOilFilm=value;}
 
     // defined methods
     void assignViscosity(double oilViscosity, double waterViscosity);
 
 protected:
-    int type;
+    capillaryType type; // type of the capillary element: pore (throat) or pore body (node)
 
     //Basic attributes
     int id; // capillary relative ID: from 1 to totalPores (if pore); from 1 to totalNodes (if node)
@@ -207,6 +211,7 @@ protected:
     double beta1,beta2,beta3; // half angles in the capillary
     bool oilCanFlowViaFilm, waterCanFlowViaFilm; // flags whether a fluid can flow via layer/film
     bool oilLayerActivated, waterCornerActivated; // flags whether a fluid can flow via layer/film
+    bool oilConductor, waterConductor; // flags whether a fluid can flow through the capillary - through bulk OR film
     double oilFilmVolume, waterFilmVolume; // layer/film volumes
     double oilFilmConductivity, waterFilmConductivity; // layer/film conductivity
     double effectiveVolume; // bulk volume (volume - (film+layer) volume)

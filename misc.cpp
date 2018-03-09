@@ -13,270 +13,159 @@ namespace PNM {
 
 void network::assignViscositiesWithMixedFluids()
 {
-    for (element* e : accessibleElements)
-         e->setViscosity(oilViscosity*e->getOilFraction()+waterViscosity*e->getWaterFraction());
+    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+        e->setViscosity(oilViscosity*e->getOilFraction()+waterViscosity*e->getWaterFraction());
+    });
 }
 
 void network::assignViscosities()
 {
-    for (element* e : accessibleElements)
-    {
-        switch(e->getPhaseFlag())
-        {
-            case phase::oil:
-            {
-                e->setViscosity(oilViscosity);
-                break;
-            }
-            case phase::water:
-            {
-                e->setViscosity(waterViscosity);
-                break;
-            }
+    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+        if(e->getPhaseFlag()==phase::oil){
+            e->setViscosity(oilViscosity);
         }
-    }
+        if(e->getPhaseFlag()==phase::water){
+            e->setViscosity(waterViscosity);
+        }
+    });
 }
 
-void network::fillWithPhasePT(PNM::phase phase, double saturation, int distribution, PNM::phase otherPhase)
+void network::fillWithPhase(PNM::phase phase, double saturation, int distribution, PNM::phase otherPhase)
 {
-    for(int i=0;i<totalElements;++i)
-    {
-        element* p=getElement(i);
-        if(!p->getClosed())
-            p->setPhaseFlag(otherPhase);
+    if(saturation==1){
+        for_each(accessibleElements.begin(),accessibleElements.end(),[this,phase](element* e){
+            e->setPhaseFlag(phase);
+        });
+        return;
+    }
+
+    for_each(accessibleElements.begin(),accessibleElements.end(),[this,otherPhase](element* e){
+        e->setPhaseFlag(otherPhase);
+    });
+
+    if(saturation==0){
+        return;
     }
 
     if(distribution==1)
     {
-        if(saturation>0 && saturation<1)
+        auto  actualWaterVolume(0.0);
+        while((actualWaterVolume/totalNodesVolume)<saturation)
         {
-            double  actualWaterVolume=0;
-            while((actualWaterVolume/totalNodesVolume)<saturation)
-            {
-                int index=uniform_int(0,totalNodes-1);
-                node* p=getNode(index);
-                if(!p->getClosed() && p->getPhaseFlag()!=phase)
-                {
-                    p->setPhaseFlag(phase);
-                    actualWaterVolume+=p->getVolume();
-                }
+            auto index=uniform_int(0,totalElements-1);
+            auto p=getElement(index);
+            if(!p->getClosed() && p->getPhaseFlag()!=phase){
+                p->setPhaseFlag(phase);
+                actualWaterVolume+=p->getVolume();
             }
         }
+        return;
     }
 
     if(distribution==2)
     {
-        if(saturation>0 && saturation<1)
-        {
-            double  actualWaterVolume=0;
-            double currentRadius=minNodeRadius;
-            double radiusStep=(maxNodeRadius-minNodeRadius)/100;
+        auto workingElements=accessibleElements;
 
-            while((actualWaterVolume/totalNodesVolume)<saturation)
-            {
-                currentRadius+=radiusStep;
-                for (int i = 0; i < totalNodes; ++i)
-                {
-                    node* p=getNode(i);
-                    if(!p->getClosed() && p->getRadius()<=currentRadius && p->getPhaseFlag()!=phase)
-                    {
-                        p->setPhaseFlag(phase);
-                        actualWaterVolume+=p->getVolume();
-                    }
-                }
-            }
+        sort(workingElements.begin(),workingElements.end(), [this](element* e1, element* e2){
+            return e1->getRadius()>e2->getRadius();
+        });
+
+        auto  actualWaterVolume(0.0);
+
+        while(actualWaterVolume/totalElementsVolume<saturation){
+            auto biggestElement=workingElements.back();
+            biggestElement->setPhaseFlag(phase);
+            actualWaterVolume+=biggestElement->getVolume();
+            workingElements.pop_back();
         }
     }
 
     if(distribution==3)
     {
-        if(saturation>0 && saturation<1)
-        {
-            double actualWaterVolume=0;
-            double currentRadius=maxNodeRadius;
-            double radiusStep=(maxNodeRadius-minNodeRadius)/100;
+        auto workingElements=accessibleElements;
 
-            while((actualWaterVolume/totalNodesVolume)<saturation)
-            {
-                currentRadius-=radiusStep;
-                for (int i = 0; i < totalNodes; ++i)
-                {
-                    node* p=getNode(i);
-                    if(!p->getClosed() && p->getRadius()>=currentRadius && p->getPhaseFlag()!=phase)
-                    {
-                        p->setPhaseFlag(phase);
-                        actualWaterVolume+=p->getVolume();
-                    }
-                }
-            }
+        sort(workingElements.begin(),workingElements.end(), [this](element* e1, element* e2){
+            return e1->getRadius()<e2->getRadius();
+        });
+
+        auto  actualWaterVolume(0.0);
+
+        while(actualWaterVolume/totalElementsVolume<saturation){
+            auto smallestElement=workingElements.back();
+            smallestElement->setPhaseFlag(phase);
+            actualWaterVolume+=smallestElement->getVolume();
+            workingElements.pop_back();
         }
     }
-
-    if(saturation==1)
-    {
-        for(int i=0;i<totalElements;++i)
-        {
-            element* e=getElement(i);
-            if(!e->getClosed())
-                e->setPhaseFlag(phase);
-        }
-    }
-
-    if(saturation!=0 && saturation!=1)
-        for (int i = 0; i < totalPores; ++i)
-        {
-            pore* p=getPore(i);
-            if(!p->getClosed())
-            {
-                if(p->getNeighboors().size()==1)
-                {
-                    element* connectedNode=p->getNeighboors()[0];
-                    p->setPhaseFlag(connectedNode->getPhaseFlag());
-                }
-                else
-                {
-                    element* connectedNode1=p->getNeighboors()[0];
-                    element* connectedNode2=p->getNeighboors()[1];
-                    if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
-                    {
-                        p->setPhaseFlag(connectedNode1->getPhaseFlag());
-                    }
-                    else
-                    {
-                        int dice=uniform_int();
-                        if(dice==0)
-                        {
-                            p->setPhaseFlag(connectedNode1->getPhaseFlag());
-                        }
-                        else
-                        {
-                            p->setPhaseFlag(connectedNode2->getPhaseFlag());
-                        }
-                    }
-
-                }
-            }
-        }
-
-    initialiseCapillaries();
 }
 
 void network::initialiseCapillaries()
 {
-    for(pore* p : accessiblePores)
-    {
-        if(p->getPhaseFlag()==phase::water)
-        {
-            p->setNodeInOil(false);
-            p->setNodeOutOil(false);
-            p->setNodeInWater(true);
-            p->setNodeOutWater(true);
-
-            p->setOilFraction(0.0);
-            p->setWaterFraction(1);
+    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+        e->setOilFraction(e->getPhaseFlag()==phase::oil?1:0);
+        e->setWaterFraction(e->getPhaseFlag()==phase::water?1:0);
+        e->setConcentration(0);
+        e->setEffectiveVolume(e->getVolume());
+        e->setOilFilmVolume(0);
+        e->setWaterFilmVolume(0);
+        e->setOilFilmConductivity(0);
+        e->setWaterFilmConductivity(0);
+        e->setOilLayerActivated(false);
+        e->setWaterCornerActivated(false);
+        e->setActive(true);
+        e->setConductivity(0);
+        e->setFlow(0);
+        e->setMassFlow(0);
+        if(e->getType()==capillaryType::throat){
+            pore* p=static_cast<pore*>(e);
+            p->setNodeInOil(p->getPhaseFlag()==phase::oil?true:false);
+            p->setNodeOutOil(p->getPhaseFlag()==phase::oil?true:false);
+            p->setNodeInWater(p->getPhaseFlag()==phase::water?true:false);
+            p->setNodeOutWater(p->getPhaseFlag()==phase::water?true:false);
         }
-        if(p->getPhaseFlag()==phase::oil)
-        {
-            p->setNodeInOil(true);
-            p->setNodeOutOil(true);
-            p->setNodeInWater(false);
-            p->setNodeOutWater(false);
-
-            p->setOilFraction(1);
-            p->setWaterFraction(0);
-        }
-
-        p->setCapillaryPressure(0);
-        p->setConcentration(0);
-        p->setEffectiveVolume(p->getVolume());
-        p->setOilFilmVolume(0);
-        p->setWaterFilmVolume(0);
-        p->setOilFilmConductivity(0);
-        p->setWaterFilmConductivity(0);
-        p->setOilLayerActivated(false);
-        p->setWaterCornerActivated(false);
-        p->setActive(true);
-        p->setConductivity(0);
-        p->setFlow(0);
-        p->setMassFlow(0);
-    }
-
-    for (node* n: accessibleNodes)
-    {
-        if(n->getPhaseFlag()==phase::water)
-        {
-            n->setOilFraction(0);
-            n->setWaterFraction(1);
-        }
-
-        if(n->getPhaseFlag()==phase::oil)
-        {
-            n->setOilFraction(1);
-            n->setWaterFraction(0);
-        }
-
-        n->setConcentration(0);
-        n->setEffectiveVolume(n->getVolume());
-        n->setOilFilmVolume(0);
-        n->setWaterFilmVolume(0);
-        n->setOilFilmConductivity(0);
-        n->setWaterFilmConductivity(0);
-        n->setOilLayerActivated(false);
-        n->setWaterCornerActivated(false);
-        n->setActive(true);
-        n->setConductivity(0);
-        n->setFlow(0);
-        n->setMassFlow(0);
-    }
+    });
 }
 
 double network::getOutletFlow()
 {
-    double Q=0;
-    for(pore* p: accessiblePores)
-    {
-        if(p->getOutlet())
-        Q+=p->getFlow();
-    }
+    auto Q(0.0);
+    for_each(outletPores.begin(),outletPores.end(),[this,&Q](pore* e){
+        if(!e->getClosed()){
+            Q+=e->getFlow();
+        }
+    });
     return Q;
 }
 
 double network::getWaterSaturation()
 {
-    double volume(0);
-    for(element* p : accessibleElements)
-        volume+=p->getWaterFraction()*p->getVolume();
+    auto volume(0.0);
+    for_each(accessibleElements.begin(),accessibleElements.end(),[this, &volume](element* e){
+        volume+=e->getWaterFraction()*e->getVolume();
+    });
     return volume/totalElementsVolume;
 }
 
-double network::getWaterSaturationWithFilmsPT()
+double network::getWaterSaturationWithFilms()
 {
-    double waterVolume(0);
-    for(element* e: accessibleElements)
-    {
-        if(e->getPhaseFlag()==phase::oil)
-            waterVolume+=e->getWaterFilmVolume();
-
-        if(e->getPhaseFlag()==phase::water)
-        {
-            if(e->getWettabilityFlag()==wettability::oilWet)
-                waterVolume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
-            if(e->getWettabilityFlag()==wettability::waterWet)
-                waterVolume+=e->getVolume();
+    auto volume(0.0);
+    for_each(accessibleElements.begin(),accessibleElements.end(),[this, &volume](element* e){
+        if(e->getPhaseFlag()==phase::oil){
+            volume+=e->getWaterFilmVolume();
         }
-    }
-    return waterVolume/totalElementsVolume;
+        if(e->getPhaseFlag()==phase::water){
+            if(e->getWettabilityFlag()==wettability::oilWet){
+                volume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
+            }
+            if(e->getWettabilityFlag()==wettability::waterWet){
+                volume+=e->getVolume();
+            }
+        }
+    });
+    return volume/totalElementsVolume;
 }
 
-void network::extractVideo()
-{
-    if(videoRecording)
-    {
-        record=false;
-        tools::renderVideo();
-        tools::cleanVideosFolder();
-    }
-}
+// Random generators
 
 int network::uniform_int(int a, int b) {
     if(a==b)return a;
@@ -293,16 +182,22 @@ double network::uniform_real(double a, double b)
 
 double network::rayleigh(double min, double max, double ryParam)
 {
-    if(min==max)return min;
-    double value=min+sqrt(-pow(ryParam,2)*log(1-uniform_real()*(1-exp(-pow((max-min),2)/pow(ryParam,2)))));
+    if(min==max){
+        return min;
+    }
+    auto value=min+sqrt(-pow(ryParam,2)*log(1-uniform_real()*(1-exp(-pow((max-min),2)/pow(ryParam,2)))));
     return value;
 }
 
 double network::triangular(double a, double b, double c)
 {
-    if(a==b || c<a || c>b) return a;
-    double fc=(c-a)/(b-a);
-    double u=uniform_real();
+    if(a==b || c<a || c>b){
+        return a;
+    }
+
+    auto fc=(c-a)/(b-a);
+    auto u=uniform_real();
+
     if(u<fc)
         return a+sqrt(u*(b-a)*(c-a));
     else
@@ -312,12 +207,14 @@ double network::triangular(double a, double b, double c)
 
 double network::normal(double min, double max, double mu, double sigma)
 {
-    if(min==max || mu<min || mu>max) return min;
+    if(min==max || mu<min || mu>max){
+        return min;
+    }
 
     boost::normal_distribution<> nd(mu, sigma);
     boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > var_nor(gen, nd);
 
-    double value=min-1;
+    auto value=var_nor();
     while(value<min || value>max)
         value=var_nor();
 
@@ -326,13 +223,25 @@ double network::normal(double min, double max, double mu, double sigma)
 
 double network::weibull(double min, double max, double alpha, double beta)
 {
-    if(min==max) return min;
+    if(min==max){
+        return min;
+    }
 
-    double u=uniform_real();
-
-    double value=(max-min)*pow(-beta*log(u*(1-exp(-1/beta))+exp(-1/beta)),1/alpha)+min;
+    auto u=uniform_real();
+    auto value=(max-min)*pow(-beta*log(u*(1-exp(-1/beta))+exp(-1/beta)),1/alpha)+min;
 
     return value;
+}
+
+// Postprocessing
+void network::extractVideo()
+{
+    if(videoRecording)
+    {
+        record=false;
+        tools::renderVideo();
+        tools::cleanVideosFolder();
+    }
 }
 
 //signals

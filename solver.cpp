@@ -70,8 +70,8 @@ void network::solvePressuresForRegularModel()
     }
     if(solverChoice==2)
     {
-        BiCGSTAB<SparseMatrix<double> > solver;
-        solver.setTolerance(1e-6);
+        ConjugateGradient<SparseMatrix<double>,Lower, IncompleteCholesky<double> > solver;
+        solver.setTolerance(1e-8);
         solver.setMaxIterations(1000);
         solver.compute(conductivityMatrix);
         pressures=solver.solve(b);
@@ -137,8 +137,8 @@ void network::solvePressures()
     }
     if(solverChoice==2)
     {
-        BiCGSTAB<SparseMatrix<double> > solver;
-        solver.setTolerance(1e-6);
+        ConjugateGradient<SparseMatrix<double>,Lower, IncompleteCholesky<double> > solver;
+        solver.setTolerance(1e-8);
         solver.setMaxIterations(1000);
         solver.compute(conductivityMatrix);
         pressures=solver.solve(b);
@@ -216,8 +216,8 @@ void network::solvePressuresWithCapillaryPressures()
     }
     if(solverChoice==2)
     {
-        BiCGSTAB<SparseMatrix<double> > solver;
-        solver.setTolerance(1e-6);
+        ConjugateGradient<SparseMatrix<double>,Lower, IncompleteCholesky<double> > solver;
+        solver.setTolerance(1e-8);
         solver.setMaxIterations(1000);
         solver.compute(conductivityMatrix);
         pressures=solver.solve(b);

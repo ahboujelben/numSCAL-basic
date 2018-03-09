@@ -21,37 +21,37 @@ class pore : public element
 {
 public:
     pore(node *const&,node *const&);
-    node *getNodeIn() const;
-    void setNodeIn(node *value);
-    node *getNodeOut() const;
-    void setNodeOut(node *value);
+    node *getNodeIn() const {return nodeIn;}
+    void setNodeIn(node *value) {nodeIn=value;}
+    node *getNodeOut() const {return nodeOut;}
+    void setNodeOut(node *value) {nodeOut=value;}
 
-    std::vector<pore *> getConnectedPores() const;
-    void setConnectedPores(const std::vector<pore *> &value);
+    std::vector<pore *>& getConnectedPores() {return connectedPores;}
+    void setConnectedPores(const std::vector<pore *> &value) {connectedPores=value;}
 
-    double getNodeInLength() const;
-    void setNodeInLength(double value);
+    double getNodeInLength() const {return nodeInLength;}
+    void setNodeInLength(double value) {nodeInLength=value;}
 
-    double getNodeOutLength() const;
-    void setNodeOutLength(double value);
+    double getNodeOutLength() const {return nodeOutLength;}
+    void setNodeOutLength(double value) {nodeOutLength=value;}
 
-    double getFullLength() const;
-    void setFullLength(double value);
+    double getFullLength() const {return fullLength;}
+    void setFullLength(double value) {fullLength=value;}
 
-    double getCapillaryPressure() const;
-    void setCapillaryPressure(double value);
+    double getCapillaryPressure() const {return capillaryPressure;}
+    void setCapillaryPressure(double value) {capillaryPressure=value;}
 
-    bool getNodeInOil() const;
-    void setNodeInOil(bool value);
+    bool getNodeInOil() const {return nodeInOil;}
+    void setNodeInOil(bool value) {nodeInOil=value;}
 
-    bool getNodeOutWater() const;
-    void setNodeOutWater(bool value);
+    bool getNodeOutWater() const {return nodeOutWater;}
+    void setNodeOutWater(bool value) {nodeOutWater=value;}
 
-    bool getNodeInWater() const;
-    void setNodeInWater(bool value);
+    bool getNodeInWater() const {return nodeInWater;}
+    void setNodeInWater(bool value) {nodeInWater=value;}
 
-    bool getNodeOutOil() const;
-    void setNodeOutOil(bool value);
+    bool getNodeOutOil() const {return nodeOutOil;}
+    void setNodeOutOil(bool value) {nodeOutOil=value;}
 
     //defined methods
 
