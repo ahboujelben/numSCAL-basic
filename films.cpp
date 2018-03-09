@@ -4,7 +4,7 @@
 ///              conductivities) are defined here.
 /// Author:      Ahmed Hamdi Boujelben <ahmed.hamdi.boujelben@gmail.com>
 /// Created:     2017
-/// Copyright:   (c) 2017 Ahmed Hamdi Boujelben
+/// Copyright:   (c) 2018 Ahmed Hamdi Boujelben
 /// Licence:     Attribution-NonCommercial 4.0 International
 /////////////////////////////////////////////////////////////////////////////
 
