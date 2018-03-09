@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.0
+** Created by: Qt User Interface Compiler version 5.10.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -22,6 +22,8 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSlider>
@@ -36,6 +38,8 @@ QT_BEGIN_NAMESPACE
 class Ui_MainWindow
 {
 public:
+    QAction *actionExit;
+    QAction *actionAbout;
     QWidget *centralwidget;
     QHBoxLayout *horizontalLayout_2;
     QVBoxLayout *verticalLayout;
@@ -284,6 +288,9 @@ public:
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
     QLabel *SimNotif;
+    QMenuBar *menuBar;
+    QMenu *menuFile;
+    QMenu *menuHelp;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -298,6 +305,10 @@ public:
         QIcon icon;
         icon.addFile(QStringLiteral(":/icon/icon2.png"), QSize(), QIcon::Normal, QIcon::Off);
         MainWindow->setWindowIcon(icon);
+        actionExit = new QAction(MainWindow);
+        actionExit->setObjectName(QStringLiteral("actionExit"));
+        actionAbout = new QAction(MainWindow);
+        actionAbout->setObjectName(QStringLiteral("actionAbout"));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QStringLiteral("centralwidget"));
         horizontalLayout_2 = new QHBoxLayout(centralwidget);
@@ -1289,6 +1300,14 @@ public:
         horizontalLayout_2->addLayout(verticalLayout_2);
 
         MainWindow->setCentralWidget(centralwidget);
+        menuBar = new QMenuBar(MainWindow);
+        menuBar->setObjectName(QStringLiteral("menuBar"));
+        menuBar->setGeometry(QRect(0, 0, 1100, 21));
+        menuFile = new QMenu(menuBar);
+        menuFile->setObjectName(QStringLiteral("menuFile"));
+        menuHelp = new QMenu(menuBar);
+        menuHelp->setObjectName(QStringLiteral("menuHelp"));
+        MainWindow->setMenuBar(menuBar);
         QWidget::setTabOrder(extractedRadioButton, calibratedRadioButton);
         QWidget::setTabOrder(calibratedRadioButton, loadNetworkButton);
         QWidget::setTabOrder(loadNetworkButton, pathToExtractedLineEdit);
@@ -1351,6 +1370,11 @@ public:
         QWidget::setTabOrder(maxYAxis, minXAxis);
         QWidget::setTabOrder(minXAxis, maxXAxis);
 
+        menuBar->addAction(menuFile->menuAction());
+        menuBar->addAction(menuHelp->menuAction());
+        menuFile->addAction(actionExit);
+        menuHelp->addAction(actionAbout);
+
         retranslateUi(MainWindow);
 
         networkTabBox->setCurrentIndex(0);
@@ -1365,6 +1389,14 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "numSCAL", nullptr));
+        actionExit->setText(QApplication::translate("MainWindow", "Exit", nullptr));
+#ifndef QT_NO_TOOLTIP
+        actionExit->setToolTip(QApplication::translate("MainWindow", "Close numSCAL", nullptr));
+#endif // QT_NO_TOOLTIP
+        actionAbout->setText(QApplication::translate("MainWindow", "About", nullptr));
+#ifndef QT_NO_TOOLTIP
+        actionAbout->setToolTip(QApplication::translate("MainWindow", "About numSCAL", nullptr));
+#endif // QT_NO_TOOLTIP
         label->setText(QApplication::translate("MainWindow", "Network Properties", nullptr));
         extractedRadioButton->setText(QApplication::translate("MainWindow", "E&xtracted Network", nullptr));
         calibratedRadioButton->setText(QApplication::translate("MainWindow", "Regular Network", nullptr));
@@ -1708,6 +1740,8 @@ public:
         pushButton_3->setText(QApplication::translate("MainWindow", "Clear Plots", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_18), QApplication::translate("MainWindow", "Curves", nullptr));
         SimNotif->setText(QApplication::translate("MainWindow", "Ready", nullptr));
+        menuFile->setTitle(QApplication::translate("MainWindow", "File", nullptr));
+        menuHelp->setTitle(QApplication::translate("MainWindow", "Help", nullptr));
     } // retranslateUi
 
 };

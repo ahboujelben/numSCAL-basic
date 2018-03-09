@@ -54,6 +54,7 @@ public:
     void createPores();
     void setNeighboors(); 
     void applyCoordinationNumber();
+    void defineAccessibleElements();
     void assignRadii();
     void assignLengths();
     void distortNetwork();
@@ -63,8 +64,7 @@ public:
     void assignVolumes();
     void assignConductivities();
     void assignWettability();
-    void assignElements();
-    void setNeighs();
+    void assignGeneralProperties();
     void assignViscosities();
 
 
@@ -129,7 +129,7 @@ public:
     void assignViscositiesWithMixedFluids();
 
     //Filling Network with fluids
-    void fillWithPhasePT(PNM::phase phase, double saturation=1, int distribution=1, PNM::phase otherPhase=phase::oil);
+    void fillWithPhase(PNM::phase phase, double saturation=1, int distribution=1, PNM::phase otherPhase=phase::oil);
 
     //Setting initial attributes
     void initialiseCapillaries();
@@ -137,7 +137,7 @@ public:
     //Tools
     double getOutletFlow();
     double getWaterSaturation();
-    double getWaterSaturationWithFilmsPT();
+    double getWaterSaturationWithFilms();
 
     //Video Recording
     void extractVideo();

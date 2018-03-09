@@ -26,7 +26,6 @@ win32 {
 }
 
 unix {
-    QMAKE_CXXFLAGS += -std=c++11
     LIBS += -lGLEW
 }
 

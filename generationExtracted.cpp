@@ -18,10 +18,12 @@ void network::setupExtractedModel()
     loadExtractedNetwork();
     cout<<"Cleaning Network..."<<endl;
     cleanExtractedNetwork();
+    cout<<"Defining accessible elements..."<<endl;
+    defineAccessibleElements();
     cout<<"Assigning Half Angles..."<<endl;
     assignHalfAngles();
-    cout<<"Assigning Elements..."<<endl;
-    assignElements();
+    cout<<"Assigning General properties..."<<endl;
+    assignGeneralProperties();
     cout<<"Setting Wettability..."<<endl;
     assignWettability();
 
@@ -62,6 +64,7 @@ void network::loadExtractedNetwork()
     totalOpenedNodes=totalNodes;
 
     tableOfAllNodes.resize(totalNodes);
+    tableOfElements.reserve(totalNodes);
 
     getline(node1,line);
 
@@ -82,6 +85,7 @@ void network::loadExtractedNetwork()
 
         tableOfAllNodes[i]= new node(x,y,z);
         node* n=tableOfAllNodes[i];
+        tableOfElements.push_back(n);
         n->setId(id);
         n->setAbsId(i);
         n->setConnectionNumber(numberOfNeighboors);
@@ -148,8 +152,10 @@ void network::loadExtractedNetwork()
     link1>>totalPores;
 
     totalOpenedPores=totalPores;
+    totalElements=totalNodes+totalPores;
 
     tableOfAllPores.resize(totalPores);
+    tableOfElements.reserve(totalNodes+totalPores);
 
     getline(link1,line);
 
@@ -185,6 +191,7 @@ void network::loadExtractedNetwork()
 
         tableOfAllPores[i]=new pore(nodeIn,nodeOut);
         pore* p=tableOfAllPores[i];
+        tableOfElements.push_back(p);
 
         if(p->getNodeOut()==0)
         {

@@ -69,6 +69,7 @@ void network::destroy()
     totalNodes=0;
     tableOfAllPores.clear();
     tableOfAllNodes.clear();
+    tableOfElements.clear();
     tableOfNodes.clear();
     tableOfPoresX.clear();
     tableOfPoresY.clear();

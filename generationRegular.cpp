@@ -14,12 +14,21 @@ namespace PNM {
 
 void network::setupRegularModel()
 {
+    totalNodes=Nx*Ny*Nz;
+    tableOfAllNodes.reserve(totalNodes);
+    totalPores=3*Nx*Ny*Nz+Ny*Nz+Nx*Nz+Nx*Ny;
+    tableOfAllPores.reserve(totalPores);
+    totalElements=totalNodes+totalPores;
+    tableOfElements.reserve(totalPores+totalNodes);
+
     cout<<"Creating Nodes..."<<endl;
     createNodes();
     cout<<"Creating Pores..."<<endl;
     createPores();
     cout<<"Applying Coordination Number..."<<endl;
     applyCoordinationNumber();
+    cout<<"Defining accessible elements..."<<endl;
+    defineAccessibleElements();
     cout<<"Assigning Radii..."<<endl;
     assignRadii();
     cout<<"Assigning Lengths..."<<endl;
@@ -34,8 +43,8 @@ void network::setupRegularModel()
     assignVolumes();
     cout<<"Assigning Conductivities..."<<endl;
     assignConductivities();
-    cout<<"Assigning Elements..."<<endl;
-    assignElements();
+    cout<<"Assigning General properties..."<<endl;
+    assignGeneralProperties();
     cout<<"Assigning Wettability..."<<endl;
     assignWettability();
 
@@ -70,8 +79,6 @@ void network::createNodes()
                 tableOfNodes[i][j][k]=new node(i,j,k);
                 tableOfAllNodes.push_back(tableOfNodes[i][j][k]);
             }
-
-    totalNodes=Nx*Ny*Nz;
 
     for(int i=0;i<totalNodes;++i)
     {
@@ -132,8 +139,6 @@ void network::createPores()
         for (int j = 0; j < Ny; ++j)
             for (int k = 0; k < Nz+1; ++k)
                 tableOfPoresZ[i][j][k]=new pore(getNode(i,j,k),getNode(i,j,k-1));
-
-    totalPores=3*Nx*Ny*Nz+Ny*Nz+Nx*Nz+Nx*Ny;
 
     for (int k = 0; k < Nz; ++k)
         for (int j = 0; j < Ny; ++j)
@@ -306,6 +311,60 @@ void network::applyCoordinationNumber()
     }
 
     maxConnectionNumber=(Nz==1? 4: 6);
+}
+
+void network::defineAccessibleElements()
+{
+    totalOpenedElements=0;
+    totalOpenedPores=0;
+    totalOpenedNodes=0;
+
+    accessibleNodes.reserve(totalNodes);
+    accessiblePores.reserve(totalPores);
+    accessibleElements.reserve(totalNodes+totalPores);
+
+    for(int i=0;i<totalNodes;++i)
+    {
+        node* n=getNode(i);
+        if(!n->getClosed())
+        {
+            totalOpenedElements++;
+            totalOpenedNodes++;
+            accessibleNodes.push_back(n);
+            accessibleElements.push_back(n);
+        }
+    }
+
+    for(int i=0;i<totalPores;++i)
+    {
+        pore* p=getPore(i);
+        if(!p->getClosed())
+        {
+            totalOpenedElements++;
+            totalOpenedPores++;
+            accessiblePores.push_back(p);
+            accessibleElements.push_back(p);
+        }
+    }
+
+    for(int i=0;i<totalPores;++i)
+    {
+        pore* p=getPore(i);
+        vector<element*> neighs;
+        if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());
+        if(p->getNodeOut()!=0)neighs.push_back(p->getNodeOut());
+        p->setNeighboors(neighs);
+    }
+
+    for(int i=0;i<totalNodes;++i)
+    {
+        node* n=getNode(i);
+        vector<element*> neighs;
+        const vector<int>& neighboors=n->getConnectedPores();
+        for(unsigned j=0;j<neighboors.size();++j)
+           neighs.push_back(getPore(neighboors[j]-1));
+        n->setNeighboors(neighs);
+    }
 }
 
 void network::assignRadii()
@@ -857,72 +916,29 @@ void network::assignHalfAngles()
     }
 }
 
-void network::assignElements()
+void network::assignGeneralProperties()
 {
-    tableOfElements.clear();
-    totalElements=0;
-    totalOpenedElements=0;
-    totalOpenedPores=0;
-    totalOpenedNodes=0;
     totalElementsVolume=0;
     totalPoresVolume=0;
     totalNodesVolume=0;
     for(int i=0;i<totalNodes;++i)
     {
         node* n=getNode(i);
-        tableOfElements.push_back(n);
-        n->setType(0);
         if(!n->getClosed())
         {
-            totalOpenedElements++;
-            totalOpenedNodes++;
             totalElementsVolume+=n->getVolume();
             totalNodesVolume+=n->getVolume();
-            accessibleNodes.push_back(n);
-            accessibleElements.push_back(n);
         }
-        totalElements++;
     }
 
     for(int i=0;i<totalPores;++i)
     {
         pore* p=getPore(i);
-        tableOfElements.push_back(p);
-        p->setType(1);
         if(!p->getClosed())
         {
-            totalOpenedElements++;
-            totalOpenedPores++;
             totalElementsVolume+=p->getVolume();
             totalPoresVolume+=p->getVolume();
-            accessiblePores.push_back(p);
-            accessibleElements.push_back(p);
         }
-        totalElements++;
-    }
-
-    setNeighs();
-}
-
-void network::setNeighs()
-{
-    for(int i=0;i<totalPores;++i)
-    {
-        pore* p=getPore(i);
-        vector<element*> neighs;
-        if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());
-        if(p->getNodeOut()!=0)neighs.push_back(p->getNodeOut());
-        p->setNeighboors(neighs);
-    }
-
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        vector<element*> neighs;
-        const vector<int>& neighboors=n->getConnectedPores();
-        for(unsigned j=0;j<neighboors.size();++j)
-           neighs.push_back(getPore(neighboors[j]-1));
-        n->setNeighboors(neighs);
     }
 }
 

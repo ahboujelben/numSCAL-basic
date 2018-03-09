@@ -61,19 +61,23 @@ void network::initializeTwoPhaseSimulationPT()
 
     if(twoPhaseSS)
     {
-        fillWithPhasePT(phase::water);
+        fillWithPhase(phase::water);
+        initialiseCapillaries();
     }
 
     else
     {
         if(waterDistribution!=4)
         {
-            fillWithPhasePT(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
+            fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
+            initialiseCapillaries();
         }
         else
         {
-            fillWithPhasePT(phase::water);
+            fillWithPhase(phase::water);
+            initialiseCapillaries();
             primaryDrainagePT(initialWaterSaturation);
+            initialiseCapillaries();
         }
 
         restoreWettabilityPT();
@@ -84,8 +88,6 @@ void network::initializeTwoPhaseSimulationPT()
             cout<<"PVs to inject: "<<injectedPVs<<endl;
         }
     }
-
-    initialiseCapillaries();
 }
 
 void network::primaryDrainagePT(double finalSaturation)
@@ -291,7 +293,7 @@ void network::spontaneousImbibitionPT()
         file2<<"Sw Krw Kro"<<endl;
 
     //Initialise variables
-    double waterSaturation=getWaterSaturationWithFilmsPT();
+    double waterSaturation=getWaterSaturationWithFilms();
     double currentWaterVolume(waterSaturation*totalElementsVolume);
 
     //Calculate the incremental reduction of capillary pressure
@@ -374,7 +376,7 @@ void network::spontaneousImbibitionPT()
                     {connectedToInletWaterCluster=true;break;}
 
                 //throat
-                if(e->getType()==1 && (e->getInlet() || connectedToInletWaterCluster) && e->getClusterOilFilm()->getOutlet())
+                if(e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletWaterCluster) && e->getClusterOilFilm()->getOutlet())
                 {
                     double entryPressure=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                     if(currentPc-1e-5<=entryPressure)
@@ -383,7 +385,7 @@ void network::spontaneousImbibitionPT()
 
                 //pore
 
-                if(e->getType()==0 && connectedToInletWaterCluster && e->getClusterOilFilm()->getOutlet())
+                if(e->getType()==capillaryType::poreBody && connectedToInletWaterCluster && e->getClusterOilFilm()->getOutlet())
                 {
                     int oilNeighboorsNumber(0);
                     int totalNeighboorsNumber(0);
@@ -510,7 +512,7 @@ void network::forcedWaterInjectionPT()
         file2<<"Sw Krw Kro"<<endl;
 
     //Initialise variables
-    double waterSaturation=getWaterSaturationWithFilmsPT();
+    double waterSaturation=getWaterSaturationWithFilms();
     double currentWaterVolume=waterSaturation*totalElementsVolume;
 
     //Calculate the incremental reduction of capillary pressure
@@ -565,7 +567,7 @@ void network::forcedWaterInjectionPT()
                     if(!n->getClosed() && n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
                     {connectedToInletWaterCluster=true;break;}
 
-                if((e->getType()==1 && (e->getInlet() || connectedToInletWaterCluster)) || (e->getType()==0 && connectedToInletWaterCluster))
+                if((e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletWaterCluster)) || (e->getType()==capillaryType::poreBody && connectedToInletWaterCluster))
                 {
                     if(e->getClusterOilFilm()->getOutlet())
                     {
@@ -686,7 +688,7 @@ void network::spontaneousOilInvasionPT()
         file2<<"Sw Krw Kro"<<endl;
 
     //Initialise variables
-    double waterSaturation=getWaterSaturationWithFilmsPT();
+    double waterSaturation=getWaterSaturationWithFilms();
     double currentWaterVolume=waterSaturation*totalElementsVolume;
 
     //Calculate the incremental increase of capillary pressure
@@ -767,7 +769,7 @@ void network::spontaneousOilInvasionPT()
                     {connectedToInletOilCluster=true;break;}
 
                 //throat
-                if(e->getType()==1 && (e->getInlet() || connectedToInletOilCluster) && e->getClusterWaterFilm()->getOutlet())
+                if(e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletOilCluster) && e->getClusterWaterFilm()->getOutlet())
                 {
                     double entryPressure=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                     if(currentPc+1e-5>=entryPressure)
@@ -776,7 +778,7 @@ void network::spontaneousOilInvasionPT()
 
                 //pore
 
-                if(e->getType()==0 && connectedToInletOilCluster && e->getClusterWaterFilm()->getOutlet())
+                if(e->getType()==capillaryType::poreBody && connectedToInletOilCluster && e->getClusterWaterFilm()->getOutlet())
                 {
                     int waterNeighboorsNumber(0);
                     int totalNeighboorsNumber(0);
@@ -903,7 +905,7 @@ void network::secondaryOilDrainagePT()
         file2<<"Sw Krw Kro"<<endl;
 
     //Initialise variables
-    double waterSaturation=getWaterSaturationWithFilmsPT();
+    double waterSaturation=getWaterSaturationWithFilms();
     double currentWaterVolume=waterSaturation*totalElementsVolume;
 
     //Calculate the incremental reduction of capillary pressure
@@ -958,7 +960,7 @@ void network::secondaryOilDrainagePT()
                     if(!n->getClosed() && n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
                     {connectedToInletOilCluster=true;break;}
 
-                if((e->getType()==1 && (e->getInlet() || connectedToInletOilCluster)) || (e->getType()==0 && connectedToInletOilCluster))
+                if((e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletOilCluster)) || (e->getType()==capillaryType::poreBody && connectedToInletOilCluster))
                 {
                     if(e->getClusterWaterFilm()->getOutlet())//change
                     {

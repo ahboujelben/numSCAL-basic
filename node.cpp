@@ -14,6 +14,7 @@ namespace PNM {
 
 node::node(double X, double Y, double Z)
 {
+    type=capillaryType::poreBody;
     x=X;
     y=Y;
     z=Z;

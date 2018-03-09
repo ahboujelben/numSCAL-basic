@@ -759,3 +759,16 @@ void MainWindow::on_linesCheckbox_clicked(bool checked)
     ui->widget->setPoreLines(checked);
     ui->widget->updateGL();
 }
+
+void MainWindow::on_actionExit_triggered()
+{
+    this->close();
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QMessageBox::about(this,tr("About numSCAL"), tr("numSCAL is a pore network simulator developed by \nAhmed Boujelben "
+                                                    "at Heriot-Watt University.\n"
+                                                    "For enquiries, please send an e-mail to: "
+                                                    "ahmed.hamdi.boujelben@gmail.com"));
+}

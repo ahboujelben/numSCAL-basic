@@ -301,9 +301,16 @@ void network::clusterOilElements()
 
 void network::clusterOilFlowingElements()
 {
+    for_each(accessibleElements.begin(), accessibleElements.end(), [this] (element* e){
+        if(e->getPhaseFlag()==phase::oil || e->getOilLayerActivated())
+            e->setOilConductor(true);
+        else
+            e->setOilConductor(false);
+    });
+
     cluster* (element::*getter)() const =&element::getClusterOilFilm;
     void (element::*setter)(cluster*) =&element::setClusterOilFilm;
-    bool (element::*status)(void) const=&element::getOilFlowing;
+    bool (element::*status)(void) const=&element::getOilConductor;
     clusterElements(getter,setter,status,true,oilFilmClusters);
 
     isOilSpanning=false;
@@ -321,9 +328,16 @@ void network::clusterOilFlowingElements()
 
 void network::clusterWaterFlowingElements()
 {
+    for_each(accessibleElements.begin(), accessibleElements.end(), [this] (element* e){
+        if(e->getPhaseFlag()==phase::water || e->getWaterCornerActivated())
+            e->setWaterConductor(true);
+        else
+            e->setWaterConductor(false);
+    });
+
     cluster* (element::*getter)() const =&element::getClusterWaterFilm;
     void (element::*setter)(cluster*) =&element::setClusterWaterFilm;
-    bool (element::*status)(void) const=&element::getWaterFlowing;
+    bool (element::*status)(void) const=&element::getWaterConductor;
     clusterElements(getter,setter,status,true,waterFilmClusters);
 
     isWaterSpanning=false;

@@ -96,6 +96,8 @@ private slots:
     void on_ySlider_valueChanged(int value);
     void on_zSlider_valueChanged(int value);
     void on_linesCheckbox_clicked(bool checked);
+    void on_actionExit_triggered();
+    void on_actionAbout_triggered();
 };
 
 #endif // MAINWINDOW_H
