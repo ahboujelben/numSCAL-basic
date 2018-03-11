@@ -296,7 +296,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(1100, 650);
+        MainWindow->resize(1100, 652);
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -1556,8 +1556,14 @@ public:
         owFractionSpinBox->setText(QApplication::translate("MainWindow", "0.5", nullptr));
         networkTabBox->setTabText(networkTabBox->indexOf(tab_4), QApplication::translate("MainWindow", "Wettability", nullptr));
         groupBox_21->setTitle(QApplication::translate("MainWindow", "Solver", nullptr));
+#ifndef QT_NO_TOOLTIP
+        choleskyRadioButton->setToolTip(QApplication::translate("MainWindow", "Suitable for small networks", nullptr));
+#endif // QT_NO_TOOLTIP
         choleskyRadioButton->setText(QApplication::translate("MainWindow", "Choles&ky", nullptr));
-        bicstabRadioButton->setText(QApplication::translate("MainWindow", "BICSTAB", nullptr));
+#ifndef QT_NO_TOOLTIP
+        bicstabRadioButton->setToolTip(QApplication::translate("MainWindow", "Conjugate Gradient: Suitable for large networks", nullptr));
+#endif // QT_NO_TOOLTIP
+        bicstabRadioButton->setText(QApplication::translate("MainWindow", "CG", nullptr));
         calcPermCheckBox->setText(QApplication::translate("MainWindow", "Calculate Absolute Permeability", nullptr));
         networkTabBox->setTabText(networkTabBox->indexOf(tab_8), QApplication::translate("MainWindow", "Misc", nullptr));
         groupBox_14->setTitle(QApplication::translate("MainWindow", "Network Properties", nullptr));

@@ -135,13 +135,16 @@ void network::solvePressures()
         solver.compute(conductivityMatrix);
         pressures=solver.solve(b);
     }
+
     if(solverChoice==2)
     {
-        ConjugateGradient<SparseMatrix<double>,Lower, IncompleteCholesky<double> > solver;
+        ConjugateGradient<SparseMatrix<double>,Lower|Upper> solver;
         solver.setTolerance(1e-8);
         solver.setMaxIterations(1000);
+
         solver.compute(conductivityMatrix);
         pressures=solver.solve(b);
+        cout<<solver.info()<<endl;
         //cout<<solver.error()<<" "<<solver.iterations()<<endl;
     }
 
@@ -216,7 +219,7 @@ void network::solvePressuresWithCapillaryPressures()
     }
     if(solverChoice==2)
     {
-        ConjugateGradient<SparseMatrix<double>,Lower, IncompleteCholesky<double> > solver;
+        ConjugateGradient<SparseMatrix<double>,Lower|Upper> solver;
         solver.setTolerance(1e-8);
         solver.setMaxIterations(1000);
         solver.compute(conductivityMatrix);
