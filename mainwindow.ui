@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1100</width>
-    <height>650</height>
+    <height>652</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1178,6 +1178,9 @@
              <height>21</height>
             </rect>
            </property>
+           <property name="toolTip">
+            <string>Suitable for small networks</string>
+           </property>
            <property name="text">
             <string>Choles&amp;ky</string>
            </property>
@@ -1194,8 +1197,11 @@
              <height>21</height>
             </rect>
            </property>
+           <property name="toolTip">
+            <string>Conjugate Gradient: Suitable for large networks</string>
+           </property>
            <property name="text">
-            <string>BICSTAB</string>
+            <string>CG</string>
            </property>
            <property name="checked">
             <bool>false</bool>
