@@ -74,18 +74,19 @@ void network::runUSSDrainageModelPT()
         }
 
         // Write up data
-        double waterSat=getWaterSaturation();
+
         if(outputPVs>injectThreshold)
         {
+            double waterSat=getWaterSaturation();
             outputTwoPhaseData(injectedPVs,outputCount, waterSat);
             outputPVs=0;
-        }
 
-        //Display notification
-        std::ostringstream ss;
-        ss << std::fixed << std::setprecision(2);
-        ss << "Injected PVs: " << injectedPVs<<" / Sw(%): "<<waterSat*100;
-        simulationNotification = ss.str();
+            //Display notification
+            std::ostringstream ss;
+            ss << std::fixed << std::setprecision(2);
+            ss << "Injected PVs: " << injectedPVs<<" / Sw(%): "<<waterSat*100;
+            simulationNotification = ss.str();
+        }
 
         //Update simulation flags
 
@@ -350,14 +351,6 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
                         if(p->getTheta()<tools::pi()/2)//imbibition
                             capillaryPressure=2*OWSurfaceTension*cos(p->getTheta())/nodeOut->getRadius()-oilNeighboorsNumber*OWSurfaceTension/nodeOut->getRadius();
                     }
-                }
-                if(!p->getInlet() && !p->getOutlet() && nodeIn!=0 && nodeOut!=0)
-                {
-                    //pore filling mechanism
-                    int oilNeighboorsNumber(0);
-                    for(element* n : nodeIn->getNeighboors())
-                        if(!n->getClosed() && n->getPhaseFlag()==phase::oil)
-                            oilNeighboorsNumber++;
 
                     if(nodeOut->getPhaseFlag()==phase::water && nodeIn->getPhaseFlag()==phase::oil)
                     {
@@ -367,6 +360,7 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
                             capillaryPressure=-2*OWSurfaceTension*cos(p->getTheta())/nodeIn->getRadius()+oilNeighboorsNumber*OWSurfaceTension/nodeIn->getRadius();
                     }
                 }
+
                 if(p->getInlet())
                 {
                     //pore filling mechanism

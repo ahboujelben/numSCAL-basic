@@ -26,7 +26,9 @@ win32 {
 }
 
 unix {
+    QMAKE_CXXFLAGS += -fopenmp
     LIBS += -lGLEW
+    LIBS += -fopenmp
 }
 
 
