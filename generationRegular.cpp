@@ -91,61 +91,24 @@ void network::createNodes()
 
 void network::createPores()
 {
-    tableOfPoresX.resize(Nx+1);
-    for (int i = 0; i < Nx+1; ++i)
-    {
-        tableOfPoresX[i].resize(Ny);
-        for (int j = 0; j < Ny; ++j)
-            tableOfPoresX[i][j].resize(Nz);
-    }
-
-    tableOfPoresY.resize(Nx);
-    for (int i = 0; i < Nx; ++i)
-    {
-        tableOfPoresY[i].resize(Ny+1);
-        for (int j = 0; j < Ny+1; ++j)
-            tableOfPoresY[i][j].resize(Nz);
-    }
-
-    tableOfPoresZ.resize(Nx);
-    for (int i = 0; i < Nx; ++i)
-    {
-        tableOfPoresZ[i].resize(Ny);
-        for (int j = 0; j < Ny; ++j)
-            tableOfPoresZ[i][j].resize(Nz+1);
-    }
-
     for (int i = 0; i < Nx+1; ++i)
         for (int j = 0; j < Ny; ++j)
             for (int k = 0; k < Nz; ++k)
-                tableOfPoresX[i][j][k]=new pore(getNode(i,j,k),getNode(i-1,j,k));
+                tableOfAllPores.push_back(new pore(getNode(i,j,k),getNode(i-1,j,k)));
     for (int i = 0; i < Nx; ++i)
         for (int j = 0; j < Ny+1; ++j)
             for (int k = 0; k < Nz; ++k)
-                tableOfPoresY[i][j][k]=new pore(getNode(i,j,k),getNode(i,j-1,k));
+                tableOfAllPores.push_back(new pore(getNode(i,j,k),getNode(i,j-1,k)));
     for (int i = 0; i < Nx; ++i)
         for (int j = 0; j < Ny; ++j)
             for (int k = 0; k < Nz+1; ++k)
-                tableOfPoresZ[i][j][k]=new pore(getNode(i,j,k),getNode(i,j,k-1));
+                tableOfAllPores.push_back(new pore(getNode(i,j,k),getNode(i,j,k-1)));
 
-    for (int k = 0; k < Nz; ++k)
-        for (int j = 0; j < Ny; ++j)
-            for (int i = 0; i < Nx+1; ++i)
-                tableOfAllPores.push_back(tableOfPoresX[i][j][k]);
-    for (int k = 0; k < Nz; ++k)
-        for (int j = 0; j < Ny+1; ++j)
-            for (int i = 0; i < Nx; ++i)
-                tableOfAllPores.push_back(tableOfPoresY[i][j][k]);
-    for (int k = 0; k < Nz+1; ++k)
-        for (int j = 0; j < Ny; ++j)
-            for (int i = 0; i < Nx; ++i)
-                tableOfAllPores.push_back(tableOfPoresZ[i][j][k]);
-
-    for(int i=0;i<totalPores;++i)
-    {
-        pore* p=getPore(i);
-        p->setId(i+1);
-        p->setAbsId(totalNodes+i);
+    auto key(0);
+    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this, &key](pore* p){
+        p->setId(key+1);
+        p->setAbsId(totalNodes+key);
+        ++key;
         if(p->getNodeOut()==0)
         {
             p->setInlet(true);
@@ -157,7 +120,8 @@ void network::createPores()
             outletPores.push_back(p);
         }
         tableOfElements.push_back(p);
-    }
+    });
+
     setNeighboors();
 }
 

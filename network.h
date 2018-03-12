@@ -235,9 +235,6 @@ private:
     int Nx;
     int Ny;
     int Nz;
-    vector<vector<vector<pore*> > > tableOfPoresX;
-    vector<vector<vector<pore*> > > tableOfPoresY;
-    vector<vector<vector<pore*> > > tableOfPoresZ;
     vector<pore*> tableOfAllPores;
     vector<node*> tableOfAllNodes;
     vector<element*> tableOfElements;
