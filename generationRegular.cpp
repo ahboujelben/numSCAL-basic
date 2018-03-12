@@ -20,6 +20,9 @@ void network::setupRegularModel()
     tableOfAllPores.reserve(totalPores);
     totalElements=totalNodes+totalPores;
     tableOfElements.reserve(totalPores+totalNodes);
+    xEdgeLength=Nx*length;
+    yEdgeLength=Ny*length;
+    zEdgeLength=Nz*length;
 
     cout<<"Creating Nodes..."<<endl;
     createNodes();
@@ -65,39 +68,24 @@ void network::setupRegularModel()
 
 void network::createNodes()
 {
-    tableOfNodes.resize(Nx);
-    for (int i = 0; i < Nx; ++i)
-    {
-        tableOfNodes[i].resize(Ny);
-        for (int j = 0; j < Ny; ++j)
-            tableOfNodes[i][j].resize(Nz);
-    }
     for (int i = 0; i < Nx; ++i)
         for (int j = 0; j < Ny; ++j)
-            for (int k = 0; k < Nz; ++k)
-            {
-                tableOfNodes[i][j][k]=new node(i,j,k);
-                tableOfAllNodes.push_back(tableOfNodes[i][j][k]);
+            for (int k = 0; k < Nz; ++k){
+                tableOfAllNodes.push_back(new node(i,j,k));
             }
 
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        n->setId(i+1);
-        n->setAbsId(i);
-        if(n->getIndexX()==0)n->setInlet(true);
-        if(n->getIndexX()==Nx-1)n->setOutlet(true);
-        n->setXCoordinate(n->getIndexX()*length);
-        n->setYCoordinate(n->getIndexY()*length);
-        n->setZCoordinate(n->getIndexZ()*length);
-        tableOfElements.push_back(n);
-    }
-
-    xEdgeLength=Nx*length;
-    yEdgeLength=Ny*length;
-    zEdgeLength=Nz*length;
-    minNodeRadius=0;
-    maxNodeRadius=0;
+    auto key(0);
+    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this, &key](node* e){
+        e->setId(key+1);
+        e->setAbsId(key);
+        ++key;
+        if(e->getIndexX()==0)e->setInlet(true);
+        if(e->getIndexX()==Nx-1)e->setOutlet(true);
+        e->setXCoordinate(e->getIndexX()*length);
+        e->setYCoordinate(e->getIndexY()*length);
+        e->setZCoordinate(e->getIndexZ()*length);
+        tableOfElements.push_back(e);
+    });
 
 }
 
@@ -106,7 +94,7 @@ void network::createPores()
     tableOfPoresX.resize(Nx+1);
     for (int i = 0; i < Nx+1; ++i)
     {
-        tableOfPoresX[i].resize(Ny+1);
+        tableOfPoresX[i].resize(Ny);
         for (int j = 0; j < Ny; ++j)
             tableOfPoresX[i][j].resize(Nz);
     }
@@ -252,13 +240,16 @@ void network::applyCoordinationNumber()
 
     if (coordinationNumber<6 || (coordinationNumber<4 && Nz==1))
     {
-        double totalOpenedPoresSoFar=totalPores-2*Nx*Ny-2*Nx*Nz;
-        int closedPoresNumber=(Nz==1? int(totalOpenedPoresSoFar*(1-coordinationNumber/4.0)) :int(totalPores*(1-coordinationNumber/6.0)));
-        int i=0;
-        while(i<closedPoresNumber)
+        auto totalOpenedPoresSoFar=totalPores-2*Nx*Ny-2*Nx*Nz;
+        auto closedPoresNumber=(Nz==1? int(totalOpenedPoresSoFar*(1-coordinationNumber/4.0)) :int(totalPores*(1-coordinationNumber/6.0)));
+
+        auto shuffledPores=tableOfAllPores;
+        shuffle(shuffledPores.begin(), shuffledPores.end(), gen);
+
+        while(closedPoresNumber>0)
         {
-            int index=uniform_int(0,totalPores-1);
-            pore* p=getPore(index);
+            pore* p=shuffledPores.back();
+            shuffledPores.pop_back();
             if(!p->getClosed())
             {
                 p->setClosed(true);
@@ -266,49 +257,38 @@ void network::applyCoordinationNumber()
                 node* out=p->getNodeOut();
                 if(in!=0)in->setConnectionNumber(in->getConnectionNumber()-1);
                 if(out!=0)out->setConnectionNumber(out->getConnectionNumber()-1);
-                ++i;
+                --closedPoresNumber;
             }
         }
 
         //Clean Network from isolated pores
-
         clusterOilPores();
-        for(int i=0;i<totalPores;++i)
-        {
-            pore* p=getPore(i);
-            if(!p->getClosed() && !p->getClusterOil()->getSpanning())
-            {
-                p->setClosed(true);
-                node* in=p->getNodeIn();
-                node* out=p->getNodeOut();
+        for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* e){
+            if(!e->getClosed() && !e->getClusterOil()->getSpanning()){
+                e->setClosed(true);
+                node* in=e->getNodeIn();
+                node* out=e->getNodeOut();
                 if(in!=0)in->setConnectionNumber(in->getConnectionNumber()-1);
                 if(out!=0)out->setConnectionNumber(out->getConnectionNumber()-1);
             }
-        }
+        });
 
-        //delete isolated nodes
-        for(int i=0;i<totalNodes;++i)
-        {
-            node* n=getNode(i);
-            if(n->getConnectionNumber()==0)
-            {
-                n->setClosed(true);
+        //Delete isolated nodes
+        for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* e){
+            if(e->getConnectionNumber()==0){
+                e->setClosed(true);
             }
-        }
-
+        });
     }
 
     //Ranking for the solver
-    int rank=0;
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-        {
-            n->setRank(rank);
-            rank++;
+    auto rank(0);
+    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this, &rank](node* e){
+        if(!e->getClosed()){
+            e->setRank(rank);
+            ++rank;
         }
-    }
+    });
 
     maxConnectionNumber=(Nz==1? 4: 6);
 }

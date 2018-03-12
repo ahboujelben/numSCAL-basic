@@ -70,7 +70,6 @@ void network::destroy()
     tableOfAllPores.clear();
     tableOfAllNodes.clear();
     tableOfElements.clear();
-    tableOfNodes.clear();
     tableOfPoresX.clear();
     tableOfPoresY.clear();
     tableOfPoresZ.clear();
@@ -235,7 +234,7 @@ node *network::getNode(int i,int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<0 || j>Ny-1 || k<0 || k>Nz-1)
         return 0;
-    return tableOfNodes[i][j][k];
+    return tableOfAllNodes[i*Ny*Nz+j*Nz+k];
 }
 
 node *network::getNode(int i) const
