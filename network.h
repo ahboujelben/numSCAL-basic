@@ -60,7 +60,6 @@ public:
     void distortNetwork();
     void assignShapeFactors();
     void assignShapeFactorConstants();
-    void assignHalfAngles();
     void assignVolumes();
     void assignConductivities();
     void assignWettability();
@@ -103,6 +102,7 @@ public:
     void assignWWWettabilityPT(double theta=0);
     void restoreWettabilityPT();
     //Films 2 phases
+    void assignHalfAngles();
     void assignFilmStability();
 
 
@@ -122,6 +122,9 @@ public:
 
     ///////////// Methods for Unsteady-steady state 2-Phase flow
     void runTracerFlowPT();
+    void solvePressureFieldInOil();
+    void calculateTracerTimeStep();
+    void updateConcentrationValues(vector<double> & newConcentration);
 
     ///////////// Misc
 
@@ -235,10 +238,6 @@ private:
     int Nx;
     int Ny;
     int Nz;
-    vector<vector<vector<node*> > > tableOfNodes;
-    vector<vector<vector<pore*> > > tableOfPoresX;
-    vector<vector<vector<pore*> > > tableOfPoresY;
-    vector<vector<vector<pore*> > > tableOfPoresZ;
     vector<pore*> tableOfAllPores;
     vector<node*> tableOfAllNodes;
     vector<element*> tableOfElements;
@@ -306,7 +305,6 @@ private:
     double minOilWetTheta;
     double maxOilWetTheta;
     double oilWetFraction;
-    map<element*,double> wettabiltyThetaBackup;
 
 
     ////////////// Fluid injection Simulations

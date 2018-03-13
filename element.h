@@ -67,6 +67,9 @@ public:
     double getTheta() const {return theta;}
     void setTheta(double value) {theta=value;}
 
+    double getOriginalTheta() const {return originalTheta;}
+    void setOriginalTheta(double value) {originalTheta=value;}
+
     wettability getWettabilityFlag() const {return wettabilityFlag;}
     void setWettabilityFlag(wettability value) {wettabilityFlag=value;}
 
@@ -185,11 +188,11 @@ protected:
     double shapeFactor; // capillary shape factor (dimensionless)
     double shapeFactorConstant; // capillary shape factor constant (dimensionless)
     double conductivity; // capillary conductivity (SI)
-    double theta; // capillary oil-water contact angle
-    wettability wettabilityFlag; // capillary wettability
-    phase phaseFlag; // capillary occupying phase
+    double theta, originalTheta; // capillary oil-water contact angle
     double viscosity; // capillary average viscosity (SI)
     double concentration; // capillary concentration in tracer (between 0 and 1)
+    wettability wettabilityFlag; // capillary wettability
+    phase phaseFlag; // capillary occupying phase
     bool inlet; // a flag whether the capillary is connected to the inlet boundary
     bool outlet; // a flag whether the capillary is connected to the outlet boundary
     bool closed; // a flag whether the capillary is undefinetely closed (i.e. when assigning the coordination number)

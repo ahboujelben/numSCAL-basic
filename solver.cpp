@@ -144,7 +144,6 @@ void network::solvePressures()
 
         solver.compute(conductivityMatrix);
         pressures=solver.solve(b);
-        cout<<solver.info()<<endl;
         //cout<<solver.error()<<" "<<solver.iterations()<<endl;
     }
 

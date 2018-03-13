@@ -19,6 +19,9 @@ CONFIG += c++11
 
 TEMPLATE = app
 
+QMAKE_CXXFLAGS += -fopenmp
+LIBS += -fopenmp
+
 win32 {
     LIBS += -lopengl32 $$PWD/Glew/glew32.dll
     LIBS += -L$$PWD/Glew/ -lglew32
@@ -26,9 +29,7 @@ win32 {
 }
 
 unix {
-    QMAKE_CXXFLAGS += -fopenmp
     LIBS += -lGLEW
-    LIBS += -fopenmp
 }
 
 

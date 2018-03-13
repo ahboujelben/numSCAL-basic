@@ -63,6 +63,7 @@ void network::initializeTwoPhaseSimulationPT()
     {
         fillWithPhase(phase::water);
         initialiseCapillaries();
+        assignHalfAngles();
     }
 
     else
@@ -76,6 +77,7 @@ void network::initializeTwoPhaseSimulationPT()
         {
             fillWithPhase(phase::water);
             initialiseCapillaries();
+            assignHalfAngles();
             primaryDrainagePT(initialWaterSaturation);
             initialiseCapillaries();
         }

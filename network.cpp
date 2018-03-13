@@ -70,10 +70,6 @@ void network::destroy()
     tableOfAllPores.clear();
     tableOfAllNodes.clear();
     tableOfElements.clear();
-    tableOfNodes.clear();
-    tableOfPoresX.clear();
-    tableOfPoresY.clear();
-    tableOfPoresZ.clear();
     accessiblePores.clear();
     accessibleNodes.clear();
     accessibleElements.clear();
@@ -186,42 +182,42 @@ pore *network::getPoreX(int i, int j, int k) const
 {
     if(i<0 || i>Nx || j<0 || j>Ny-1 || k<0 || k>Nz-1)
         return 0;
-    return tableOfPoresX[i][j][k];
+    return tableOfAllPores[i*Ny*Nz+j*Nz+k];
 }
 
 pore *network::getPoreY(int i, int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<0 || j>Ny || k<0 || k>Nz-1)
         return 0;
-    return tableOfPoresY[i][j][k];
+    return tableOfAllPores[(Nx+1)*Ny*Nz+i*(Ny+1)*Nz+j*Nz+k];
 }
 
 pore *network::getPoreZ(int i, int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<0 || j>Ny-1 || k<0 || k>Nz)
         return 0;
-    return tableOfPoresZ[i][j][k];
+    return tableOfAllPores[(Nx+1)*Ny*Nz+Nx*(Ny+1)*Nz+i*Ny*(Nz+1)+j*(Nz+1)+k];
 }
 
 pore *network::getPoreXout(int i, int j, int k) const
 {
     if(i<-1 || i>Nx-1 || j<0 || j>Ny-1 || k<0 || k>Nz-1)
         return 0;
-    return tableOfPoresX[i+1][j][k];
+    return tableOfAllPores[(i+1)*Ny*Nz+j*Nz+k];
 }
 
 pore *network::getPoreYout(int i, int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<-1 || j>Ny-1 || k<0 || k>Nz-1)
         return 0;
-    return tableOfPoresY[i][j+1][k];
+    return tableOfAllPores[(Nx+1)*Ny*Nz+i*(Ny+1)*Nz+(j+1)*Nz+k];
 }
 
 pore *network::getPoreZout(int i, int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<0 || j>Ny-1 || k<-1 || k>Nz-1)
         return 0;
-    return tableOfPoresZ[i][j][k+1];
+    return tableOfAllPores[(Nx+1)*Ny*Nz+Nx*(Ny+1)*Nz+i*Ny*(Nz+1)+j*(Nz+1)+k+1];
 }
 
 pore *network::getPore(int i) const
@@ -235,7 +231,7 @@ node *network::getNode(int i,int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<0 || j>Ny-1 || k<0 || k>Nz-1)
         return 0;
-    return tableOfNodes[i][j][k];
+    return tableOfAllNodes[i*Ny*Nz+j*Nz+k];
 }
 
 node *network::getNode(int i) const
