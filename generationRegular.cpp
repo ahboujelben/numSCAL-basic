@@ -40,16 +40,14 @@ void network::setupRegularModel()
     distortNetwork();
     cout<<"Assigning Shape Factors..."<<endl;
     assignShapeFactors();
-    cout<<"Assigning Half Angles..."<<endl;
-    assignHalfAngles();
     cout<<"Assigning Volumes..."<<endl;
     assignVolumes();
     cout<<"Assigning Conductivities..."<<endl;
     assignConductivities();
-    cout<<"Assigning General properties..."<<endl;
-    assignGeneralProperties();
     cout<<"Assigning Wettability..."<<endl;
     assignWettability();
+    cout<<"Assigning General properties..."<<endl;
+    assignGeneralProperties();
 
     if(absolutePermeabilityCalculation)
     {
@@ -267,11 +265,8 @@ void network::defineAccessibleElements()
     accessiblePores.reserve(totalPores);
     accessibleElements.reserve(totalNodes+totalPores);
 
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-        {
+    for(node* n:tableOfAllNodes){
+        if(!n->getClosed()){
             totalOpenedElements++;
             totalOpenedNodes++;
             accessibleNodes.push_back(n);
@@ -279,11 +274,8 @@ void network::defineAccessibleElements()
         }
     }
 
-    for(int i=0;i<totalPores;++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-        {
+    for(pore* p:tableOfAllPores){
+        if(!p->getClosed()){
             totalOpenedElements++;
             totalOpenedPores++;
             accessiblePores.push_back(p);
@@ -291,599 +283,147 @@ void network::defineAccessibleElements()
         }
     }
 
-    for(int i=0;i<totalPores;++i)
-    {
-        pore* p=getPore(i);
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
         vector<element*> neighs;
         if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());
         if(p->getNodeOut()!=0)neighs.push_back(p->getNodeOut());
         p->setNeighboors(neighs);
-    }
+    });
 
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
+    for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
         vector<element*> neighs;
         const vector<int>& neighboors=n->getConnectedPores();
         for(unsigned j=0;j<neighboors.size();++j)
            neighs.push_back(getPore(neighboors[j]-1));
         n->setNeighboors(neighs);
-    }
+    });
 }
 
 void network::assignRadii()
 {
-    ofstream filep("Results/Network_Description/pores_radii.txt");
-    ofstream filen("Results/Network_Description/nodes_radii.txt");
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+        if(radiusDistribution==1)
+            p->setRadius(uniform_real(minRadius,maxRadius));
+        if(radiusDistribution==2)
+            p->setRadius(rayleigh(minRadius,maxRadius,rayleighParameter));
+        if(radiusDistribution==3)
+            p->setRadius(triangular(minRadius,maxRadius,triangularParameter));
+        if(radiusDistribution==4)
+            p->setRadius(normal(minRadius,maxRadius,normalMuParameter,normalSigmaParameter));
+    });
 
-    for (int i = 0; i < totalPores; ++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-        {
-            if(radiusDistribution==1)
-                p->setRadius(uniform_real(minRadius,maxRadius));
-            if(radiusDistribution==2)
-                p->setRadius(rayleigh(minRadius,maxRadius,rayleighParameter));
-            if(radiusDistribution==3)
-                p->setRadius(triangular(minRadius,maxRadius,triangularParameter));
-            if(radiusDistribution==4)
-                p->setRadius(normal(minRadius,maxRadius,normalMuParameter,normalSigmaParameter));
-            filep<<p->getId()<<" "<<p->getRadius()<<endl;
-        }
-    }
+    maxNodeRadius=0;
+    minNodeRadius=1e10;
 
-    if(networkSource==2)
-    {
-        maxNodeRadius=0;
-        minNodeRadius=1e10;
-        for (int i = 0; i < totalNodes; ++i)
+    for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
+        double maxRadius(0),averageRadius(0);
+        int neighboorsNumber(0);
+        for(unsigned j=0;j<n->getConnectedPores().size();++j)
         {
-            node* n=getNode(i);
-            if(!n->getClosed())
+            pore* p=getPore(n->getConnectedPores()[j]-1);
+            if(!p->getClosed())
             {
-                double maxRadius(0),averageRadius(0);
-                int neighboorsNumber(0);
-                for(unsigned j=0;j<n->getConnectedPores().size();++j)
-                {
-                    pore* p=getPore(n->getConnectedPores()[j]-1);
-                    if(!p->getClosed())
-                    {
-                        if(p->getRadius()>maxRadius)maxRadius=p->getRadius();
-                        averageRadius+=p->getRadius();
-                        neighboorsNumber++;
-                    }
-                }
-                averageRadius=aspectRatio*averageRadius/neighboorsNumber;
-                double radius=max(maxRadius,averageRadius);
-                if(radius>maxNodeRadius)maxNodeRadius=radius;
-                if(radius<minNodeRadius)minNodeRadius=radius;
-                n->setRadius(radius);
-                filen<<n->getId()<<" "<<n->getRadius()<<endl;
+                if(p->getRadius()>maxRadius)maxRadius=p->getRadius();
+                averageRadius+=p->getRadius();
+                neighboorsNumber++;
             }
         }
-    }
-
-    //createGanglia();
+        averageRadius=aspectRatio*averageRadius/neighboorsNumber;
+        double radius=max(maxRadius,averageRadius);
+        if(radius>maxNodeRadius)maxNodeRadius=radius;
+        if(radius<minNodeRadius)minNodeRadius=radius;
+        n->setRadius(radius);
+    });
 }
 
 void network::assignLengths()
 {
-    for (int i = 0; i < totalPores; ++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-        {
-            p->setFullLength(length);
-            p->setNodeInLength(p->getNodeIn()==0 ?0:p->getNodeIn()->getRadius());
-            p->setNodeOutLength(p->getNodeOut()==0 ?0:p->getNodeOut()->getRadius());
-            p->setLength(length-p->getNodeInLength()-p->getNodeOutLength()>0?length-p->getNodeInLength()-p->getNodeOutLength():length/2);
-        }
-    }
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+        p->setFullLength(length);
+        p->setNodeInLength(p->getNodeIn()==0 ?0:p->getNodeIn()->getRadius());
+        p->setNodeOutLength(p->getNodeOut()==0 ?0:p->getNodeOut()->getRadius());
+        p->setLength(length-p->getNodeInLength()-p->getNodeOutLength()>0?length-p->getNodeInLength()-p->getNodeOutLength():length/2);
+    });
 
-    if(networkSource==2)
-    for (int i = 0; i < totalNodes; ++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-            n->setLength(2*n->getRadius());
-    }
+    for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
+        n->setLength(2*n->getRadius());
+    });
 }
 
 void network::distortNetwork()
 {
     if(degreeOfDistortion>0)
     {
-        for (int i = 0; i < Nx; ++i)
-            for (int j = 0; j < Ny; ++j)
-                for (int k = 0; k < Nz; ++k)
-                {
-                    node* n=getNode(i,j,k);
-                    n->setXCoordinate(n->getXCoordinate()+length*degreeOfDistortion*(-1+2*uniform_real()));
-                    n->setYCoordinate(n->getYCoordinate()+length*degreeOfDistortion*(-1+2*uniform_real()));
-                    if(Nz!=1)
-                    n->setZCoordinate(n->getZCoordinate()+length*degreeOfDistortion*(-1+2*uniform_real()));
-                }
+        for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
+            n->setXCoordinate(n->getXCoordinate()+length*degreeOfDistortion*(-1+2*uniform_real()));
+            n->setYCoordinate(n->getYCoordinate()+length*degreeOfDistortion*(-1+2*uniform_real()));
+            if(Nz!=1)
+            n->setZCoordinate(n->getZCoordinate()+length*degreeOfDistortion*(-1+2*uniform_real()));
+        });
 
         //update pores' lengths
-        for (int i = 0; i < totalPores; ++i)
-        {
-            pore* p=getPore(i);
-            if(!p->getClosed())
-            {
-                if(p->getNodeIn()==0 || p->getNodeOut()==0)continue;
-                double length=sqrt(pow(p->getNodeIn()->getXCoordinate()-p->getNodeOut()->getXCoordinate(),2)+pow(p->getNodeIn()->getYCoordinate()-p->getNodeOut()->getYCoordinate(),2)+pow(p->getNodeIn()->getZCoordinate()-p->getNodeOut()->getZCoordinate(),2));
-                p->setFullLength(length);
-                p->setLength(length-p->getNodeInLength()-p->getNodeOutLength()>0?length-p->getNodeInLength()-p->getNodeOutLength():length/2);//if(p->getLength()<0)cout<<"sdsads"<<endl;
-            }
-        }
+        for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+            if(p->getNodeIn()==0 || p->getNodeOut()==0) return;
+            double length=sqrt(pow(p->getNodeIn()->getXCoordinate()-p->getNodeOut()->getXCoordinate(),2)+pow(p->getNodeIn()->getYCoordinate()-p->getNodeOut()->getYCoordinate(),2)+pow(p->getNodeIn()->getZCoordinate()-p->getNodeOut()->getZCoordinate(),2));
+            p->setFullLength(length);
+            p->setLength(length-p->getNodeInLength()-p->getNodeOutLength()>0?length-p->getNodeInLength()-p->getNodeOutLength():length/2);
+        });
     }
 }
 
 void network::assignShapeFactors()
 {
-    for (int i = 0; i < totalPores; ++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-            p->setShapeFactor(shapeFactor);
-    }
-
-    if(networkSource==2)
-    for (int i = 0; i < totalNodes; ++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-            n->setShapeFactor(shapeFactor);
-
-    }
-
-    assignShapeFactorConstants();
-}
-
-void network::assignShapeFactorConstants()
-{
-    for (int i = 0; i < totalPores; ++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-        {
-            if(p->getShapeFactor()<=sqrt(3)/36.)
-                p->setShapeFactorConstant(0.6);
-            else if (p->getShapeFactor()<=1./16.)
-                p->setShapeFactorConstant(0.5623);
-            else
-                p->setShapeFactorConstant(0.5);
-        }
-    }
-
-    if(networkSource==2 || networkSource==3)
-    for (int i = 0; i < totalNodes; ++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-        {
-            if(n->getShapeFactor()<=sqrt(3)/36.)
-                n->setShapeFactorConstant(0.6);
-            else if (n->getShapeFactor()<=1./16.)
-                n->setShapeFactorConstant(0.5623);
-            else
-                n->setShapeFactorConstant(0.5);
-        }
-    }
+    auto circleThreshold=sqrt(3)/36.0;
+    auto squareThreshold=1.0/16.0;
+    for_each(accessibleElements.begin(),accessibleElements.end(),[=,this](element* e){
+        e->setShapeFactor(shapeFactor);
+        if(shapeFactor<=circleThreshold)
+            e->setShapeFactorConstant(0.6);
+        else if (shapeFactor<=squareThreshold)
+            e->setShapeFactorConstant(0.5623);
+        else
+            e->setShapeFactorConstant(0.5);
+    });
 }
 
 void network::assignVolumes()
 {
-    totalPoresVolume=0;
-    totalNodesVolume=0;
-    for (int i = 0; i < totalPores; ++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-        {
-            double volume=pow(poreVolumeConstant,2-poreVolumeExponent)*p->getLength()*pow(p->getRadius(),poreVolumeExponent)/(4*p->getShapeFactor())*pow(10,(6*poreVolumeExponent-12));
-            p->setVolume(volume);
-            p->setEffectiveVolume(volume);
-            totalPoresVolume+=volume;
-        }
-    }
-
-    if(networkSource==2 || networkSource==3)
-    for (int i = 0; i < totalNodes; ++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-        {
-            double volume=pow(poreVolumeConstant,2-poreVolumeExponent)*n->getLength()*pow(n->getRadius(),poreVolumeExponent)/(4*n->getShapeFactor())*pow(10,(6*poreVolumeExponent-12));
-            n->setVolume(volume);
-            n->setEffectiveVolume(volume);
-            totalNodesVolume+=volume;
-        }
-    }
+    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+        double volume=pow(poreVolumeConstant,2-poreVolumeExponent)*e->getLength()*pow(e->getRadius(),poreVolumeExponent)/(4*e->getShapeFactor())*pow(10,(6*poreVolumeExponent-12));
+        e->setVolume(volume);
+        e->setEffectiveVolume(volume);
+    });
 }
 
 void network::assignConductivities()
 {
-    for(int i=0;i<totalPores;++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-        {
-            node* nodeIn=p->getNodeIn();
-            node* nodeOut=p->getNodeOut();
-            double throatConductivityInverse(0),nodeInConductivityInverse(0),nodeOutConductivityInverse(0);
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+        node* nodeIn=p->getNodeIn();
+        node* nodeOut=p->getNodeOut();
+        auto throatConductivityInverse(0.0),nodeInConductivityInverse(0.0),nodeOutConductivityInverse(0.0);
 
-            throatConductivityInverse=1/(p->getShapeFactorConstant()*pow(p->getRadius(),4)/(16*p->getShapeFactor())/(p->getViscosity()*p->getLength()));
+        throatConductivityInverse=1/(p->getShapeFactorConstant()*pow(p->getRadius(),4)/(16*p->getShapeFactor())/(p->getViscosity()*p->getLength()));
 
-            if(nodeIn!=0)
-                nodeInConductivityInverse=1/(nodeIn->getShapeFactorConstant()*pow(nodeIn->getRadius(),4)/(16*nodeIn->getShapeFactor())/(nodeIn->getViscosity()*p->getNodeInLength()));
-            if(nodeOut!=0)
-                nodeOutConductivityInverse=1/(nodeOut->getShapeFactorConstant()*pow(nodeOut->getRadius(),4)/(16*nodeOut->getShapeFactor())/(nodeOut->getViscosity()*p->getNodeOutLength()));
+        if(nodeIn!=0)
+            nodeInConductivityInverse=1/(nodeIn->getShapeFactorConstant()*pow(nodeIn->getRadius(),4)/(16*nodeIn->getShapeFactor())/(nodeIn->getViscosity()*p->getNodeInLength()));
+        if(nodeOut!=0)
+            nodeOutConductivityInverse=1/(nodeOut->getShapeFactorConstant()*pow(nodeOut->getRadius(),4)/(16*nodeOut->getShapeFactor())/(nodeOut->getViscosity()*p->getNodeOutLength()));
 
-            p->setConductivity(1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse));
-
-        }
-    }
-}
-
-void network::assignWettability()
-{
-    if(wettingTypeFlag==1) //WW
-    {
-        for (int i = 0; i < totalElements; ++i)
-        {
-            element* e=getElement(i);
-            if(!e->getClosed())
-            {
-                e->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                e->setWettabilityFlag(wettability::waterWet);
-            }
-        }
-    }
-
-    if(wettingTypeFlag==2) //OW
-    {
-        for (int i = 0; i < totalElements; ++i)
-        {
-            element* e=getElement(i);
-            if(!e->getClosed())
-            {
-                e->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                e->setWettabilityFlag(wettability::oilWet);
-            }
-        }
-    }
-
-    if(wettingTypeFlag==3) //FW
-    {
-        for (int i = 0; i < totalElements; ++i)
-        {
-            element* p=getElement(i);
-            if(!p->getClosed())
-            {
-                p->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                p->setWettabilityFlag(wettability::waterWet);
-            }
-        }
-
-        int  oilWetSoFar=0;
-        while((double(oilWetSoFar)/double(totalOpenedNodes))<oilWetFraction)
-        {
-            int index=uniform_int(0,totalNodes-1);
-            node* p=getNode(index);
-            if(!p->getClosed() && p->getWettabilityFlag()!=wettability::oilWet)
-                {
-                    p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                    p->setWettabilityFlag(wettability::oilWet);
-                    oilWetSoFar++;
-                }
-        }
-
-        for (int i = 0; i < totalPores; ++i)
-        {
-            pore* p=getPore(i);
-            if(!p->getClosed())
-            {
-                if(p->getNeighboors().size()==1)
-                {
-                    element* connectedNode=p->getNeighboors()[0];
-                    p->setWettabilityFlag(connectedNode->getWettabilityFlag());
-                    p->setTheta(connectedNode->getTheta());
-                }
-                else
-                {
-                    element* connectedNode1=p->getNeighboors()[0];
-                    element* connectedNode2=p->getNeighboors()[1];
-                    if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
-                    {
-                        p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                        p->setTheta(connectedNode1->getTheta());
-                    }
-                    else
-                    {
-                        int dice=uniform_int();
-                        if(dice==0)
-                        {
-                            p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                            p->setTheta(connectedNode1->getTheta());
-                        }
-                        else
-                        {
-                            p->setWettabilityFlag(connectedNode2->getWettabilityFlag());
-                            p->setTheta(connectedNode2->getTheta());
-                        }
-                    }
-
-                }
-            }
-        }
-    }
-
-    if(wettingTypeFlag==4) //MWS
-        {
-            for (int i = 0; i < totalElements; ++i)
-            {
-                element* p=getElement(i);
-                if(!p->getClosed())
-                {
-                    p->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                    p->setWettabilityFlag(wettability::waterWet);
-                }
-            }
-
-            int  oilWetSoFar=0;
-            double currentRadius=minNodeRadius;
-            double radiusStep=(maxNodeRadius-minNodeRadius)/100;
-
-            while((double(oilWetSoFar)/double(totalOpenedNodes))<oilWetFraction)
-            {
-                currentRadius+=radiusStep;
-                for (int i = 0; i < totalNodes; ++i)
-                {
-                    element* p=getNode(i);
-                    if(!p->getClosed() && p->getRadius()<=currentRadius && p->getWettabilityFlag()!=wettability::oilWet)
-                    {
-                        p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                        p->setWettabilityFlag(wettability::oilWet);
-                        oilWetSoFar++;
-                    }
-                }
-            }
-
-            for (int i = 0; i < totalPores; ++i)
-            {
-                pore* p=getPore(i);
-                if(!p->getClosed())
-                {
-                    if(p->getNeighboors().size()==1)
-                    {
-                        element* connectedNode=p->getNeighboors()[0];
-                        p->setWettabilityFlag(connectedNode->getWettabilityFlag());
-                        p->setTheta(connectedNode->getTheta());
-                    }
-                    else
-                    {
-                        element* connectedNode1=p->getNeighboors()[0];
-                        element* connectedNode2=p->getNeighboors()[1];
-                        if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
-                        {
-                            p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                            p->setTheta(connectedNode1->getTheta());
-                        }
-                        else
-                        {
-                            int dice=uniform_int();
-                            if(dice==0)
-                            {
-                                p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                                p->setTheta(connectedNode1->getTheta());
-                            }
-                            else
-                            {
-                                p->setWettabilityFlag(connectedNode2->getWettabilityFlag());
-                                p->setTheta(connectedNode2->getTheta());
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
-
-        if(wettingTypeFlag==5) //MWL
-        {
-            for (int i = 0; i < totalElements; ++i)
-            {
-                element* p=getElement(i);
-                if(!p->getClosed())
-                {
-                    p->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                    p->setWettabilityFlag(wettability::waterWet);
-                }
-            }
-
-            int  oilWetSoFar=0;
-            double currentRadius=maxNodeRadius;
-            double radiusStep=(maxNodeRadius-minNodeRadius)/100;
-
-            while((double(oilWetSoFar)/double(totalOpenedNodes))<oilWetFraction)
-            {
-                currentRadius-=radiusStep;
-                for (int i = 0; i < totalNodes; ++i)
-                {
-                    element* p=getNode(i);
-                    if(!p->getClosed() && p->getRadius()>=currentRadius && p->getWettabilityFlag()!=wettability::oilWet)
-                    {
-                        p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                        p->setWettabilityFlag(wettability::oilWet);
-                        oilWetSoFar++;
-                    }
-                }
-            }
-
-            for (int i = 0; i < totalPores; ++i)
-            {
-                pore* p=getPore(i);
-                if(!p->getClosed())
-                {
-                    if(p->getNeighboors().size()==1)
-                    {
-                        element* connectedNode=p->getNeighboors()[0];
-                        p->setWettabilityFlag(connectedNode->getWettabilityFlag());
-                        p->setTheta(connectedNode->getTheta());
-                    }
-                    else
-                    {
-                        element* connectedNode1=p->getNeighboors()[0];
-                        element* connectedNode2=p->getNeighboors()[1];
-                        if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
-                        {
-                            p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                            p->setTheta(connectedNode1->getTheta());
-                        }
-                        else
-                        {
-                            int dice=uniform_int();
-                            if(dice==0)
-                            {
-                                p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                                p->setTheta(connectedNode1->getTheta());
-                            }
-                            else
-                            {
-                                p->setWettabilityFlag(connectedNode2->getWettabilityFlag());
-                                p->setTheta(connectedNode2->getTheta());
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
-        backupWettabilityPT();
-}
-
-void network::backupWettabilityPT()
-{
-    wettabiltyThetaBackup.clear();
-    for(int i=0;i<totalElements;++i)
-    {
-        element* e=getElement(i);
-        if(!e->getClosed())
-            wettabiltyThetaBackup[e]=e->getTheta();
-    }
-}
-
-void network::assignWWWettabilityPT(double theta)
-{
-    for(int i=0;i<totalElements;++i)
-    {
-        element* e=getElement(i);
-        if(!e->getClosed())
-        {
-            e->setTheta(theta);
-            e->setWettabilityFlag(wettability::waterWet);
-        }
-    }
-    clusterWaterWetElements();
-    clusterOilWetElements();
-}
-
-void network::restoreWettabilityPT()
-{
-    for(int i=0;i<totalElements;++i)
-    {
-        element* e=getElement(i);
-        if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
-        {
-            e->setTheta(wettabiltyThetaBackup[e]);
-            if(e->getTheta()<tools::pi()/2)
-            {
-                e->setWettabilityFlag(wettability::waterWet);
-            }
-            else
-            {
-                e->setWettabilityFlag(wettability::oilWet);
-                e->setWaterCornerActivated(false);
-            }
-        }
-    }
-    clusterWaterWetElements();
-    clusterOilWetElements();
-}
-
-void network::assignHalfAngles()
-{
-    ofstream file("Results/halfAngles.txt");
-    for (int i = 0; i < totalPores; ++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-        {
-            double beta1(0), beta2(0),beta3(0);
-            if(p->getShapeFactor()<=sqrt(3)/36.)
-            {
-                double beta2Min=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3+4*tools::pi()/3));
-                double beta2Max=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3));
-                beta2=uniform_real(beta2Min,beta2Max);
-                beta1=-0.5*beta2+0.5*asin((tan(beta2)+4*p->getShapeFactor())/(tan(beta2)-4*p->getShapeFactor())*sin(beta2));
-                beta3=tools::pi()/2-beta1-beta2;
-            }
-            p->setBeta1(beta1);
-            p->setBeta2(beta2);
-            p->setBeta3(beta3);
-            file<<p->getId()<<" "<<p->getBeta1()<<" "<<p->getBeta2()<<" "<<p->getBeta3()<<endl;
-        }
-    }
-
-    if(networkSource==2 || networkSource==3)
-    for (int i = 0; i < totalNodes; ++i)
-    {
-        node* p=getNode(i);
-        if(!p->getClosed())
-        {
-            double beta1(0), beta2(0),beta3(0);
-            if(p->getShapeFactor()<=sqrt(3)/36.)
-            {
-                double beta2Min=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3+4*tools::pi()/3));
-                double beta2Max=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3));
-                beta2=uniform_real(beta2Min,beta2Max);
-                beta1=-0.5*beta2+0.5*asin((tan(beta2)+4*p->getShapeFactor())/(tan(beta2)-4*p->getShapeFactor())*sin(beta2));
-                beta3=tools::pi()/2-beta1-beta2;
-            }
-            p->setBeta1(beta1);
-            p->setBeta2(beta2);
-            p->setBeta3(beta3);
-            file<<p->getId()<<" "<<p->getBeta1()<<" "<<p->getBeta2()<<" "<<p->getBeta3()<<endl;
-        }
-    }
+        p->setConductivity(1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse));
+    });
 }
 
 void network::assignGeneralProperties()
 {
-    totalElementsVolume=0;
-    totalPoresVolume=0;
-    totalNodesVolume=0;
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-        {
-            totalElementsVolume+=n->getVolume();
-            totalNodesVolume+=n->getVolume();
-        }
-    }
+    totalNodesVolume=accumulate(accessibleNodes.begin(), accessibleNodes.end(), 0.0, [](double sum, const node* n){
+        return sum+n->getVolume();
+    });
 
-    for(int i=0;i<totalPores;++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-        {
-            totalElementsVolume+=p->getVolume();
-            totalPoresVolume+=p->getVolume();
-        }
-    }
+    totalPoresVolume=accumulate(accessiblePores.begin(), accessiblePores.end(), 0.0, [](double sum, const pore* p){
+        return sum+p->getVolume();
+    });
+
+    totalElementsVolume=totalNodesVolume+totalPoresVolume;
 }
 
 }

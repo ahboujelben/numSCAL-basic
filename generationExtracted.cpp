@@ -20,12 +20,12 @@ void network::setupExtractedModel()
     cleanExtractedNetwork();
     cout<<"Defining accessible elements..."<<endl;
     defineAccessibleElements();
-    cout<<"Assigning Half Angles..."<<endl;
-    assignHalfAngles();
-    cout<<"Assigning General properties..."<<endl;
-    assignGeneralProperties();
+    cout<<"Assigning Conductivities..."<<endl;
+    assignConductivities();
     cout<<"Setting Wettability..."<<endl;
     assignWettability();
+    cout<<"Assigning General properties..."<<endl;
+    assignGeneralProperties();
 
     if(absolutePermeabilityCalculation)
     {
@@ -258,10 +258,40 @@ void network::loadExtractedNetwork()
     }
 
     assignShapeFactorConstants();
-    assignConductivities();
 
     //setting neighboors
     setNeighboorsForExtractedModel();
+}
+
+void network::assignShapeFactorConstants()
+{
+    for (int i = 0; i < totalPores; ++i)
+    {
+        pore* p=getPore(i);
+        if(!p->getClosed())
+        {
+            if(p->getShapeFactor()<=sqrt(3)/36.)
+                p->setShapeFactorConstant(0.6);
+            else if (p->getShapeFactor()<=1./16.)
+                p->setShapeFactorConstant(0.5623);
+            else
+                p->setShapeFactorConstant(0.5);
+        }
+    }
+
+    for (int i = 0; i < totalNodes; ++i)
+    {
+        node* n=getNode(i);
+        if(!n->getClosed())
+        {
+            if(n->getShapeFactor()<=sqrt(3)/36.)
+                n->setShapeFactorConstant(0.6);
+            else if (n->getShapeFactor()<=1./16.)
+                n->setShapeFactorConstant(0.5623);
+            else
+                n->setShapeFactorConstant(0.5);
+        }
+    }
 }
 
 void network::setNeighboorsForExtractedModel()

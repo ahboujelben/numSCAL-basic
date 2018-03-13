@@ -122,6 +122,7 @@ void network::initialiseCapillaries()
             p->setNodeOutOil(p->getPhaseFlag()==phase::oil?true:false);
             p->setNodeInWater(p->getPhaseFlag()==phase::water?true:false);
             p->setNodeOutWater(p->getPhaseFlag()==phase::water?true:false);
+            p->setCapillaryPressure(0);
         }
     });
 }
