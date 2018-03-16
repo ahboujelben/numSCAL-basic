@@ -138,7 +138,7 @@ void network::primaryDrainagePT(double finalSaturation)
 
     //Look for capillaries connected to water
     clusterWaterFlowingElements();
-    set<element*> elementsToInvade;
+    unordered_set<element*> elementsToInvade;
     for(pore* e:accessiblePores)
         if(e->getPhaseFlag()==phase::water && e->getInlet())
             elementsToInvade.insert(e);
@@ -195,9 +195,8 @@ void network::primaryDrainagePT(double finalSaturation)
         //Remove trapped water capillaries from the set potentially-invaded capillaries
         clusterWaterFlowingElements();
         vector<element*> trappedElements;
-        for(set<element*>::iterator it = elementsToInvade.begin(); it != elementsToInvade.end(); ++it )
+        for(element* e: elementsToInvade )
         {
-            element* e=*it;
             if(!e->getClusterWaterFilm()->getOutlet())
                 trappedElements.push_back(e);
         }
@@ -250,7 +249,6 @@ void network::primaryDrainagePT(double finalSaturation)
         //Extract data at Breakthrough
         if(!spanningOil)
         {
-            clusterOilElements();
             if (isOilSpanning)
             {
                 spanningOil=true;
@@ -324,7 +322,7 @@ void network::spontaneousImbibitionPT()
     assignFilmStability();
 
     //Look for capillaries connected to water
-    set<element*> elementsToInvade;
+    unordered_set<element*> elementsToInvade;
     for(element* e:accessibleElements)
         if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::waterWet)
             elementsToInvade.insert(e);
@@ -538,7 +536,7 @@ void network::forcedWaterInjectionPT()
     double currentRadius=effectiveMaxRadius;
 
     //Look for capillaries connected to water
-    set<element*> elementsToInvade;
+    unordered_set<element*> elementsToInvade;
     for(element* e: accessibleElements)
     {
         if(e->getPhaseFlag()==phase::oil)
@@ -717,7 +715,7 @@ void network::spontaneousOilInvasionPT()
 
     //Look for capillaries connected to oil
     clusterWaterFlowingElements();
-    set<element*> elementsToInvade;
+    unordered_set<element*> elementsToInvade;
     for(element* e:accessibleElements)
         if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::oilWet)
             elementsToInvade.insert(e);
@@ -931,7 +929,7 @@ void network::secondaryOilDrainagePT()
     double currentRadius=effectiveMaxRadius;
 
     //Look for capillaries connected to oil
-    set<element*> elementsToInvade;
+    unordered_set<element*> elementsToInvade;
     for(element* e: accessibleElements)
     {
         if(e->getPhaseFlag()==phase::water)
