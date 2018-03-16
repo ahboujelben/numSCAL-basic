@@ -64,9 +64,9 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
 
     if(distribution==2)
     {
-        auto workingElements=accessibleElements;
+        auto workingElements=accessibleNodes;
 
-        sort(workingElements.begin(),workingElements.end(), [this](element* e1, element* e2){
+        sort(workingElements.begin(),workingElements.end(), [this](node* e1, node* e2){
             return e1->getRadius()>e2->getRadius();
         });
 
@@ -82,9 +82,9 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
 
     if(distribution==3)
     {
-        auto workingElements=accessibleElements;
+        auto workingElements=accessibleNodes;
 
-        sort(workingElements.begin(),workingElements.end(), [this](element* e1, element* e2){
+        sort(workingElements.begin(),workingElements.end(), [this](node* e1, node* e2){
             return e1->getRadius()<e2->getRadius();
         });
 
@@ -97,6 +97,23 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
             workingElements.pop_back();
         }
     }
+
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+        if(p->getNeighboors().size()==1){
+            element* connectedNode=p->getNeighboors()[0];
+            p->setPhaseFlag(connectedNode->getPhaseFlag());
+        }
+        else{
+            element* connectedNode1=p->getNeighboors()[0];
+            element* connectedNode2=p->getNeighboors()[1];
+            if(connectedNode1->getPhaseFlag()==connectedNode2->getPhaseFlag()){
+                p->setPhaseFlag(connectedNode1->getPhaseFlag());
+            }
+            else{
+                p->setPhaseFlag(uniform_int()?connectedNode1->getPhaseFlag():connectedNode2->getPhaseFlag());
+            }
+        }
+    });
 }
 
 void network::initialiseCapillaries()

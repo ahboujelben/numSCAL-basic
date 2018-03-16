@@ -129,18 +129,16 @@ void network::setInitialFlagsPT()
         {
             p->setNodeOutOil(false);
             p->setNodeOutWater(true);
-            p->setNodeInOil(true);
-            p->setNodeInWater(false);
         }
     }
 
     for(node* p: accessibleNodes) //create Pc in oil-filled pores next to inlet-connected water
     {
-        if(p->getPhaseFlag()==phase::water && p->getClusterWater()->getInlet())
+        if(p->getPhaseFlag()==phase::water)
         for(int i : p->getConnectedPores())
         {
             pore* neigh=getPore(i-1);
-            if(!neigh->getClosed() && neigh->getPhaseFlag()==phase::oil && !p->getInlet() && !neigh->getInlet())
+            if(!neigh->getClosed() && neigh->getPhaseFlag()==phase::oil)
             {
                 if(p==neigh->getNodeIn())
                 {
@@ -153,18 +151,6 @@ void network::setInitialFlagsPT()
                     neigh->setNodeOutOil(false);
                     neigh->setNodeOutWater(true);
                 }
-
-                if(p==neigh->getNodeOut())
-                {
-                    neigh->setNodeOutOil(false);
-                    neigh->setNodeOutWater(true);
-                }
-
-                if(p==neigh->getNodeIn())
-                {
-                    neigh->setNodeInOil(false);
-                    neigh->setNodeInWater(true);
-                }
             }
         }
     }
@@ -174,7 +160,6 @@ void network::setAdvancedTrappingPT()
 {
     clusterOilElements();
     clusterWaterElements();
-    clusterOilWetElements();
 
     vector<pore*> partiallyFilled;
     for(pore* p :accessiblePores)
@@ -242,13 +227,12 @@ void network::setAdvancedTrappingPT()
 
     for(pore* p: partiallyFilled)
         p->setPhaseFlag(phase::oil);
+
+    clusterOilElements();
 }
 
 void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::set<node *> &nodesToCheck)
 {
-    clusterOilElements();
-    clusterWaterElements();
-
     for(node* p : accessibleNodes)
     {
         p->assignViscosity(oilViscosity, waterViscosity);
@@ -546,7 +530,6 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
 
 double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck, std::set<node *> &nodesToCheck, bool &solvePressure)
 {
-    double additionalWater(0);
     for(pore* p : poresToCheck)
     {
         if(p->getActive() && abs(p->getFlow())>1e-24)
@@ -556,8 +539,6 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
                 double incrementalWater=abs(p->getFlow())*timeStep;
                 p->setWaterFraction(p->getWaterFraction()+incrementalWater/p->getVolume());
                 p->setOilFraction(1-p->getWaterFraction());
-
-                additionalWater+=incrementalWater;
 
                 if(p->getWaterFraction()>1-1e-8)
                 {
@@ -582,8 +563,6 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
             p->setWaterFraction(p->getWaterFraction()+incrementalWater/p->getVolume());
             p->setOilFraction(1-p->getWaterFraction());
 
-            additionalWater+=incrementalWater;
-
             if(p->getWaterFraction()>1-1e-8)
             {
                 p->setPhaseFlag(phase::water);
@@ -597,27 +576,26 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
             if(p->getWaterFraction()>1.0001 || p->getWaterFraction()<-0.0001) {cout<<"Something wrong: water fraction >1 or <0 "<<p->getWaterFraction()<<endl;cancel=true;}
         }
     }
-
-    return additionalWater;
 }
 
 void network::updateElementaryFluidFlagsPT(std::set<pore *> &poresToCheck, std::set<node *> &nodesToCheck)
 {
     for(pore* p: poresToCheck)
     {
+        node* n=0;
+
         if(p->getPhaseFlag()==phase::water)
         {
+            if(p->getNodeInOil())
+                n=p->getNodeIn();
+            if(p->getNodeOutOil())
+                n=p->getNodeOut();
+
             p->setNodeInOil(false);
             p->setNodeOutOil(false);
             p->setNodeInWater(true);
             p->setNodeOutWater(true);
         }
-
-        node* n=0;
-        if(p->getNodeInOil())
-            n=p->getNodeIn();
-        if(p->getNodeOutOil())
-            n=p->getNodeOut();
 
         if(n!=0 && n->getPhaseFlag()==phase::water && n->getWaterTrapped())
         {
@@ -655,7 +633,6 @@ void network::updateElementaryFluidFlagsPT(std::set<pore *> &poresToCheck, std::
                 pore* n=getPore(i-1);
                 if(!n->getClosed() && n->getPhaseFlag()==phase::oil)
                 {
-
                     if(n->getNodeIn()==p)
                     {
                         n->setNodeInOil(false);
