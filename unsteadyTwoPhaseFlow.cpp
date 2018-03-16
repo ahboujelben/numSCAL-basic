@@ -268,7 +268,10 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
             }
             else
             {
-                if(p->getInlet() || (p->getNodeIn()!=0 && !p->getNodeIn()->getClosed() && p->getNodeIn()->getPhaseFlag()==phase::water && !p->getNodeIn()->getWaterTrapped()) || (p->getNodeOut()!=0 && !p->getNodeOut()->getClosed() &&  p->getNodeOut()->getPhaseFlag()==phase::water && !p->getNodeOut()->getWaterTrapped()))
+                if(p->getInlet()
+                        || (p->getNodeIn()!=0 && !p->getNodeIn()->getClosed()
+                            && p->getNodeIn()->getPhaseFlag()==phase::water && !p->getNodeIn()->getWaterTrapped())
+                        || (p->getNodeOut()!=0 && !p->getNodeOut()->getClosed() &&  p->getNodeOut()->getPhaseFlag()==phase::water && !p->getNodeOut()->getWaterTrapped()))
                     poresToCheck.insert(p);
 
                 //Allow slow filling of throats connecting water clusters (a workaround to mimic experimental observations)
@@ -418,15 +421,16 @@ void network::solvePressureWithoutCounterImbibitionPT()
 
         for(pore* p : accessiblePores)
         {
-            if(p->getActive() && p->getNodeIn()!=0 && p->getNodeOut()!=0 && ((p->getFlow()>0 && p->getNodeOut()->getPhaseFlag()==phase::oil && p->getNodeIn()->getPhaseFlag()==phase::water) || (p->getFlow()<0 && p->getNodeOut()->getPhaseFlag()==phase::water && p->getNodeIn()->getPhaseFlag()==phase::oil)))
-            {
+            if(p->getActive() && p->getNodeIn()!=0 && p->getNodeOut()!=0
+                    && ((p->getFlow()>0 && p->getNodeOut()->getPhaseFlag()==phase::oil && p->getNodeIn()->getPhaseFlag()==phase::water)
+                        || (p->getFlow()<0 && p->getNodeOut()->getPhaseFlag()==phase::water && p->getNodeIn()->getPhaseFlag()==phase::oil)
+                        )){
                 p->setConductivity(1e-200);
                 p->setCapillaryPressure(0);
                 p->setActive(false);
                 stillMorePoresToClose=true;
             }
-            if(p->getActive() && (p->getInlet() || p->getOutlet()) &&  p->getFlow()<0)
-            {
+            if(p->getActive() && (p->getInlet() || p->getOutlet()) &&  p->getFlow()<0){
                 p->setConductivity(1e-200);
                 p->setCapillaryPressure(0);
                 p->setActive(false);
@@ -582,7 +586,7 @@ void network::updateElementaryFluidFlagsPT(std::set<pore *> &poresToCheck, std::
 {
     for(pore* p: poresToCheck)
     {
-        node* n=0;
+        node* n=nullptr;
 
         if(p->getPhaseFlag()==phase::water)
         {
@@ -597,7 +601,7 @@ void network::updateElementaryFluidFlagsPT(std::set<pore *> &poresToCheck, std::
             p->setNodeOutWater(true);
         }
 
-        if(n!=0 && n->getPhaseFlag()==phase::water && n->getWaterTrapped())
+        if(n!=nullptr && n->getPhaseFlag()==phase::water && n->getWaterTrapped())
         {
             for(node* nn: accessibleNodes)
             {
