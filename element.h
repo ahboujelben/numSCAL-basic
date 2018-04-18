@@ -176,6 +176,11 @@ public:
     // defined methods
     void assignViscosity(double oilViscosity, double waterViscosity);
 
+    // virtual methods
+    virtual double getXCoordinate() const =0;
+    virtual double getYCoordinate() const =0;
+    virtual double getZCoordinate() const =0;
+
 protected:
     capillaryType type; // type of the capillary element: pore (throat) or pore body (node)
 

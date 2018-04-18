@@ -20,12 +20,12 @@ void network::setupExtractedModel()
     cleanExtractedNetwork();
     cout<<"Defining accessible elements..."<<endl;
     defineAccessibleElements();
+    cout<<"Assigning Volume..."<<endl;
+    calculateExtractedNetworkVolume();
     cout<<"Assigning Conductivities..."<<endl;
     assignConductivities();
     cout<<"Setting Wettability..."<<endl;
     assignWettability();
-    cout<<"Assigning General properties..."<<endl;
-    assignGeneralProperties();
 
     if(absolutePermeabilityCalculation)
     {
@@ -357,6 +357,23 @@ void network::cleanExtractedNetwork()
             rank++;
         }
     }
+}
+
+void network::calculateExtractedNetworkVolume()
+{
+    totalNodesVolume=accumulate(accessibleNodes.begin(), accessibleNodes.end(), 0.0, [](double sum, const node* n){
+        return sum+n->getVolume();
+    });
+
+    totalPoresVolume=accumulate(accessiblePores.begin(), accessiblePores.end(), 0.0, [](double sum, const pore* p){
+        return sum+p->getVolume();
+    });
+
+    inletPoresVolume=accumulate(inletPores.begin(), inletPores.end(), 0.0, [](double sum, const pore* p){
+        return sum+p->getVolume();
+    });
+
+    totalElementsVolume=totalNodesVolume+totalPoresVolume;
 }
 
 }

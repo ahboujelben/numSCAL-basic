@@ -153,16 +153,21 @@ void network::setupModel()
 
     gen.seed(seed);
 
-    if(networkSource==2)
-        setupRegularModel();
-    if(networkSource==3)
-        setupExtractedModel();
+    try{
+        if(networkSource==2)
+            setupRegularModel();
+        if(networkSource==3)
+            setupExtractedModel();
+    }catch(std::bad_alloc e){
+        cout<<"Not enough RAM to load the network. Aborting."<<endl;
+        exit(0);
+    }
 
     ready=true;
     emitPlotSignal();
 }
 
-void network::runFluidInjectionSimulation()
+void network::runSimulation()
 {
     tools::createRequiredFolders();
     tools::cleanResultsFolder();
@@ -172,9 +177,9 @@ void network::runFluidInjectionSimulation()
     if(twoPhaseSS)
         runTwoPhaseSSModelPT();
     if(drainageUSS)
-        runUSSDrainageModelPT();
+        runUSSDrainageModel();
     if(tracerFlow)
-        runTracerFlowPT();
+        runTracerModel();
 }
 
 //getters
@@ -292,10 +297,6 @@ int network::getNz() const
     return Nz;
 }
 
-void network::setNz(int value)
-{
-    Nz = value;
-}
 std::string network::getSimulationNotification() const
 {
     return simulationNotification;

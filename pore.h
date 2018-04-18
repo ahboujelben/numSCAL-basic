@@ -64,9 +64,9 @@ public:
     double getMinZCoordinate() const;
     double getMaxZCoordinate() const;
 
-    double getXCoordinate() const;
-    double getYCoordinate() const;
-    double getZCoordinate() const;
+    double getXCoordinate() const override;
+    double getYCoordinate() const override;
+    double getZCoordinate() const override;
 
     void assignConductivity(); //calculate pore conductivity
 

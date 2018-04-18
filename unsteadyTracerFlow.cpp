@@ -12,7 +12,7 @@
 
 namespace PNM {
 
-void network::runTracerFlowPT()
+void network::runTracerModel()
 {
     cout<<"Starting Tracer Flow Model... "<<endl;
 
@@ -23,7 +23,7 @@ void network::runTracerFlowPT()
     if(videoRecording)
         record=true;
 
-    initializeTwoPhaseSimulationPT();
+    initialiseTracerModel();
 
     //initialise flags
     double timeSoFar(0);
@@ -81,6 +81,26 @@ void network::runTracerFlowPT()
     cout<<"Injected PVs: "<<injectedPVs<<endl;
     endTime=tools::getCPUTime();
     cout<<"Tracer Flow Time: "<<endTime-startTime<<" s"<<endl;
+}
+
+void network::initialiseTracerModel()
+{
+    cancel=false;
+    if(waterDistribution!=4){ //not after primary drainage
+        fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
+    }
+    else{ //after primary drainage
+        initialiseTwoPhaseSSModel();
+        primaryDrainagePT(initialWaterSaturation);
+        restoreWettabilityPT();
+    }
+
+    initialiseCapillaries();
+
+    if(overrideByInjectedPVs){
+        simulationTime=totalElementsVolume*injectedPVs/flowRate;
+        cout<<"PVs to inject: "<<injectedPVs<<endl;
+    }
 }
 
 void network::solvePressureFieldInOil()

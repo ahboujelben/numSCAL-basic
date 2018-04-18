@@ -47,6 +47,7 @@ public:
     void destroy();
     void reset();
     void setupModel();
+    void runSimulation();
 
 
     ///////////// Methods for generating regular networks models
@@ -64,7 +65,6 @@ public:
     void assignVolumes();
     void assignConductivities();
     void assignWettability();
-    void assignGeneralProperties();
     void assignViscosities();
 
 
@@ -73,15 +73,11 @@ public:
     void loadExtractedNetwork();
     void setNeighboorsForExtractedModel();
     void cleanExtractedNetwork();
-    //Methods for extending the size of microCT models
-    void extendCustomModel(char);
-    void stitchCustomModel(char);
-    void setBoundaries();
+    void calculateExtractedNetworkVolume();
 
 
     ///////////// Methods for solvers and permeability calculations
     void solvePressures();
-    void solvePressuresForRegularModel();
     void solvePressuresWithCapillaryPressures();
     double updateFlows();
     double updateFlowsWithCapillaryPressure();
@@ -91,9 +87,8 @@ public:
 
 
     ///////////// Methods for Quasi-steady state 2-Phase flow
-    void runFluidInjectionSimulation();
     void runTwoPhaseSSModelPT();
-    void initializeTwoPhaseSimulationPT();
+    void initialiseTwoPhaseSSModel();
     void primaryDrainagePT(double finalSaturation=0);
     void spontaneousImbibitionPT();
     void forcedWaterInjectionPT();
@@ -108,7 +103,9 @@ public:
 
 
     ///////////// Methods for Unsteady-steady state 2-Phase flow
-    void runUSSDrainageModelPT();
+    void runUSSDrainageModel();
+    void initialiseUSSDrainageModel();
+    void addWaterChannel();
     void setInitialFlagsPT();
     void setAdvancedTrappingPT();
     void updateCapillaryPropertiesPT(set<pore*>&, set<node*>&);
@@ -122,7 +119,8 @@ public:
     void outputTwoPhaseData(double, int &, double);
 
     ///////////// Methods for Unsteady-steady state 2-Phase flow
-    void runTracerFlowPT();
+    void runTracerModel();
+    void initialiseTracerModel();
     void solvePressureFieldInOil();
     void calculateTracerTimeStep();
     void updateConcentrationValues(vector<double> & newConcentration);
@@ -206,7 +204,7 @@ public:
     double getZEdgeLength() const;
 
 
-    ////////////// ThreadManagement
+    ////////////// Thread Management
     bool getReady() const;
     void setCancel(bool value);
     int getNetworkSource() const;
@@ -217,7 +215,6 @@ public:
     bool getSimulationRunning() const;
     void setSimulationRunning(bool value);
     int getNz() const;
-    void setNz(int value);
 
 
     ////////////// Display runtime notifications
@@ -225,7 +222,7 @@ public:
     void setSimulationNotification(const string &value);
 
 
-    ///////////// Emitting signals
+    ///////////// Emitting updateGL signals
     void emitPlotSignal();
 
 signals:
@@ -257,6 +254,7 @@ private:
     double totalPoresVolume;
     double totalNodesVolume;
     double totalElementsVolume;
+    double inletPoresVolume;
     double coordinationNumber;
     double minRadius;
     double maxRadius;

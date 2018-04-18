@@ -15,14 +15,16 @@ namespace PNM {
 void network::setupRegularModel()
 {
     totalNodes=Nx*Ny*Nz;
-    tableOfAllNodes.reserve(totalNodes);
     totalPores=3*Nx*Ny*Nz+Ny*Nz+Nx*Nz+Nx*Ny;
-    tableOfAllPores.reserve(totalPores);
     totalElements=totalNodes+totalPores;
-    tableOfElements.reserve(totalPores+totalNodes);
+
     xEdgeLength=Nx*length;
     yEdgeLength=Ny*length;
     zEdgeLength=Nz*length;
+
+    tableOfAllNodes.reserve(totalNodes); 
+    tableOfAllPores.reserve(totalPores);
+    tableOfElements.reserve(totalPores+totalNodes);
 
     cout<<"Creating Nodes..."<<endl;
     createNodes();
@@ -46,8 +48,6 @@ void network::setupRegularModel()
     assignConductivities();
     cout<<"Assigning Wettability..."<<endl;
     assignWettability();
-    cout<<"Assigning General properties..."<<endl;
-    assignGeneralProperties();
 
     if(absolutePermeabilityCalculation)
     {
@@ -130,6 +130,10 @@ void network::setNeighboors()
         node* n=getNode(i);
         vector<int> connectedPores;
         vector<int> neighboors;
+
+        connectedPores.reserve(6);
+        neighboors.reserve(6);
+
         pore *x=getPoreX(n->getIndexX(),n->getIndexY(),n->getIndexZ());
         pore *xout=getPoreXout(n->getIndexX(),n->getIndexY(),n->getIndexZ());
         pore *y=getPoreY(n->getIndexX(),n->getIndexY(),n->getIndexZ());
@@ -143,7 +147,7 @@ void network::setNeighboors()
         connectedPores.push_back(yout->getId());
         connectedPores.push_back(z->getId());
         connectedPores.push_back(zout->getId());
-        n->setConnectedPores(connectedPores);
+        n->setConnectedPores(std::move(connectedPores));
 
         neighboors.push_back(x->getNodeOut()==0?0:x->getNodeOut()->getId());
         neighboors.push_back(xout->getNodeIn()==0?0:xout->getNodeIn()->getId());
@@ -151,13 +155,16 @@ void network::setNeighboors()
         neighboors.push_back(yout->getNodeIn()==0?0:yout->getNodeIn()->getId());
         neighboors.push_back(z->getNodeOut()==0?0:z->getNodeOut()->getId());
         neighboors.push_back(zout->getNodeIn()==0?0:zout->getNodeIn()->getId());
-        n->setConnectedNodes(neighboors);
+        n->setConnectedNodes(std::move(neighboors));
     }
 
     for(int i=0;i<totalPores;++i)
     {
         pore*p=getPore(i);
         vector<pore*> neighboors;
+
+        neighboors.reserve(6);
+
         if(p->getNodeIn()!=0)
         {
             const vector<int>& neighboorsIn=p->getNodeIn()->getConnectedPores();
@@ -172,7 +179,7 @@ void network::setNeighboors()
                 if(neighboorsOut[j]!=p->getId())
                     neighboors.push_back(getPore(neighboorsOut[j]-1));
         }
-        p->setConnectedPores(neighboors);
+        p->setConnectedPores(std::move(neighboors));
     }
 }
 
@@ -393,6 +400,20 @@ void network::assignVolumes()
         e->setVolume(volume);
         e->setEffectiveVolume(volume);
     });
+
+    totalNodesVolume=accumulate(accessibleNodes.begin(), accessibleNodes.end(), 0.0, [](double sum, const node* n){
+        return sum+n->getVolume();
+    });
+
+    totalPoresVolume=accumulate(accessiblePores.begin(), accessiblePores.end(), 0.0, [](double sum, const pore* p){
+        return sum+p->getVolume();
+    });
+
+    inletPoresVolume=accumulate(inletPores.begin(), inletPores.end(), 0.0, [](double sum, const pore* p){
+        return sum+p->getVolume();
+    });
+
+    totalElementsVolume=totalNodesVolume+totalPoresVolume;
 }
 
 void network::assignConductivities()
@@ -411,19 +432,6 @@ void network::assignConductivities()
 
         p->setConductivity(1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse));
     });
-}
-
-void network::assignGeneralProperties()
-{
-    totalNodesVolume=accumulate(accessibleNodes.begin(), accessibleNodes.end(), 0.0, [](double sum, const node* n){
-        return sum+n->getVolume();
-    });
-
-    totalPoresVolume=accumulate(accessiblePores.begin(), accessiblePores.end(), 0.0, [](double sum, const pore* p){
-        return sum+p->getVolume();
-    });
-
-    totalElementsVolume=totalNodesVolume+totalPoresVolume;
 }
 
 }

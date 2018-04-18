@@ -12,7 +12,7 @@
 
 namespace PNM {
 
-void network::runUSSDrainageModelPT()
+void network::runUSSDrainageModel()
 {
     cout<<"Starting Unsteady State Drainage Model... "<<endl;
 
@@ -23,7 +23,7 @@ void network::runUSSDrainageModelPT()
     if(videoRecording)
         record=true;
 
-    initializeTwoPhaseSimulationPT();
+    initialiseUSSDrainageModel();
     initializeTwoPhaseOutputs();
     setInitialFlagsPT();
 
@@ -117,6 +117,37 @@ void network::runUSSDrainageModelPT()
     cout<<"Injected PVs: "<<injectedPVs<<endl;
     endTime=tools::getCPUTime();
     cout<<"Fast Unsteady State Water Injection Time: "<<endTime-startTime<<" s"<<endl;
+}
+
+void network::initialiseUSSDrainageModel()
+{
+    cancel=false;
+    if(waterDistribution!=4){ //not after primary drainage
+        assignWWWettabilityPT();
+        fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
+    }
+    else{ //after primary drainage
+        initialiseTwoPhaseSSModel();
+        primaryDrainagePT(initialWaterSaturation);
+    }
+
+    addWaterChannel();
+    initialiseCapillaries();
+
+    restoreWettabilityPT();
+
+    if(overrideByInjectedPVs){
+        simulationTime=totalElementsVolume*injectedPVs/flowRate;
+        cout<<"PVs to inject: "<<injectedPVs<<endl;
+    }
+}
+
+void network::addWaterChannel()
+{
+    for_each(accessibleElements.begin(), accessibleElements.end(), [this](element* e){
+        if(e->getXCoordinate()<1.5*length)
+            e->setPhaseFlag(phase::water);
+    });
 }
 
 void network::setInitialFlagsPT()
@@ -389,35 +420,38 @@ void network::solvePressureWithoutCounterImbibitionPT()
         }
 
         stillMorePoresToClose=false;
-        double testQ=0;
-        double testQ1,testQ2,deltaP1,deltaP2;
-        deltaP1=deltaP*(1+0.5*(flowRate-testQ)/flowRate);
-        pressureIn=deltaP1;
-        pressureOut=0;
+//        double testQ=0;
+//        double testQ1,testQ2,deltaP1,deltaP2;
+//        deltaP1=deltaP*(1+0.5*(flowRate-testQ)/flowRate);
+//        pressureIn=deltaP1;
+//        pressureOut=0;
+//        solvePressuresWithCapillaryPressures();
+//        testQ1=updateFlowsWithCapillaryPressure();
+
+//        deltaP2=deltaP*(1-0.5*(flowRate-testQ)/flowRate);
+//        pressureIn=deltaP2;
+//        pressureOut=0;
+//        solvePressuresWithCapillaryPressures();
+//        testQ2=updateFlowsWithCapillaryPressure();
+
+//        while(testQ>1.01*flowRate || testQ<0.99*flowRate)
+//        {
+//            deltaP=deltaP2-(deltaP2-deltaP1)*(testQ2-flowRate)/(testQ2-testQ1);
+//            pressureIn=deltaP;
+//            pressureOut=0;
+//            solvePressuresWithCapillaryPressures();
+//            testQ=updateFlowsWithCapillaryPressure();
+//            testQ1=testQ2;
+//            testQ2=testQ;
+//            deltaP1=deltaP2;
+//            deltaP2=deltaP;
+
+//            //Thread Management
+//            if(cancel)break;
+//        }
+
         solvePressuresWithCapillaryPressures();
-        testQ1=updateFlowsWithCapillaryPressure();
-
-        deltaP2=deltaP*(1-0.5*(flowRate-testQ)/flowRate);
-        pressureIn=deltaP2;
-        pressureOut=0;
-        solvePressuresWithCapillaryPressures();
-        testQ2=updateFlowsWithCapillaryPressure();
-
-        while(testQ>1.01*flowRate || testQ<0.99*flowRate)
-        {
-            deltaP=deltaP2-(deltaP2-deltaP1)*(testQ2-flowRate)/(testQ2-testQ1);
-            pressureIn=deltaP;
-            pressureOut=0;
-            solvePressuresWithCapillaryPressures();
-            testQ=updateFlowsWithCapillaryPressure();
-            testQ1=testQ2;
-            testQ2=testQ;
-            deltaP1=deltaP2;
-            deltaP2=deltaP;
-
-            //Thread Management
-            if(cancel)break;
-        }
+        updateFlowsWithCapillaryPressure();
 
         for(pore* p : accessiblePores)
         {
@@ -430,7 +464,7 @@ void network::solvePressureWithoutCounterImbibitionPT()
                 p->setActive(false);
                 stillMorePoresToClose=true;
             }
-            if(p->getActive() && (p->getInlet() || p->getOutlet()) &&  p->getFlow()<0){
+            if(p->getActive() && (p->getOutlet()) &&  p->getFlow()<0){
                 p->setConductivity(1e-200);
                 p->setCapillaryPressure(0);
                 p->setActive(false);
@@ -478,6 +512,7 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
     {
         if(p->getActive() && abs(p->getFlow())>1e-24)
         {
+
             double step=p->getVolume()*p->getOilFraction()/abs(p->getFlow());
             if(step<timeStep)
             {

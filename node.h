@@ -21,38 +21,38 @@ class node : public element
 public:
     node(double, double, double);
 
-    int getIndexX() const;
-    void setIndexX(int value);
+    int getIndexX() const {return x;}
+    void setIndexX(int value) {x=value;}
 
-    int getIndexY() const;
-    void setIndexY(int value);
+    int getIndexY() const {return y;}
+    void setIndexY(int value) {y=value;}
 
-    int getIndexZ() const;
-    void setIndexZ(int value);
+    int getIndexZ() const {return z;}
+    void setIndexZ(int value) {z=value;}
 
-    double getPressure() const;
-    void setPressure(double value);
+    double getXCoordinate() const override {return xCoordinate;}
+    void setXCoordinate(double value) {xCoordinate=value;}
 
-    double getXCoordinate() const;
-    void setXCoordinate(double value);
+    double getYCoordinate() const override {return yCoordinate;}
+    void setYCoordinate(double value) {yCoordinate=value;}
 
-    double getYCoordinate() const;
-    void setYCoordinate(double value);
+    double getZCoordinate() const override {return zCoordinate;}
+    void setZCoordinate(double value) {zCoordinate=value;}
 
-    double getZCoordinate() const;
-    void setZCoordinate(double value);
+    int getConnectionNumber() const {return connectionNumber;}
+    void setConnectionNumber(int value) {connectionNumber=value;}
 
-    int getRank() const;
-    void setRank(int value);
+    double getPressure() const {return pressure;}
+    void setPressure(double value) {pressure=value;}
 
-    std::vector<int> &getConnectedNodes();
-    void setConnectedNodes(const std::vector<int> &value);
+    int getRank() const {return rank;}
+    void setRank(int value) {rank=value;}
 
-    std::vector<int> &getConnectedPores();
-    void setConnectedPores(const std::vector<int> &value);
+    std::vector<int> &getConnectedNodes() {return connectedNodes;}
+    void setConnectedNodes(const std::vector<int> &value) {connectedNodes=value;}
 
-    int getConnectionNumber() const;
-    void setConnectionNumber(int value);
+    std::vector<int> &getConnectedPores() {return connectedPores;}
+    void setConnectedPores(const std::vector<int> &value) {connectedPores=value;}
 
 private:
     int x; // relative x coordinate
@@ -65,12 +65,11 @@ private:
 
     int connectionNumber; //coordination number
 
+    double pressure; // pressure (SI)
     int rank; // solver ranking
 
     std::vector<int> connectedNodes; // table of connected nodes ID
     std::vector<int> connectedPores; // table of connected pores ID
-
-    double pressure; // pressure (SI)
 };
 
 }

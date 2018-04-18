@@ -23,7 +23,7 @@ void network::runTwoPhaseSSModelPT()
     if(videoRecording)
         record=true;
 
-    initializeTwoPhaseSimulationPT();
+    initialiseTwoPhaseSSModel();
 
     if(primaryDrainageSimulation && !cancel)
         primaryDrainagePT();
@@ -53,43 +53,13 @@ void network::runTwoPhaseSSModelPT()
     cout<<"Processing Time: "<<endTime-startTime<<" s"<<endl;
 }
 
-void network::initializeTwoPhaseSimulationPT()
+void network::initialiseTwoPhaseSSModel()
 {
     cancel=false;
-
     assignWWWettabilityPT();
-
-    if(twoPhaseSS)
-    {
-        fillWithPhase(phase::water);
-        initialiseCapillaries();
-        assignHalfAngles();
-    }
-
-    else
-    {
-        if(waterDistribution!=4)
-        {
-            fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
-            initialiseCapillaries();
-        }
-        else
-        {
-            fillWithPhase(phase::water);
-            initialiseCapillaries();
-            assignHalfAngles();
-            primaryDrainagePT(initialWaterSaturation);
-            initialiseCapillaries();
-        }
-
-        restoreWettabilityPT();
-
-        if(overrideByInjectedPVs)
-        {
-            simulationTime=totalElementsVolume*injectedPVs/flowRate;
-            cout<<"PVs to inject: "<<injectedPVs<<endl;
-        }
-    }
+    fillWithPhase(phase::water);
+    initialiseCapillaries();
+    assignHalfAngles();
 }
 
 void network::primaryDrainagePT(double finalSaturation)
