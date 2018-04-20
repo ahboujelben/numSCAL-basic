@@ -24,6 +24,9 @@ void network::runUSSDrainageModel()
     initializeTwoPhaseOutputs();
     setInitialFlagsPT();
 
+    assignViscosities();
+    assignConductivities();
+
     //initialise flags
     double timeSoFar(0);
     double injectedPVs(0);
@@ -34,8 +37,8 @@ void network::runUSSDrainageModel()
     bool waterSpanning=isWaterSpanning;
     deltaP=1;
 
-    set<pore*> poresToCheck;
-    set<node*> nodesToCheck;
+    unordered_set<pore*> poresToCheck;
+    unordered_set<node*> nodesToCheck;
 
     while(!cancel && timeSoFar<simulationTime)
     {
@@ -264,7 +267,7 @@ void network::setAdvancedTrappingPT()
     clusterOilElements();
 }
 
-void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::set<node *> &nodesToCheck)
+void network::updateCapillaryPropertiesPT(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
 {
     for(node* p : accessibleNodes)
     {
@@ -478,7 +481,7 @@ void network::solvePressureWithoutCounterImbibitionPT()
     }
 }
 
-void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<node *> &nodesToCheck,bool includeWater)
+void network::calculateTimeStepUSSPT(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool includeWater)
 {
     timeStep=1e50;
     for(pore* p : poresToCheck)
@@ -540,7 +543,7 @@ void network::calculateTimeStepUSSPT(std::set<pore *> & poresToCheck, std::set<n
     }
 }
 
-double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck, std::set<node *> &nodesToCheck, bool &solvePressure)
+double network::updateElementaryFluidFractionsPT(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool &solvePressure)
 {
     for(pore* p : poresToCheck)
     {
@@ -590,7 +593,7 @@ double network::updateElementaryFluidFractionsPT(std::set<pore *> &poresToCheck,
     }
 }
 
-void network::updateElementaryFluidFlagsPT(std::set<pore *> &poresToCheck, std::set<node *> &nodesToCheck)
+void network::updateElementaryFluidFlagsPT(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
 {
     for(pore* p: poresToCheck)
     {

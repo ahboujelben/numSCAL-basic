@@ -115,11 +115,11 @@ public:
     void addWaterChannel();
     void setInitialFlagsPT();
     void setAdvancedTrappingPT();
-    void updateCapillaryPropertiesPT(set<pore*>&, set<node*>&);
+    void updateCapillaryPropertiesPT(unordered_set<pore*>&, unordered_set<node*>&);
     void solvePressureWithoutCounterImbibitionPT();
-    void calculateTimeStepUSSPT(set<pore *> &, set<node *> &, bool);
-    double updateElementaryFluidFractionsPT(set<pore*>&, set<node*>&, bool &);
-    void updateElementaryFluidFlagsPT(set<pore*>&, set<node *> &nodesToCheck);
+    void calculateTimeStepUSSPT(unordered_set<pore *> &, unordered_set<node *> &, bool);
+    double updateElementaryFluidFractionsPT(unordered_set<pore*>&, unordered_set<node*>&, bool &);
+    void updateElementaryFluidFlagsPT(unordered_set<pore*>&, unordered_set<node *> &nodesToCheck);
     void setConstantFlowRateAker();
     //Output data
     void initializeTwoPhaseOutputs();
