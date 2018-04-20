@@ -16,9 +16,6 @@ void network::runUSSDrainageModel()
 {
     cout<<"Starting Unsteady State Drainage Model... "<<endl;
 
-    double startTime,endTime;
-    startTime=tools::getCPUTime();
-
     //post-processing
     if(videoRecording)
         record=true;
@@ -115,8 +112,6 @@ void network::runUSSDrainageModel()
 
     cout<<"Simulation Time: "<<timeSoFar<<" s"<<endl;
     cout<<"Injected PVs: "<<injectedPVs<<endl;
-    endTime=tools::getCPUTime();
-    cout<<"Fast Unsteady State Water Injection Time: "<<endTime-startTime<<" s"<<endl;
 }
 
 void network::initialiseUSSDrainageModel()
@@ -364,17 +359,17 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
 
                     if(nodeOut->getPhaseFlag()==phase::oil && nodeIn->getPhaseFlag()==phase::water)
                     {
-                        if(p->getTheta()>tools::pi()/2)//drainage
+                        if(p->getTheta()>pi()/2)//drainage
                             capillaryPressure=2*OWSurfaceTension*cos(p->getTheta())/nodeOut->getRadius();
-                        if(p->getTheta()<tools::pi()/2)//imbibition
+                        if(p->getTheta()<pi()/2)//imbibition
                             capillaryPressure=2*OWSurfaceTension*cos(p->getTheta())/nodeOut->getRadius()-oilNeighboorsNumber*OWSurfaceTension/nodeOut->getRadius();
                     }
 
                     if(nodeOut->getPhaseFlag()==phase::water && nodeIn->getPhaseFlag()==phase::oil)
                     {
-                        if(p->getTheta()>tools::pi()/2)//drainage
+                        if(p->getTheta()>pi()/2)//drainage
                             capillaryPressure=-2*OWSurfaceTension*cos(p->getTheta())/nodeIn->getRadius();
-                        if(p->getTheta()<tools::pi()/2)//imbibition
+                        if(p->getTheta()<pi()/2)//imbibition
                             capillaryPressure=-2*OWSurfaceTension*cos(p->getTheta())/nodeIn->getRadius()+oilNeighboorsNumber*OWSurfaceTension/nodeIn->getRadius();
                     }
                 }
@@ -389,9 +384,9 @@ void network::updateCapillaryPropertiesPT(std::set<pore *> & poresToCheck, std::
 
                     if(nodeIn->getPhaseFlag()==phase::oil)
                     {
-                        if(p->getTheta()>tools::pi()/2)//drainage
+                        if(p->getTheta()>pi()/2)//drainage
                             capillaryPressure=-2*OWSurfaceTension*cos(p->getTheta())/nodeIn->getRadius();
-                        if(p->getTheta()<tools::pi()/2)//imbibition
+                        if(p->getTheta()<pi()/2)//imbibition
                             capillaryPressure=-2*OWSurfaceTension*cos(p->getTheta())/nodeIn->getRadius()+oilNeighboorsNumber*OWSurfaceTension/nodeIn->getRadius();
                     }
                 }
@@ -420,35 +415,6 @@ void network::solvePressureWithoutCounterImbibitionPT()
         }
 
         stillMorePoresToClose=false;
-//        double testQ=0;
-//        double testQ1,testQ2,deltaP1,deltaP2;
-//        deltaP1=deltaP*(1+0.5*(flowRate-testQ)/flowRate);
-//        pressureIn=deltaP1;
-//        pressureOut=0;
-//        solvePressuresWithCapillaryPressures();
-//        testQ1=updateFlowsWithCapillaryPressure();
-
-//        deltaP2=deltaP*(1-0.5*(flowRate-testQ)/flowRate);
-//        pressureIn=deltaP2;
-//        pressureOut=0;
-//        solvePressuresWithCapillaryPressures();
-//        testQ2=updateFlowsWithCapillaryPressure();
-
-//        while(testQ>1.01*flowRate || testQ<0.99*flowRate)
-//        {
-//            deltaP=deltaP2-(deltaP2-deltaP1)*(testQ2-flowRate)/(testQ2-testQ1);
-//            pressureIn=deltaP;
-//            pressureOut=0;
-//            solvePressuresWithCapillaryPressures();
-//            testQ=updateFlowsWithCapillaryPressure();
-//            testQ1=testQ2;
-//            testQ2=testQ;
-//            deltaP1=deltaP2;
-//            deltaP2=deltaP;
-
-//            //Thread Management
-//            if(cancel)break;
-//        }
 
         solvePressuresWithCapillaryPressures();
         updateFlowsWithCapillaryPressure();

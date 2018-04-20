@@ -33,6 +33,13 @@
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+
+//Eigen library
+#include <Eigen/Sparse>
+#include <Eigen/IterativeLinearSolvers>
+#include <Eigen/SparseCholesky>
 
 #include <QObject>
 
@@ -127,22 +134,24 @@ public:
 
     ///////////// Misc
 
+    //Constants and conversion
+    double pi(){return 3.14159265358979323846264;}
+    double PsiToPa(double const &pressure){return pressure/14.50377*1e5;}
+    double PaToPsi(double const &pressure){return pressure*14.50377/1e5;}
+
+    //Setting initial attributes
+    void initialiseCapillaries();
+
     //Assigning viscosities
     void assignViscositiesWithMixedFluids();
 
     //Filling Network with fluids
     void fillWithPhase(PNM::phase phase, double saturation=1, int distribution=1, PNM::phase otherPhase=phase::oil);
 
-    //Setting initial attributes
-    void initialiseCapillaries();
-
-    //Tools
+    //Getting flow properties
     double getOutletFlow();
     double getWaterSaturation();
     double getWaterSaturationWithFilms();
-
-    //Video Recording
-    void extractVideo();
 
     //Random generators
     int uniform_int(int a=0, int b=1);
@@ -151,6 +160,9 @@ public:
     double triangular(double, double, double);
     double normal(double,double,double,double);
     double weibull(double,double,double,double);
+
+    //Video Recording
+    void extractVideo();
 
     ///////////// Methods for clustering
     int hkFind(int, vector<int>&);
@@ -175,7 +187,7 @@ public:
     void clusterActiveElements();
 
 
-    ///////////// Methods for loading data
+    ///////////// Methods for loading input data
     void loadNetworkData();
     void loadTwoPhaseData();
 

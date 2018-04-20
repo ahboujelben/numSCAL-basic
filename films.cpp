@@ -23,11 +23,11 @@ void network::assignHalfAngles()
             double beta1(0), beta2(0),beta3(0);
             if(p->getShapeFactor()<=sqrt(3)/36.)
             {
-                double beta2Min=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3+4*tools::pi()/3));
+                double beta2Min=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3+4*pi()/3));
                 double beta2Max=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3));
                 beta2=uniform_real(beta2Min,beta2Max);
                 beta1=-0.5*beta2+0.5*asin((tan(beta2)+4*p->getShapeFactor())/(tan(beta2)-4*p->getShapeFactor())*sin(beta2));
-                beta3=tools::pi()/2-beta1-beta2;
+                beta3=pi()/2-beta1-beta2;
             }
             p->setBeta1(beta1);
             p->setBeta2(beta2);
@@ -45,11 +45,11 @@ void network::assignHalfAngles()
             double beta1(0), beta2(0),beta3(0);
             if(p->getShapeFactor()<=sqrt(3)/36.)
             {
-                double beta2Min=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3+4*tools::pi()/3));
+                double beta2Min=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3+4*pi()/3));
                 double beta2Max=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3));
                 beta2=uniform_real(beta2Min,beta2Max);
                 beta1=-0.5*beta2+0.5*asin((tan(beta2)+4*p->getShapeFactor())/(tan(beta2)-4*p->getShapeFactor())*sin(beta2));
-                beta3=tools::pi()/2-beta1-beta2;
+                beta3=pi()/2-beta1-beta2;
             }
             p->setBeta1(beta1);
             p->setBeta2(beta2);
@@ -70,20 +70,20 @@ void network::assignFilmStability()
             if(p->getWettabilityFlag()==wettability::waterWet)
             {
                 double sum(0);
-                if(theta<tools::pi()/2-p->getBeta1())
+                if(theta<pi()/2-p->getBeta1())
                 {
                     waterCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta+p->getBeta1())/sin(p->getBeta1())-tools::pi()/2*(1-(theta+p->getBeta1())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta+p->getBeta1())/sin(p->getBeta1())-pi()/2*(1-(theta+p->getBeta1())/(pi()/2));
                 }
-                if(theta<tools::pi()/2-p->getBeta2())
+                if(theta<pi()/2-p->getBeta2())
                 {
                     waterCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta+p->getBeta2())/sin(p->getBeta2())-tools::pi()/2*(1-(theta+p->getBeta2())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta+p->getBeta2())/sin(p->getBeta2())-pi()/2*(1-(theta+p->getBeta2())/(pi()/2));
                 }
-                if(theta<tools::pi()/2-p->getBeta3())
+                if(theta<pi()/2-p->getBeta3())
                 {
                     waterCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta+p->getBeta3())/sin(p->getBeta3())-tools::pi()/2*(1-(theta+p->getBeta3())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta+p->getBeta3())/sin(p->getBeta3())-pi()/2*(1-(theta+p->getBeta3())/(pi()/2));
                 }
                 p->setFilmAreaCoefficient(sum);
             }
@@ -91,20 +91,20 @@ void network::assignFilmStability()
             if(p->getWettabilityFlag()==wettability::oilWet)
             {
                 double sum(0);
-                if(tools::pi()-theta<tools::pi()/2-p->getBeta1())
+                if(pi()-theta<pi()/2-p->getBeta1())
                 {
                     oilCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta-p->getBeta1())/sin(p->getBeta1())-tools::pi()/2*(-1+(theta-p->getBeta1())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta-p->getBeta1())/sin(p->getBeta1())-pi()/2*(-1+(theta-p->getBeta1())/(pi()/2));
                 }
-                if(tools::pi()-theta<tools::pi()/2-p->getBeta2())
+                if(pi()-theta<pi()/2-p->getBeta2())
                 {
                     oilCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta-p->getBeta2())/sin(p->getBeta2())-tools::pi()/2*(-1+(theta-p->getBeta2())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta-p->getBeta2())/sin(p->getBeta2())-pi()/2*(-1+(theta-p->getBeta2())/(pi()/2));
                 }
-                if(tools::pi()-theta<tools::pi()/2-p->getBeta3())
+                if(pi()-theta<pi()/2-p->getBeta3())
                 {
                     oilCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta-p->getBeta3())/sin(p->getBeta3())-tools::pi()/2*(-1+(theta-p->getBeta3())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta-p->getBeta3())/sin(p->getBeta3())-pi()/2*(-1+(theta-p->getBeta3())/(pi()/2));
                 }
                 p->setFilmAreaCoefficient(sum);
             }
@@ -122,20 +122,20 @@ void network::assignFilmStability()
             if(p->getWettabilityFlag()==wettability::waterWet)
             {
                 double sum(0);
-                if(theta<tools::pi()/2-p->getBeta1())
+                if(theta<pi()/2-p->getBeta1())
                 {
                     waterCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta+p->getBeta1())/sin(p->getBeta1())-tools::pi()/2*(1-(theta+p->getBeta1())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta+p->getBeta1())/sin(p->getBeta1())-pi()/2*(1-(theta+p->getBeta1())/(pi()/2));
                 }
-                if(theta<tools::pi()/2-p->getBeta2())
+                if(theta<pi()/2-p->getBeta2())
                 {
                     waterCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta+p->getBeta2())/sin(p->getBeta2())-tools::pi()/2*(1-(theta+p->getBeta2())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta+p->getBeta2())/sin(p->getBeta2())-pi()/2*(1-(theta+p->getBeta2())/(pi()/2));
                 }
-                if(theta<tools::pi()/2-p->getBeta3())
+                if(theta<pi()/2-p->getBeta3())
                 {
                     waterCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta+p->getBeta3())/sin(p->getBeta3())-tools::pi()/2*(1-(theta+p->getBeta3())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta+p->getBeta3())/sin(p->getBeta3())-pi()/2*(1-(theta+p->getBeta3())/(pi()/2));
                 }
                 p->setFilmAreaCoefficient(sum);
             }
@@ -143,20 +143,20 @@ void network::assignFilmStability()
             if(p->getWettabilityFlag()==wettability::oilWet)
             {
                 double sum(0);
-                if(tools::pi()-theta<tools::pi()/2-p->getBeta1())
+                if(pi()-theta<pi()/2-p->getBeta1())
                 {
                     oilCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta-p->getBeta1())/sin(p->getBeta1())-tools::pi()/2*(-1+(theta-p->getBeta1())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta-p->getBeta1())/sin(p->getBeta1())-pi()/2*(-1+(theta-p->getBeta1())/(pi()/2));
                 }
-                if(tools::pi()-theta<tools::pi()/2-p->getBeta2())
+                if(pi()-theta<pi()/2-p->getBeta2())
                 {
                     oilCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta-p->getBeta2())/sin(p->getBeta2())-tools::pi()/2*(-1+(theta-p->getBeta2())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta-p->getBeta2())/sin(p->getBeta2())-pi()/2*(-1+(theta-p->getBeta2())/(pi()/2));
                 }
-                if(tools::pi()-theta<tools::pi()/2-p->getBeta3())
+                if(pi()-theta<pi()/2-p->getBeta3())
                 {
                     oilCanFlowViaFilm=true;
-                    sum+=cos(theta)*cos(theta-p->getBeta3())/sin(p->getBeta3())-tools::pi()/2*(-1+(theta-p->getBeta3())/(tools::pi()/2));
+                    sum+=cos(theta)*cos(theta-p->getBeta3())/sin(p->getBeta3())-pi()/2*(-1+(theta-p->getBeta3())/(pi()/2));
                 }
                 p->setFilmAreaCoefficient(sum);
             }
@@ -426,7 +426,7 @@ void network::restoreWettabilityPT()
     for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
         if(e->getPhaseFlag()==phase::oil){
             e->setTheta(e->getOriginalTheta());
-            if(e->getTheta()<tools::pi()/2){
+            if(e->getTheta()<pi()/2){
                 e->setWettabilityFlag(wettability::waterWet);
             }
             else{

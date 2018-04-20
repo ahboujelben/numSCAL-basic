@@ -16,9 +16,6 @@ void network::runTracerModel()
 {
     cout<<"Starting Tracer Flow Model... "<<endl;
 
-    double startTime,endTime;
-    startTime=tools::getCPUTime();
-
     //post-processing
     if(videoRecording)
         record=true;
@@ -78,9 +75,7 @@ void network::runTracerModel()
     }
 
     cout<<"Simulation Time: "<<timeSoFar<<" s"<<endl;
-    cout<<"Injected PVs: "<<injectedPVs<<endl;
-    endTime=tools::getCPUTime();
-    cout<<"Tracer Flow Time: "<<endTime-startTime<<" s"<<endl;
+    cout<<"Injected PVs: "<<injectedPVs<<endl; 
 }
 
 void network::initialiseTracerModel()

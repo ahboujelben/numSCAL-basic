@@ -174,12 +174,17 @@ void network::runSimulation()
 
     loadTwoPhaseData();
 
+    auto startTime=tools::getCPUTime();
+
     if(twoPhaseSS)
         runTwoPhaseSSModelPT();
     if(drainageUSS)
         runUSSDrainageModel();
     if(tracerFlow)
         runTracerModel();
+
+    auto endTime=tools::getCPUTime();
+    cout<<"Processing Runtime: "<<endTime-startTime<<" s."<<endl;
 }
 
 //getters

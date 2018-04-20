@@ -16,9 +16,6 @@ void network::runTwoPhaseSSModelPT()
 {
     cout<<"Starting Two-Phase SS Simulation... "<<endl;
 
-    double startTime,endTime;
-    startTime=tools::getCPUTime();
-
     //post-processing
     if(videoRecording)
         record=true;
@@ -48,9 +45,6 @@ void network::runTwoPhaseSSModelPT()
         record=false;
         extractVideo();
     }
-
-    endTime=tools::getCPUTime();
-    cout<<"Processing Time: "<<endTime-startTime<<" s"<<endl;
 }
 
 void network::initialiseTwoPhaseSSModel()
@@ -66,9 +60,6 @@ void network::primaryDrainagePT(double finalSaturation)
 
 {
     cout<<"Starting Primary Drainage... "<<endl;
-
-    double startTime,endTime;
-    startTime=tools::getCPUTime();
 
     //Prepare result files
     ofstream file("Results/1-primaryDrainagePcCurve.txt");
@@ -87,7 +78,7 @@ void network::primaryDrainagePT(double finalSaturation)
     double minPc(1e20),maxPc(0);
     for(element* e:accessibleElements)
     {
-        double pc=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        double pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(pc<minPc)
         {
             minPc=pc;
@@ -132,7 +123,7 @@ void network::primaryDrainagePT(double finalSaturation)
             vector<element*> invadedElements;
             for(element* e: elementsToInvade)
             {
-                double entryPressure=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                 if(currentPc+1e-5>=entryPressure && e->getClusterWaterFilm()->getOutlet())
                     invadedElements.push_back(e);
             }
@@ -183,7 +174,7 @@ void network::primaryDrainagePT(double finalSaturation)
             {
                 if(e->getWaterCornerActivated() && e->getClusterWaterFilm()->getOutlet())
                 {
-                    double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*tools::pi()*e->getShapeFactor())*e->getVolume());
+                    double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*pi()*e->getShapeFactor())*e->getVolume());
                     double filmConductance=rSquared*filmVolume/e->getLength()/(waterViscosity*e->getLength());
                     e->setWaterFilmVolume(filmVolume);
                     e->setWaterFilmConductivity(filmConductance);//cout<<filmConductance<<endl;
@@ -208,12 +199,12 @@ void network::primaryDrainagePT(double finalSaturation)
 
         //Extract capillary pressure results
         if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<tools::PaToPsi(currentPc)<<endl;
+            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << tools::PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
         simulationNotification = ss.str();
 
         //Extract data at Breakthrough
@@ -241,17 +232,11 @@ void network::primaryDrainagePT(double finalSaturation)
 
     file3<<"Pc after PD: "<<finalPcPD<<endl;
     file3<<"Sw after PD: "<<finalSaturationPD<<endl;
-
-    endTime=tools::getCPUTime();
-    //cout<<"Primary Drainage Processing Time: "<<endTime-startTime<<" s"<<endl;
 }
 
 void network::spontaneousImbibitionPT()
 {
     cout<<"Starting Spontaneous Imbibition... "<<endl;
-
-    double startTime,endTime;
-    startTime=tools::getCPUTime();
 
     //prepare result files
     ofstream file("Results/2-spontaneousImbibitionPcCurve.txt");
@@ -276,7 +261,7 @@ void network::spontaneousImbibitionPT()
             minPc=abs(pc);
         }
 
-        pc=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)>maxPc)
         {
             maxPc=abs(pc);
@@ -348,7 +333,7 @@ void network::spontaneousImbibitionPT()
                 //throat
                 if(e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletWaterCluster) && e->getClusterOilFilm()->getOutlet())
                 {
-                    double entryPressure=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                    double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                     if(currentPc-1e-5<=entryPressure)
                         invadedElements.push_back(e);
                 }
@@ -370,9 +355,9 @@ void network::spontaneousImbibitionPT()
 
                    double entryPressureBodyFilling=0;
                    if(oilNeighboorsNumber==1)
-                       entryPressureBodyFilling=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                       entryPressureBodyFilling=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                    if(oilNeighboorsNumber>1)
-                       entryPressureBodyFilling=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius()/double(oilNeighboorsNumber);
+                       entryPressureBodyFilling=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius()/double(oilNeighboorsNumber);
 
                     if(currentPc-1e-5<=entryPressureBodyFilling)
                         invadedElements.push_back(e);
@@ -415,7 +400,7 @@ void network::spontaneousImbibitionPT()
             {
                 if(e->getWaterCornerActivated() && e->getClusterWaterFilm()->getInlet() && e->getClusterOilFilm()->getOutlet())
                 {
-                    double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*tools::pi()*e->getShapeFactor())*e->getVolume());
+                    double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*pi()*e->getShapeFactor())*e->getVolume());
                     double filmConductance=rSquared*filmVolume/e->getLength()/(waterViscosity*e->getLength());
                     e->setWaterFilmVolume(filmVolume);
                     e->setWaterFilmConductivity(filmConductance);
@@ -444,12 +429,12 @@ void network::spontaneousImbibitionPT()
 
         //Extract capillary pressure results
         if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<tools::PaToPsi(currentPc)<<endl;
+            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << tools::PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
         simulationNotification = ss.str();
 
         finalPcPI=currentPc;
@@ -461,17 +446,11 @@ void network::spontaneousImbibitionPT()
 
     file3<<"Pc after SI: "<<finalPcPI<<endl;
     file3<<"Sw after SI: "<<finalSaturationPI<<endl;
-
-    endTime=tools::getCPUTime();
-    //cout<<"Spontaneous Imbibition Processing Time: "<<endTime-startTime<<" s"<<endl;
 }
 
 void network::forcedWaterInjectionPT()
 {
     cout<<"Starting Forced Water Injection ... "<<endl;
-
-    double startTime,endTime;
-    startTime=tools::getCPUTime();
 
     //prepare results files
     ofstream file("Results/3-forcedWaterInjectionPcCurve.txt");
@@ -489,7 +468,7 @@ void network::forcedWaterInjectionPT()
     double minPc(1e20),maxPc(0);
     for(element* e:accessibleElements)
     {
-        double pc=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        double pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
         {
             minPc=abs(pc);
@@ -541,7 +520,7 @@ void network::forcedWaterInjectionPT()
                 {
                     if(e->getClusterOilFilm()->getOutlet())
                     {
-                        double entryPressure=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                        double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                         if(currentPc-1e-5<=entryPressure)
                             invadedElements.push_back(e);
                     }
@@ -590,7 +569,7 @@ void network::forcedWaterInjectionPT()
             {
                 if(e->getClusterWaterFilm()->getInlet() && e->getOilLayerActivated() && e->getClusterOilFilm()->getOutlet())
                 {
-                    double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*tools::pi()*e->getShapeFactor())*e->getVolume());
+                    double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*pi()*e->getShapeFactor())*e->getVolume());
                     double effectiveOilFilmVolume=max(0.0,filmVolume-e->getWaterFilmVolume());
                     double filmConductance=rSquared*effectiveOilFilmVolume/e->getLength()/(oilViscosity*e->getLength());
 
@@ -619,12 +598,12 @@ void network::forcedWaterInjectionPT()
 
         //Extract capillary pressure results
         if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<tools::PaToPsi(currentPc)<<endl;
+            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << tools::PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
         simulationNotification = ss.str();
 
         finalPcSD=currentPc;
@@ -636,17 +615,11 @@ void network::forcedWaterInjectionPT()
 
     file3<<"Pc after FWI: "<<finalPcSD<<endl;
     file3<<"Sw after FWI: "<<finalSaturationSD<<endl;
-
-    endTime=tools::getCPUTime();
-    //cout<<"Forced Water Injection Time: "<<endTime-startTime<<" s"<<endl;
 }
 
 void network::spontaneousOilInvasionPT()
 {
     cout<<"Starting Spontaneous Oil Invasion ... "<<endl;
-
-    double startTime,endTime;
-    startTime=tools::getCPUTime();
 
     //prepare results files
     ofstream file("Results/4-spontaneousOilnvasionPcCurve.txt");
@@ -671,7 +644,7 @@ void network::spontaneousOilInvasionPT()
             minPc=abs(pc);
         }
 
-        pc=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)>maxPc)
         {
             maxPc=abs(pc);
@@ -741,7 +714,7 @@ void network::spontaneousOilInvasionPT()
                 //throat
                 if(e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletOilCluster) && e->getClusterWaterFilm()->getOutlet())
                 {
-                    double entryPressure=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                    double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                     if(currentPc+1e-5>=entryPressure)
                         invadedElements.push_back(e);
                 }
@@ -763,9 +736,9 @@ void network::spontaneousOilInvasionPT()
 
                    double entryPressureBodyFilling=0;
                    if(waterNeighboorsNumber==1)
-                       entryPressureBodyFilling=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                       entryPressureBodyFilling=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                    if(waterNeighboorsNumber>1)
-                       entryPressureBodyFilling=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius()/double(waterNeighboorsNumber);
+                       entryPressureBodyFilling=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius()/double(waterNeighboorsNumber);
 
                     if(currentPc+1e-5>=entryPressureBodyFilling)
                         invadedElements.push_back(e);
@@ -812,7 +785,7 @@ void network::spontaneousOilInvasionPT()
             {
                 if(e->getOilLayerActivated() && e->getClusterOilFilm()->getInlet() && e->getClusterWaterFilm()->getOutlet() )
                 {
-                    double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*tools::pi()*e->getShapeFactor())*e->getVolume()-e->getWaterFilmVolume());
+                    double filmVolume=min(rSquared*e->getFilmAreaCoefficient()*e->getLength(),(1-4*pi()*e->getShapeFactor())*e->getVolume()-e->getWaterFilmVolume());
                     double filmConductance=rSquared*filmVolume/e->getLength()/(oilViscosity*e->getLength());
                     e->setOilFilmVolume(filmVolume);//if(e->getType()==0 && e->getId()==177)cout<<e->getOilFilmVolume()/e->getVolume()<<endl;
                     e->setOilFilmConductivity(filmConductance);
@@ -837,12 +810,12 @@ void network::spontaneousOilInvasionPT()
 
         //Extract capillary pressure results
         if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<tools::PaToPsi(currentPc)<<endl;
+            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << tools::PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
         simulationNotification = ss.str();
 
         finalPcSI=currentPc;
@@ -854,17 +827,11 @@ void network::spontaneousOilInvasionPT()
 
     file3<<"Pc after SOI: "<<finalPcSI<<endl;
     file3<<"Sw after SOI: "<<finalSaturationSI<<endl;
-
-    endTime=tools::getCPUTime();
-    //cout<<"Spontaneous Oil Invasion Processing Time: "<<endTime-startTime<<" s"<<endl;
 }
 
 void network::secondaryOilDrainagePT()
 {
     cout<<"Starting Secondary Oil Drainage... "<<endl;
-
-    double startTime,endTime;
-    startTime=tools::getCPUTime();
 
     //prepare results files
     ofstream file("Results/5-secondaryOilDrainagePcCurve.txt");
@@ -882,7 +849,7 @@ void network::secondaryOilDrainagePT()
     double minPc(1e20),maxPc(0);
     for(element* e:accessibleElements)
     {
-        double pc=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        double pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
         {
             minPc=abs(pc);
@@ -934,7 +901,7 @@ void network::secondaryOilDrainagePT()
                 {
                     if(e->getClusterWaterFilm()->getOutlet())//change
                     {
-                        double entryPressure=(1+2*sqrt(tools::pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                        double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                         if(currentPc+1e-5>=entryPressure)
                             invadedElements.push_back(e);
                     }
@@ -991,12 +958,12 @@ void network::secondaryOilDrainagePT()
 
         //Extract capillary pressure results
         if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<tools::PaToPsi(currentPc)<<endl;
+            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << tools::PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
         simulationNotification = ss.str();
 
         finalPcTD=currentPc;
@@ -1008,9 +975,6 @@ void network::secondaryOilDrainagePT()
 
     file3<<"Pc after SOD: "<<finalPcTD<<endl;
     file3<<"Sw after SOD: "<<finalSaturationTD<<endl;
-
-    endTime=tools::getCPUTime();
-    //cout<<"Secondary Oil Drainage Time: "<<endTime-startTime<<" s"<<endl;
 }
 
 }
