@@ -216,6 +216,24 @@ void network::calculatePermeabilityAndPorosity()
     file<<"Absolute permeability (mD):\t"<<absolutePermeability/0.987e-15<<endl<<"Porosity:\t"<<porosity<<endl;
 }
 
+void network::assignConductivities()
+{
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+        node* nodeIn=p->getNodeIn();
+        node* nodeOut=p->getNodeOut();
+        auto throatConductivityInverse(0.0),nodeInConductivityInverse(0.0),nodeOutConductivityInverse(0.0);
+
+        throatConductivityInverse=1/(p->getShapeFactorConstant()*pow(p->getRadius(),4)/(16*p->getShapeFactor())/(p->getViscosity()*p->getLength()));
+
+        if(nodeIn!=0)
+            nodeInConductivityInverse=1/(nodeIn->getShapeFactorConstant()*pow(nodeIn->getRadius(),4)/(16*nodeIn->getShapeFactor())/(nodeIn->getViscosity()*p->getNodeInLength()));
+        if(nodeOut!=0)
+            nodeOutConductivityInverse=1/(nodeOut->getShapeFactorConstant()*pow(nodeOut->getRadius(),4)/(16*nodeOut->getShapeFactor())/(nodeOut->getViscosity()*p->getNodeOutLength()));
+
+        p->setConductivity(1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse));
+    });
+}
+
 void network::setConstantFlowRateAker()
 {
     assignViscositiesWithMixedFluids();

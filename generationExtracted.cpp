@@ -316,47 +316,61 @@ void network::setNeighboorsForExtractedModel()
         }
         p->setConnectedPores(neighboors);
     }
+
+    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
+        vector<element*> neighs;
+        if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());
+        if(p->getNodeOut()!=0)neighs.push_back(p->getNodeOut());
+        p->setNeighboors(neighs);
+    });
+
+    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* n){
+        vector<element*> neighs;
+        const vector<int>& neighboors=n->getConnectedPores();
+        for(unsigned j=0;j<neighboors.size();++j)
+           neighs.push_back(getPore(neighboors[j]-1));
+        n->setNeighboors(neighs);
+    });
 }
 
 void network::cleanExtractedNetwork()
 {
-    //delete isolated clusters
-    clusterOilPores();
+    //Clean Network from isolated pores
+    clusterOilElements();
 
-    for(int i=0;i<totalPores;++i)
-    {
-        pore* p=getPore(i);
-        if(!p->getClusterOil()->getSpanning())
-        {
-            node* nodeIn=p->getNodeIn();
-            node* nodeOut=p->getNodeOut();
-            if(nodeIn!=0)nodeIn->setConnectionNumber(0);
-            if(nodeOut!=0)nodeOut->setConnectionNumber(0);
-            p->setClosed(true);
+    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* e){
+        if(!e->getClosed() && !e->getClusterOil()->getSpanning()){
+            e->setClosed(true);
+            node* in=e->getNodeIn();
+            node* out=e->getNodeOut();
+            if(in!=0)in->setConnectionNumber(in->getConnectionNumber()-1);
+            if(out!=0)out->setConnectionNumber(out->getConnectionNumber()-1);
         }
-    }
+    });
 
-    //delete isolated nodes
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        if(n->getConnectionNumber()==0)
-        {
-            n->setClosed(true);
+    //Delete isolated nodes
+    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* e){
+        if(e->getConnectionNumber()==0 || !e->getClusterOil()->getSpanning()){
+            e->setClosed(true);
         }
-    }
+    });
 
-    //ranking for the solver
-    int rank=0;
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-        {
-            n->setRank(rank);
-            rank++;
+    // delete closed pores from inlet/ outlet containers
+    inletPores.erase(remove_if(inletPores.begin(), inletPores.end(), [this](pore* p)->bool{
+                         return p->getClosed();
+                     }), inletPores.end());
+    outletPores.erase(remove_if(outletPores.begin(), outletPores.end(), [this](pore* p)->bool{
+                         return p->getClosed();
+                     }), outletPores.end());
+
+    //Ranking for the solver
+    auto rank(0);
+    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this, &rank](node* e){
+        if(!e->getClosed()){
+            e->setRank(rank);
+            ++rank;
         }
-    }
+    });
 }
 
 void network::calculateExtractedNetworkVolume()

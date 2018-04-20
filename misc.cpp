@@ -47,7 +47,7 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
         return;
     }
 
-    if(distribution==1)
+    if(distribution==1) //random
     {
         auto  actualWaterVolume(0.0);
         while((actualWaterVolume/totalNodesVolume)<saturation)
@@ -62,7 +62,7 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
         return;
     }
 
-    if(distribution==2)
+    if(distribution==2) //phase in biggest elements
     {
         auto workingElements=accessibleNodes;
 
@@ -80,7 +80,7 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
         }
     }
 
-    if(distribution==3)
+    if(distribution==3) //phase in smallest elements
     {
         auto workingElements=accessibleNodes;
 
@@ -99,13 +99,17 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
     }
 
     for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
-        if(p->getNeighboors().size()==1){
-            element* connectedNode=p->getNeighboors()[0];
+        if(p->getNodeIn()==0){
+            auto connectedNode=p->getNodeOut();
+            p->setPhaseFlag(connectedNode->getPhaseFlag());
+        }
+        else if (p->getNodeOut()==0){
+            auto connectedNode=p->getNodeIn();
             p->setPhaseFlag(connectedNode->getPhaseFlag());
         }
         else{
-            element* connectedNode1=p->getNeighboors()[0];
-            element* connectedNode2=p->getNeighboors()[1];
+            auto connectedNode1=p->getNodeIn();
+            auto connectedNode2=p->getNodeOut();
             if(connectedNode1->getPhaseFlag()==connectedNode2->getPhaseFlag()){
                 p->setPhaseFlag(connectedNode1->getPhaseFlag());
             }

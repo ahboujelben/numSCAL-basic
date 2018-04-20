@@ -170,11 +170,6 @@ public:
     int hkMakeSet(vector<int>&);
 
     template<typename T>
-    void clusterPores(cluster*(pore::*)(void) const, void(pore::*)(cluster*), T(pore::*)() const, T, vector<cluster *> &);
-    void clusterOilPores();
-    void clusterWaterPores();
-
-    template<typename T>
     void clusterElements(cluster*(element::*)(void) const,void(element::*)(cluster*),T(element::*)(void) const,T,vector<cluster *> &);
 
     void clusterWaterWetElements();
