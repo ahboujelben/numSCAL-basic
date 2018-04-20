@@ -114,6 +114,11 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
                 p->setPhaseFlag(connectedNode1->getPhaseFlag());
             }
             else{
+                if(connectedNode1->getClosed())
+                    p->setPhaseFlag(connectedNode2->getPhaseFlag());
+                else if(connectedNode2->getClosed())
+                    p->setPhaseFlag(connectedNode1->getPhaseFlag());
+                else
                 p->setPhaseFlag(uniform_int()?connectedNode1->getPhaseFlag():connectedNode2->getPhaseFlag());
             }
         }

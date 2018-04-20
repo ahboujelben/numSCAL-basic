@@ -168,239 +168,109 @@ void network::assignFilmStability()
 
 void network::assignWettability()
 {
-    if(wettingTypeFlag==1) //WW
-    {
-        for (int i = 0; i < totalElements; ++i)
-        {
-            element* e=getElement(i);
-            if(!e->getClosed())
-            {
-                e->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                e->setWettabilityFlag(wettability::waterWet);
-            }
-        }
+    if(wettingTypeFlag==2){ //OW
+        for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+            e->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
+            e->setWettabilityFlag(wettability::oilWet);
+        });
+        backupWettabilityPT();
+        return;
     }
 
-    if(wettingTypeFlag==2) //OW
-    {
-        for (int i = 0; i < totalElements; ++i)
-        {
-            element* e=getElement(i);
-            if(!e->getClosed())
-            {
-                e->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                e->setWettabilityFlag(wettability::oilWet);
-            }
-        }
+    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+        e->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
+        e->setWettabilityFlag(wettability::waterWet);
+    });
+
+    if(wettingTypeFlag==1){ //WW
+        backupWettabilityPT();
+        return;
     }
 
-    if(wettingTypeFlag==3) //FW
-    {
-        for (int i = 0; i < totalElements; ++i)
-        {
-            element* p=getElement(i);
-            if(!p->getClosed())
-            {
-                p->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                p->setWettabilityFlag(wettability::waterWet);
-            }
-        }
+    if(wettingTypeFlag==3){ //FW
 
-        int  oilWetSoFar=0;
-        while((double(oilWetSoFar)/double(totalOpenedNodes))<oilWetFraction)
+        auto oilWetSoFar(0);
+        while((double(oilWetSoFar)/totalOpenedNodes)<oilWetFraction)
         {
             int index=uniform_int(0,totalNodes-1);
-            node* p=getNode(index);
-            if(!p->getClosed() && p->getWettabilityFlag()!=wettability::oilWet)
-                {
-                    p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                    p->setWettabilityFlag(wettability::oilWet);
-                    oilWetSoFar++;
-                }
-        }
-
-        for (int i = 0; i < totalPores; ++i)
-        {
-            pore* p=getPore(i);
-            if(!p->getClosed())
-            {
-                if(p->getNeighboors().size()==1)
-                {
-                    element* connectedNode=p->getNeighboors()[0];
-                    p->setWettabilityFlag(connectedNode->getWettabilityFlag());
-                    p->setTheta(connectedNode->getTheta());
-                }
-                else
-                {
-                    element* connectedNode1=p->getNeighboors()[0];
-                    element* connectedNode2=p->getNeighboors()[1];
-                    if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
-                    {
-                        p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                        p->setTheta(connectedNode1->getTheta());
-                    }
-                    else
-                    {
-                        int dice=uniform_int();
-                        if(dice==0)
-                        {
-                            p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                            p->setTheta(connectedNode1->getTheta());
-                        }
-                        else
-                        {
-                            p->setWettabilityFlag(connectedNode2->getWettabilityFlag());
-                            p->setTheta(connectedNode2->getTheta());
-                        }
-                    }
-
-                }
+            auto p=getNode(index);
+            if(!p->getClosed() && p->getWettabilityFlag()!=wettability::oilWet){
+                p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
+                p->setWettabilityFlag(wettability::oilWet);
+                oilWetSoFar++;
             }
         }
     }
 
-    if(wettingTypeFlag==4) //MWS
-        {
-            for (int i = 0; i < totalElements; ++i)
-            {
-                element* p=getElement(i);
-                if(!p->getClosed())
-                {
-                    p->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                    p->setWettabilityFlag(wettability::waterWet);
-                }
+    if(wettingTypeFlag==4){ //MWL
+        auto workingElements=accessibleNodes;
+
+        sort(workingElements.begin(),workingElements.end(), [this](node* e1, node* e2){
+            return e1->getRadius()>e2->getRadius();
+        });
+
+        auto oilWetSoFar(0);
+
+        while((double(oilWetSoFar)/totalOpenedNodes)<oilWetFraction){
+            auto biggestElement=workingElements.back();
+            biggestElement->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
+            biggestElement->setWettabilityFlag(wettability::oilWet);
+            oilWetSoFar++;
+            workingElements.pop_back();
+        }
+    }
+
+    if(wettingTypeFlag==5) //MWS
+    {
+        auto workingElements=accessibleNodes;
+
+        sort(workingElements.begin(),workingElements.end(), [this](node* e1, node* e2){
+            return e1->getRadius()<e2->getRadius();
+        });
+
+        auto oilWetSoFar(0);
+
+        while((double(oilWetSoFar)/totalOpenedNodes)<oilWetFraction){
+            auto smallestElement=workingElements.back();
+            smallestElement->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
+            smallestElement->setWettabilityFlag(wettability::oilWet);
+            oilWetSoFar++;
+            workingElements.pop_back();
+        }
+    }
+
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+        if(p->getNodeIn()==0){
+            auto connectedNode=p->getNodeOut();
+            p->setTheta(connectedNode->getTheta());
+            p->setWettabilityFlag(connectedNode->getWettabilityFlag());
+        }
+        else if (p->getNodeOut()==0){
+            auto connectedNode=p->getNodeIn();
+            p->setTheta(connectedNode->getTheta());
+            p->setWettabilityFlag(connectedNode->getWettabilityFlag());
+        }
+        else{
+            auto connectedNode1=p->getNodeIn();
+            auto connectedNode2=p->getNodeOut();
+            if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag()){
+                p->setTheta((connectedNode1->getTheta()+connectedNode2->getTheta())/2);
+                p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
             }
-
-            int  oilWetSoFar=0;
-            double currentRadius=minNodeRadius;
-            double radiusStep=(maxNodeRadius-minNodeRadius)/100;
-
-            while((double(oilWetSoFar)/double(totalOpenedNodes))<oilWetFraction)
-            {
-                currentRadius+=radiusStep;
-                for (int i = 0; i < totalNodes; ++i)
-                {
-                    element* p=getNode(i);
-                    if(!p->getClosed() && p->getRadius()<=currentRadius && p->getWettabilityFlag()!=wettability::oilWet)
-                    {
-                        p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                        p->setWettabilityFlag(wettability::oilWet);
-                        oilWetSoFar++;
-                    }
-                }
-            }
-
-            for (int i = 0; i < totalPores; ++i)
-            {
-                pore* p=getPore(i);
-                if(!p->getClosed())
-                {
-                    if(p->getNeighboors().size()==1)
-                    {
-                        element* connectedNode=p->getNeighboors()[0];
-                        p->setWettabilityFlag(connectedNode->getWettabilityFlag());
-                        p->setTheta(connectedNode->getTheta());
-                    }
-                    else
-                    {
-                        element* connectedNode1=p->getNeighboors()[0];
-                        element* connectedNode2=p->getNeighboors()[1];
-                        if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
-                        {
-                            p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                            p->setTheta(connectedNode1->getTheta());
-                        }
-                        else
-                        {
-                            int dice=uniform_int();
-                            if(dice==0)
-                            {
-                                p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                                p->setTheta(connectedNode1->getTheta());
-                            }
-                            else
-                            {
-                                p->setWettabilityFlag(connectedNode2->getWettabilityFlag());
-                                p->setTheta(connectedNode2->getTheta());
-                            }
-                        }
-
-                    }
-                }
+            else{
+                if(connectedNode1->getClosed())
+                    p->setTheta(connectedNode2->getTheta());
+                else if(connectedNode2->getClosed())
+                    p->setTheta(connectedNode1->getTheta());
+                else
+                    p->setTheta(uniform_int()?connectedNode1->getTheta():connectedNode2->getTheta());
+                if(p->getTheta()>pi()/2)
+                    p->setWettabilityFlag(wettability::oilWet);
             }
         }
+    });
 
-        if(wettingTypeFlag==5) //MWL
-        {
-            for (int i = 0; i < totalElements; ++i)
-            {
-                element* p=getElement(i);
-                if(!p->getClosed())
-                {
-                    p->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
-                    p->setWettabilityFlag(wettability::waterWet);
-                }
-            }
-
-            int  oilWetSoFar=0;
-            double currentRadius=maxNodeRadius;
-            double radiusStep=(maxNodeRadius-minNodeRadius)/100;
-
-            while((double(oilWetSoFar)/double(totalOpenedNodes))<oilWetFraction)
-            {
-                currentRadius-=radiusStep;
-                for (int i = 0; i < totalNodes; ++i)
-                {
-                    element* p=getNode(i);
-                    if(!p->getClosed() && p->getRadius()>=currentRadius && p->getWettabilityFlag()!=wettability::oilWet)
-                    {
-                        p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
-                        p->setWettabilityFlag(wettability::oilWet);
-                        oilWetSoFar++;
-                    }
-                }
-            }
-
-            for (int i = 0; i < totalPores; ++i)
-            {
-                pore* p=getPore(i);
-                if(!p->getClosed())
-                {
-                    if(p->getNeighboors().size()==1)
-                    {
-                        element* connectedNode=p->getNeighboors()[0];
-                        p->setWettabilityFlag(connectedNode->getWettabilityFlag());
-                        p->setTheta(connectedNode->getTheta());
-                    }
-                    else
-                    {
-                        element* connectedNode1=p->getNeighboors()[0];
-                        element* connectedNode2=p->getNeighboors()[1];
-                        if(connectedNode1->getWettabilityFlag()==connectedNode2->getWettabilityFlag())
-                        {
-                            p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                            p->setTheta(connectedNode1->getTheta());
-                        }
-                        else
-                        {
-                            int dice=uniform_int();
-                            if(dice==0)
-                            {
-                                p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
-                                p->setTheta(connectedNode1->getTheta());
-                            }
-                            else
-                            {
-                                p->setWettabilityFlag(connectedNode2->getWettabilityFlag());
-                                p->setTheta(connectedNode2->getTheta());
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
-        backupWettabilityPT();
+    backupWettabilityPT();
 }
 
 void network::backupWettabilityPT()
@@ -426,7 +296,7 @@ void network::restoreWettabilityPT()
     for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
         if(e->getPhaseFlag()==phase::oil){
             e->setTheta(e->getOriginalTheta());
-            if(e->getTheta()<pi()/2){
+            if(e->getTheta()<=pi()/2){
                 e->setWettabilityFlag(wettability::waterWet);
             }
             else{
