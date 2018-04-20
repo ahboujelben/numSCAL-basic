@@ -139,9 +139,16 @@ void network::initialiseUSSDrainageModel()
 
 void network::addWaterChannel()
 {
-    for_each(accessibleElements.begin(), accessibleElements.end(), [this](element* e){
-        if(e->getXCoordinate()<1.5*length)
-            e->setPhaseFlag(phase::water);
+    for_each(accessiblePores.begin(), accessiblePores.end(), [this](pore* p){
+        if(p->getInlet() || p->getNodeIn()!=0 & p->getNodeOut()!=0 && p->getNodeIn()->getInlet() && p->getNodeOut()->getInlet()){
+            p->setPhaseFlag(phase::water);
+        }
+    });
+
+    for_each(accessibleNodes.begin(), accessibleNodes.end(), [this](node* n){
+        if(n->getInlet()){
+            n->setPhaseFlag(phase::water);
+        }
     });
 }
 

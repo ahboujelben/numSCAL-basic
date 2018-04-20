@@ -77,8 +77,6 @@ void network::loadExtractedNetwork()
         int numberOfNeighboors;
         bool isInlet,isOutlet;
 
-
-
         node1>>id>>x>>y>>z>>numberOfNeighboors;
 
         if(numberOfNeighboors>maxConnectionNumber)maxConnectionNumber=numberOfNeighboors;
