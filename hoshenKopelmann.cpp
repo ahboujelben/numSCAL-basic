@@ -47,31 +47,24 @@ int network::hkMakeSet(vector<int>& labels)
 template<typename T>
 void network::clusterElements(cluster *(element::*getter)() const, void (element::*setter)(cluster *), T(element::*status)() const, T flag, std::vector<cluster *> &clustersList)
 {
-    if(!clustersList.empty())
-        for (unsigned i = 0; i < clustersList.size(); ++i)
-            delete clustersList[i];
+    for (cluster* c : clustersList)
+        delete c;
     clustersList.clear();
 
-    for(int i=0; i<totalElements; ++i)
-       if((getElement(i)->*status)()==flag)
-           getElement(i)->setClusterTemp(0);
+    for(element* e: tableOfElements)
+       if((e->*status)()==flag)
+           e->setClusterTemp(0);
 
     vector<int> labels;
     labels.push_back(0);
 
-
-    for(int i=0; i<totalElements;++i)
-    {
-
-        element* e=getElement(i);
-        if((e->*status)()==flag)
-        {
+    for(element* e: tableOfElements){
+        if((e->*status)()==flag){
             vector<int> neighboorsClusters;
-            vector<element*> neighboors=e->getNeighboors();
-            for(unsigned j=0;j<neighboors.size();j++)
-            {
-                if((neighboors[j]->*status)()==flag && neighboors[j]->getClusterTemp()!=0)
-                    neighboorsClusters.push_back(neighboors[j]->getClusterTemp());
+            vector<element*>& neighboors=e->getNeighboors();
+            for(element* neigh: neighboors){
+                if((neigh->*status)()==flag && neigh->getClusterTemp()!=0)
+                    neighboorsClusters.push_back(neigh->getClusterTemp());
             }
             if(neighboorsClusters.empty())
                 e->setClusterTemp(hkMakeSet(labels));
@@ -86,18 +79,16 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
 
     vector<int> new_labels(labels.size(),0);
 
-    for(int i=0; i<totalElements; ++i)
-    {
-        if((getElement(i)->*status)()==flag)
+    for(element* e: tableOfElements){
+        if((e->*status)()==flag)
         {
-            int x=hkFind(getElement(i)->getClusterTemp(),labels);
-            if (new_labels[x] == 0)
-            {
+            int x=hkFind(e->getClusterTemp(),labels);
+            if (new_labels[x] == 0){
                 new_labels[0]++;
                 new_labels[x] = new_labels[0];
                 clustersList.push_back(new cluster(new_labels[0]));
             }
-            (getElement(i)->*setter)(clustersList[new_labels[x]-1]);
+            (e->*setter)(clustersList[new_labels[x]-1]);
         }
     }
 

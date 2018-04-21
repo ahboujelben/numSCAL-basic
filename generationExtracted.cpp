@@ -1,3 +1,4 @@
+
 /////////////////////////////////////////////////////////////////////////////
 /// Name:        generationExtracted.cpp
 /// Purpose:     methods related to regular network construction (simple bond
@@ -27,8 +28,7 @@ void network::setupExtractedModel()
     cout<<"Setting Wettability..."<<endl;
     assignWettability();
 
-    if(absolutePermeabilityCalculation)
-    {
+    if(absolutePermeabilityCalculation){
         cout<<"Absolute permeabilty calculation.."<<endl;
         solvePressures();
         updateFlows();

@@ -29,7 +29,7 @@ void network::solvePressures()
         {
             vector<int>& neighboors=n->getConnectedNodes();
             vector<int>& connectedPores=n->getConnectedPores();
-            double conductivity(0);
+            double conductivity(1e-200);
             for(unsigned j=0;j<neighboors.size();++j)
             {
                 pore* p=getPore(connectedPores[j]-1);
@@ -99,14 +99,14 @@ void network::solvePressuresWithCapillaryPressures()
         {
             vector<int>& neighboors=n->getConnectedNodes();
             vector<int>& connectedPores=n->getConnectedPores();
-            double conductivity(0);
+            double conductivity(1e-200);
             for(unsigned j=0;j<neighboors.size();++j)
             {
                 pore* p=getPore(connectedPores[j]-1);
                 node* neighboor=getNode(neighboors[j]-1);
-                if(!p->getClosed())
+                if(!p->getClosed() && p->getActive())
                 {
-                    if(p->getInlet() && p->getConductivity())
+                    if(p->getInlet())
                     {
                         b(row) -= p->getVolume()/inletPoresVolume * flowRate;
                     }
@@ -162,20 +162,18 @@ double network::updateFlows()
     double outletFlow(0);
     for(pore* p : accessiblePores)
     {
+        if(p->getOutlet())
         {
-            if(p->getOutlet())
-            {
-                p->setFlow((p->getNodeOut()->getPressure()-pressureOut)*p->getConductivity());
-                outletFlow+=p->getFlow();
-            }
-            if(p->getInlet())
-            {
-                p->setFlow((pressureIn-p->getNodeIn()->getPressure())*p->getConductivity());
-            }
-            if(!p->getInlet() && !p->getOutlet())
-            {
-                p->setFlow((p->getNodeOut()->getPressure()-p->getNodeIn()->getPressure())*p->getConductivity());
-            }
+            p->setFlow((p->getNodeOut()->getPressure()-pressureOut)*p->getConductivity());
+            outletFlow+=p->getFlow();
+        }
+        if(p->getInlet())
+        {
+            p->setFlow((pressureIn-p->getNodeIn()->getPressure())*p->getConductivity());
+        }
+        if(!p->getInlet() && !p->getOutlet())
+        {
+            p->setFlow((p->getNodeOut()->getPressure()-p->getNodeIn()->getPressure())*p->getConductivity());
         }
     }
     return outletFlow;
@@ -186,6 +184,8 @@ double network::updateFlowsWithCapillaryPressure()
     double outletFlow(0);
     for(pore* p : accessiblePores)
     {
+        p->setFlow(0);
+        if(p->getActive())
         {
             if(p->getOutlet())
             {
@@ -236,7 +236,7 @@ void network::assignConductivities()
 
 void network::setConstantFlowRateAker()
 {
-    assignViscositiesWithMixedFluids();
+    assignViscosities();
     assignConductivities();
 
     double Q1(0),Q2(0),A,B;

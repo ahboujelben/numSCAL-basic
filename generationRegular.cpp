@@ -49,8 +49,7 @@ void network::setupRegularModel()
     cout<<"Assigning Wettability..."<<endl;
     assignWettability();
 
-    if(absolutePermeabilityCalculation)
-    {
+    if(absolutePermeabilityCalculation){
         cout<<"Absolute Permeabilty Calculation..."<<endl;
         solvePressures();
         updateFlows();

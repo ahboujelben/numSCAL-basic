@@ -11,13 +11,6 @@
 
 namespace PNM {
 
-void network::assignViscositiesWithMixedFluids()
-{
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
-        e->setViscosity(oilViscosity*e->getOilFraction()+waterViscosity*e->getWaterFraction());
-    });
-}
-
 void network::assignViscosities()
 {
     for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){

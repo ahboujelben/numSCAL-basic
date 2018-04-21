@@ -142,9 +142,6 @@ public:
     //Setting initial attributes
     void initialiseCapillaries();
 
-    //Assigning viscosities
-    void assignViscositiesWithMixedFluids();
-
     //Filling Network with fluids
     void fillWithPhase(PNM::phase phase, double saturation=1, int distribution=1, PNM::phase otherPhase=phase::oil);
 

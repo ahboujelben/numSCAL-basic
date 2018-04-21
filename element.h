@@ -76,7 +76,7 @@ public:
     phase getPhaseFlag() const {return phaseFlag;}
     void setPhaseFlag(phase value) {phaseFlag=value;}
 
-    std::vector<element *> getNeighboors() const {return neighboors;}
+    std::vector<element *>& getNeighboors() {return neighboors;}
     void setNeighboors(const std::vector<element *> &value) {neighboors=value;}
 
     double getConcentration() const {return concentration;}
@@ -175,11 +175,6 @@ public:
 
     // defined methods
     void assignViscosity(double oilViscosity, double waterViscosity);
-
-    // virtual methods
-    virtual double getXCoordinate() const =0;
-    virtual double getYCoordinate() const =0;
-    virtual double getZCoordinate() const =0;
 
 protected:
     capillaryType type; // type of the capillary element: pore (throat) or pore body (node)

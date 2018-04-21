@@ -30,13 +30,13 @@ public:
     int getIndexZ() const {return z;}
     void setIndexZ(int value) {z=value;}
 
-    double getXCoordinate() const override {return xCoordinate;}
+    double getXCoordinate() const {return xCoordinate;}
     void setXCoordinate(double value) {xCoordinate=value;}
 
-    double getYCoordinate() const override {return yCoordinate;}
+    double getYCoordinate() const {return yCoordinate;}
     void setYCoordinate(double value) {yCoordinate=value;}
 
-    double getZCoordinate() const override {return zCoordinate;}
+    double getZCoordinate() const {return zCoordinate;}
     void setZCoordinate(double value) {zCoordinate=value;}
 
     int getConnectionNumber() const {return connectionNumber;}

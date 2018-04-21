@@ -48,13 +48,4 @@ void worker::process()
         }
     }
 }
-int worker::getJob() const
-{
-    return job;
-}
-
-void worker::setJob(int value)
-{
-    job = value;
-}
 

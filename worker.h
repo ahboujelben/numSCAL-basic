@@ -20,9 +20,6 @@ class worker : public QObject
 public:
     explicit worker(PNM::network* net, int j=0, QObject *parent = 0);
 
-    int getJob() const;
-    void setJob(int value);
-
 public slots:
     void process();
 

@@ -101,7 +101,7 @@ void network::initialiseTracerModel()
 void network::solvePressureFieldInOil()
 {
     //Assign fluid properties and deactivate non-flowing capillaries (i.e. water, non-spanning oil)
-    assignViscositiesWithMixedFluids();
+    assignViscosities();
     assignConductivities();
     for (pore* p :accessiblePores)
     {

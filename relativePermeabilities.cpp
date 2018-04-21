@@ -108,7 +108,7 @@ void network::calculateRelativePermeabilitiesUSS()
     clusterOilElements();
     if (isOilSpanning)
     {
-        assignViscositiesWithMixedFluids();
+        assignViscosities();
         assignConductivities();
         for (pore* p :accessiblePores)
         {
@@ -127,7 +127,7 @@ void network::calculateRelativePermeabilitiesUSS()
     clusterWaterElements();
     if (isWaterSpanning)
     {
-        assignViscositiesWithMixedFluids();
+        assignViscosities();
         assignConductivities();
         for (pore* p :accessiblePores)
         {
