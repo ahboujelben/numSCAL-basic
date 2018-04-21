@@ -82,15 +82,17 @@ void network::initialiseTracerModel()
 {
     cancel=false;
     if(waterDistribution!=4){ //not after primary drainage
+        assignWWWettabilityPT();
         fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
     }
     else{ //after primary drainage
         initialiseTwoPhaseSSModel();
         primaryDrainagePT(initialWaterSaturation);
-        restoreWettabilityPT();
     }
 
     initialiseCapillaries();
+
+    restoreWettabilityPT();
 
     if(overrideByInjectedPVs){
         simulationTime=totalElementsVolume*injectedPVs/flowRate;
@@ -108,11 +110,17 @@ void network::solvePressureFieldInOil()
         p->setActive(true);
         if(p->getPhaseFlag()==phase::water){
            p->setActive(false);
-           p->setConductivity(1e-200);
         }
         if((p->getPhaseFlag()==phase::oil && !p->getClusterOil()->getSpanning()) || (p->getNodeIn()!=0 && !p->getNodeIn()->getClosed() && p->getNodeIn()->getPhaseFlag()==phase::water) || (p->getNodeOut()!=0 && !p->getNodeOut()->getClosed() && p->getNodeOut()->getPhaseFlag()==phase::water)){
             p->setActive(false);
-            p->setConductivity(1e-200);
+        }
+    }
+
+    clusterActiveElements();
+    for(pore* p : accessiblePores){
+        if(p->getActive() && p->getClusterActive()->getSpanning()==false){
+            p->setCapillaryPressure(0);
+            p->setActive(false);
         }
     }
 

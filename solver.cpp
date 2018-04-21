@@ -33,7 +33,7 @@ void network::solvePressures()
             for(unsigned j=0;j<neighboors.size();++j)
             {
                 pore* p=getPore(connectedPores[j]-1);
-                if(!p->getClosed())
+                if(!p->getClosed() && p->getActive())
                 {
                     if(p->getInlet())
                     {
@@ -162,18 +162,22 @@ double network::updateFlows()
     double outletFlow(0);
     for(pore* p : accessiblePores)
     {
-        if(p->getOutlet())
+        p->setFlow(0);
+        if(p->getActive())
         {
-            p->setFlow((p->getNodeOut()->getPressure()-pressureOut)*p->getConductivity());
-            outletFlow+=p->getFlow();
-        }
-        if(p->getInlet())
-        {
-            p->setFlow((pressureIn-p->getNodeIn()->getPressure())*p->getConductivity());
-        }
-        if(!p->getInlet() && !p->getOutlet())
-        {
-            p->setFlow((p->getNodeOut()->getPressure()-p->getNodeIn()->getPressure())*p->getConductivity());
+            if(p->getOutlet())
+            {
+                p->setFlow((p->getNodeOut()->getPressure()-pressureOut)*p->getConductivity());
+                outletFlow+=p->getFlow();
+            }
+            if(p->getInlet())
+            {
+                p->setFlow((pressureIn-p->getNodeIn()->getPressure())*p->getConductivity());
+            }
+            if(!p->getInlet() && !p->getOutlet())
+            {
+                p->setFlow((p->getNodeOut()->getPressure()-p->getNodeIn()->getPressure())*p->getConductivity());
+            }
         }
     }
     return outletFlow;

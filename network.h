@@ -90,7 +90,6 @@ public:
     double updateFlowsWithCapillaryPressure();
     void calculatePermeabilityAndPorosity();
     void calculateRelativePermeabilities();
-    void calculateRelativePermeabilitiesUSS();
 
 
     ///////////// Methods for Quasi-steady state 2-Phase flow
