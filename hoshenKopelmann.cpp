@@ -45,155 +45,26 @@ int network::hkMakeSet(vector<int>& labels)
 }
 
 template<typename T>
-void network::clusterPores(cluster*(pore::*getter)(void) const,void(pore::*setter)(cluster*),T(pore::*status)(void) const,T flag, vector<cluster*> &clustersList)
-{
-    if(!clustersList.empty())
-        for (unsigned i = 0; i < clustersList.size(); ++i)
-            delete clustersList[i];
-    clustersList.clear();
-
-    for(int i=0; i<totalPores; ++i)
-    {
-        pore* p=getPore(i);
-        if((p->*status)()==flag)
-            p->setClusterTemp(0);
-    }
-
-    vector<int> labels;
-    labels.push_back(0);
-
-
-    for(int i=0; i<totalPores;++i)
-    {
-        pore* p=getPore(i);
-        if((p->*status)()==flag)
-        {
-            vector<int> neighboorsClusters;
-            vector<pore*> neighboors=p->getConnectedPores();
-            for(unsigned j=0;j<neighboors.size();j++)
-            {
-                if((neighboors[j]->*status)()==flag && neighboors[j]->getClusterTemp()!=0)
-                    neighboorsClusters.push_back(neighboors[j]->getClusterTemp());
-            }
-            if(neighboorsClusters.empty())
-                p->setClusterTemp(hkMakeSet(labels));
-            else if(neighboorsClusters.size()==1)
-                p->setClusterTemp(neighboorsClusters[0]);
-            else
-                p->setClusterTemp(hkUnion(neighboorsClusters,labels));
-        }
-    }
-
-    // Create a mapping from the canonical labels determined by union/find into a new set of canonical labels, which are guaranteed to be sequential.
-
-    vector<int> new_labels(labels.size(),0);
-
-    for(int i=0; i<totalPores; ++i)
-    {
-        pore* p=getPore(i);
-        if((p->*status)()==flag)
-        {
-            int x=hkFind(p->getClusterTemp(),labels);
-            if (new_labels[x] == 0)
-            {
-                new_labels[0]++;
-                new_labels[x] = new_labels[0];
-                clustersList.push_back(new cluster(new_labels[0]));
-            }
-            (p->*setter)(clustersList[new_labels[x]-1]);
-        }
-    }
-
-    //Identify sepecial clusters
-    set<cluster*> inletClusters,outletClusters,spanningClusters;
-
-    for(pore* p: inletPores)
-        if((p->*status)()==flag)
-            inletClusters.insert((p->*getter)());
-
-    for(pore* p: outletPores)
-        if((p->*status)()==flag)
-            outletClusters.insert((p->*getter)());
-
-
-    for (cluster* c: inletClusters)
-        c->setInlet(true);
-
-    for (cluster* c: outletClusters)
-        c->setOutlet(true);
-
-    set_intersection( inletClusters.begin(), inletClusters.end(), outletClusters.begin(), outletClusters.end(), std::inserter( spanningClusters, spanningClusters.begin() ) );
-
-    for (cluster* c: spanningClusters)
-        c->setSpanning(true);
-}
-
-void network::clusterWaterPores()
-{
-    cluster* (pore::*getter)() const =&pore::getClusterWater;
-    void (pore::*setter)(cluster*) =&pore::setClusterWater;
-    phase (pore::*status)(void) const=&pore::getPhaseFlag;
-    clusterPores(getter,setter,status, phase::water,waterClusters);
-
-    isWaterSpanning=false;
-    for(unsigned i=0;i<waterClusters.size();++i)
-    {
-        cluster* cls=waterClusters[i];
-        if(cls->getSpanning())
-        {
-            isWaterSpanning=true;
-            break;
-        }
-    }
-}
-
-void network::clusterOilPores()
-{
-    cluster* (pore::*getter)() const =&pore::getClusterOil;
-    void (pore::*setter)(cluster*) =&pore::setClusterOil;
-    phase (pore::*status)(void) const=status=&pore::getPhaseFlag;
-    clusterPores(getter,setter,status,phase::oil,oilClusters);
-
-    isOilSpanning=false;
-    for(unsigned i=0;i<oilClusters.size();++i)
-    {
-        cluster* cls=oilClusters[i];
-        if(cls->getSpanning())
-        {
-            isOilSpanning=true;
-            break;
-        }
-    }
-}
-
-template<typename T>
 void network::clusterElements(cluster *(element::*getter)() const, void (element::*setter)(cluster *), T(element::*status)() const, T flag, std::vector<cluster *> &clustersList)
 {
-    if(!clustersList.empty())
-        for (unsigned i = 0; i < clustersList.size(); ++i)
-            delete clustersList[i];
+    for (cluster* c : clustersList)
+        delete c;
     clustersList.clear();
 
-    for(int i=0; i<totalElements; ++i)
-       if((getElement(i)->*status)()==flag)
-           getElement(i)->setClusterTemp(0);
+    for(element* e: tableOfElements)
+       if((e->*status)()==flag)
+           e->setClusterTemp(0);
 
     vector<int> labels;
     labels.push_back(0);
 
-
-    for(int i=0; i<totalElements;++i)
-    {
-
-        element* e=getElement(i);
-        if((e->*status)()==flag)
-        {
+    for(element* e: tableOfElements){
+        if((e->*status)()==flag){
             vector<int> neighboorsClusters;
-            vector<element*> neighboors=e->getNeighboors();
-            for(unsigned j=0;j<neighboors.size();j++)
-            {
-                if((neighboors[j]->*status)()==flag && neighboors[j]->getClusterTemp()!=0)
-                    neighboorsClusters.push_back(neighboors[j]->getClusterTemp());
+            vector<element*>& neighboors=e->getNeighboors();
+            for(element* neigh: neighboors){
+                if((neigh->*status)()==flag && neigh->getClusterTemp()!=0)
+                    neighboorsClusters.push_back(neigh->getClusterTemp());
             }
             if(neighboorsClusters.empty())
                 e->setClusterTemp(hkMakeSet(labels));
@@ -208,18 +79,16 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
 
     vector<int> new_labels(labels.size(),0);
 
-    for(int i=0; i<totalElements; ++i)
-    {
-        if((getElement(i)->*status)()==flag)
+    for(element* e: tableOfElements){
+        if((e->*status)()==flag)
         {
-            int x=hkFind(getElement(i)->getClusterTemp(),labels);
-            if (new_labels[x] == 0)
-            {
+            int x=hkFind(e->getClusterTemp(),labels);
+            if (new_labels[x] == 0){
                 new_labels[0]++;
                 new_labels[x] = new_labels[0];
                 clustersList.push_back(new cluster(new_labels[0]));
             }
-            (getElement(i)->*setter)(clustersList[new_labels[x]-1]);
+            (e->*setter)(clustersList[new_labels[x]-1]);
         }
     }
 

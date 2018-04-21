@@ -9,80 +9,10 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
-//Eigen library
-#include <Eigen/Sparse>
-#include <Eigen/IterativeLinearSolvers>
-#include <Eigen/SparseCholesky>
 
 namespace PNM {
 
 using namespace Eigen;
-
-void network::solvePressuresForRegularModel()
-{
-    SparseMatrix<double> conductivityMatrix(Nx*Ny*Nz,Nx*Ny*Nz);
-    conductivityMatrix.reserve(VectorXi::Constant(Nx*Ny*Nz,7));
-    VectorXd b=VectorXd::Zero(Nx*Ny*Nz);
-    VectorXd pressures=VectorXd::Zero(Nx*Ny*Nz);
-
-
-    int row=0;
-    for (int k = 0; k < Nz; ++k)
-        for (int j = 0; j < Ny; ++j)
-            for (int i = 0; i < Nx; ++i)
-            {
-                node *n,*nW,*nE,*nN,*nS,*nU,*nD;
-                double c,cE,cW,cN,cS,cU,cD;
-                n=getNode(i,j,k);
-                nW=getNode(i-1,j,k);
-                nE=getNode(i+1,j,k);
-                nS=getNode(i,j-1,k);
-                nN=getNode(i,j+1,k);
-                nD=(Nz!=1? getNode(i,j,k-1) : 0);
-                nU=(Nz!=1? getNode(i,j,k+1) : 0);
-                cW=getPoreX(i,j,k)->getConductivity();
-                cE=getPoreXout(i,j,k)->getConductivity();
-                cS=getPoreY(i,j,k)->getConductivity();
-                cN=getPoreYout(i,j,k)->getConductivity();
-                cD=getPoreZ(i,j,k)->getConductivity();
-                cU=getPoreZout(i,j,k)->getConductivity();
-                c=-cW-cE-cS-cN-cD-cU;
-
-                if(i==0) b(row)=-pressureIn*cW;
-                if(i==Nx-1) b(row)=-pressureOut*cE;
-
-                conductivityMatrix.insert(row,n->getRank())=c;
-                if(i!=0)conductivityMatrix.insert(row,nW->getRank())=cW;
-                if(i!=Nx-1)conductivityMatrix.insert(row,nE->getRank())=cE;
-                if(j!=0)if(Ny!=2) conductivityMatrix.insert(row,nS->getRank())=cS;
-                if(j!=Ny-1)conductivityMatrix.insert(row,nN->getRank())=cN;
-                if(k!=0)if(Nz!=1)if(Nz!=2)conductivityMatrix.insert(row,nD->getRank())=cD;
-                if(k!=Nz-1)if(Nz!=1)conductivityMatrix.insert(row,nU->getRank())=cU;
-                row++;
-            }
-    conductivityMatrix.makeCompressed();
-
-    if(solverChoice==1)
-    {
-        SimplicialLDLT<SparseMatrix<double> > solver;
-        solver.compute(conductivityMatrix);
-        pressures=solver.solve(b);
-    }
-    if(solverChoice==2)
-    {
-        ConjugateGradient<SparseMatrix<double>,Lower, IncompleteCholesky<double> > solver;
-        solver.setTolerance(1e-8);
-        solver.setMaxIterations(1000);
-        solver.compute(conductivityMatrix);
-        pressures=solver.solve(b);
-        //cout<<solver.error()<<" "<<solver.iterations()<<endl;
-    }
-
-    for (int i = 0; i < Nx; ++i)
-        for (int j = 0; j < Ny; ++j)
-            for (int k = 0; k < Nz; ++k)
-                getNode(i,j,k)->setPressure(pressures[getNode(i,j,k)->getRank()]);
-}
 
 void network::solvePressures()
 {
@@ -99,11 +29,11 @@ void network::solvePressures()
         {
             vector<int>& neighboors=n->getConnectedNodes();
             vector<int>& connectedPores=n->getConnectedPores();
-            double conductivity(0);
+            double conductivity(1e-200);
             for(unsigned j=0;j<neighboors.size();++j)
             {
                 pore* p=getPore(connectedPores[j]-1);
-                if(!p->getClosed())
+                if(!p->getClosed() && p->getActive())
                 {
                     if(p->getInlet())
                     {
@@ -144,7 +74,6 @@ void network::solvePressures()
 
         solver.compute(conductivityMatrix);
         pressures=solver.solve(b);
-        //cout<<solver.error()<<" "<<solver.iterations()<<endl;
     }
 
     for(int i=0;i<totalNodes;++i)
@@ -168,40 +97,35 @@ void network::solvePressuresWithCapillaryPressures()
         node* n=getNode(i);
         if(!n->getClosed())
         {
-            vector<int> neighboors=n->getConnectedNodes();
-            vector<int> connectedPores=n->getConnectedPores();
-            double conductivity(0);
+            vector<int>& neighboors=n->getConnectedNodes();
+            vector<int>& connectedPores=n->getConnectedPores();
+            double conductivity(1e-200);
             for(unsigned j=0;j<neighboors.size();++j)
             {
                 pore* p=getPore(connectedPores[j]-1);
-                if(!p->getClosed())
+                node* neighboor=getNode(neighboors[j]-1);
+                if(!p->getClosed() && p->getActive())
                 {
                     if(p->getInlet())
                     {
-                        b(row)-=pressureIn*p->getConductivity();
-                        conductivity-=p->getConductivity();
+                        b(row) -= p->getVolume()/inletPoresVolume * flowRate;
                     }
                     if(p->getOutlet())
                     {
-                        b(row)-=pressureOut*p->getConductivity();
                         conductivity-=p->getConductivity();
                     }
                     if(!p->getInlet() && !p->getOutlet())
                     {
-                        node* neighboor=getNode(neighboors[j]-1);
                         conductivityMatrix.insert(row,neighboor->getRank())=p->getConductivity();
                         conductivity-=p->getConductivity();
+
+                        //Capillary Pressure
+                        double capillaryPressure=p->getCapillaryPressure();
+                        if(neighboor==p->getNodeOut())
+                           b(row)+=capillaryPressure*p->getConductivity();
+                        if(neighboor==p->getNodeIn())
+                           b(row)-=capillaryPressure*p->getConductivity();
                     }
-
-                    //Capillary Pressure
-
-                    double capillaryPressure=p->getCapillaryPressure();
-
-                    node* neighboor=getNode(neighboors[j]-1);
-                    if(neighboor==p->getNodeOut())
-                       b(row)+=capillaryPressure*p->getConductivity();
-                    if(neighboor==p->getNodeIn())
-                       b(row)-=capillaryPressure*p->getConductivity();
                 }
             }
             conductivityMatrix.insert(row,n->getRank())=conductivity;
@@ -223,7 +147,6 @@ void network::solvePressuresWithCapillaryPressures()
         solver.setMaxIterations(1000);
         solver.compute(conductivityMatrix);
         pressures=solver.solve(b);
-        //cout<<solver.error()<<" "<<solver.iterations()<<endl;
     }
 
     for(int i=0;i<totalNodes;++i)
@@ -239,6 +162,8 @@ double network::updateFlows()
     double outletFlow(0);
     for(pore* p : accessiblePores)
     {
+        p->setFlow(0);
+        if(p->getActive())
         {
             if(p->getOutlet())
             {
@@ -263,15 +188,17 @@ double network::updateFlowsWithCapillaryPressure()
     double outletFlow(0);
     for(pore* p : accessiblePores)
     {
+        p->setFlow(0);
+        if(p->getActive())
         {
             if(p->getOutlet())
             {
-                p->setFlow((p->getNodeOut()->getPressure()-pressureOut-p->getCapillaryPressure())*p->getConductivity());
+                p->setFlow((p->getNodeOut()->getPressure())*p->getConductivity());
                 outletFlow+=p->getFlow();
             }
             if(p->getInlet())
             {
-                p->setFlow((pressureIn-p->getNodeIn()->getPressure()-p->getCapillaryPressure())*p->getConductivity());
+                p->setFlow(p->getVolume()/inletPoresVolume * flowRate);
             }
             if(!p->getInlet() && !p->getOutlet())
             {
@@ -293,34 +220,22 @@ void network::calculatePermeabilityAndPorosity()
     file<<"Absolute permeability (mD):\t"<<absolutePermeability/0.987e-15<<endl<<"Porosity:\t"<<porosity<<endl;
 }
 
-void network::setConstantFlowRateAker()
+void network::assignConductivities()
 {
-    assignViscositiesWithMixedFluids();
-    assignConductivities();
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+        node* nodeIn=p->getNodeIn();
+        node* nodeOut=p->getNodeOut();
+        auto throatConductivityInverse(0.0),nodeInConductivityInverse(0.0),nodeOutConductivityInverse(0.0);
 
-    double Q1(0),Q2(0),A,B;
+        throatConductivityInverse=1/(p->getShapeFactorConstant()*pow(p->getRadius(),4)/(16*p->getShapeFactor())/(p->getViscosity()*p->getLength()));
 
-    pressureIn=1;
-    pressureOut=0;
-    solvePressures();
-    updateFlows();
-    Q1=getOutletFlow();
+        if(nodeIn!=0)
+            nodeInConductivityInverse=1/(nodeIn->getShapeFactorConstant()*pow(nodeIn->getRadius(),4)/(16*nodeIn->getShapeFactor())/(nodeIn->getViscosity()*p->getNodeInLength()));
+        if(nodeOut!=0)
+            nodeOutConductivityInverse=1/(nodeOut->getShapeFactorConstant()*pow(nodeOut->getRadius(),4)/(16*nodeOut->getShapeFactor())/(nodeOut->getViscosity()*p->getNodeOutLength()));
 
-    pressureIn=2;
-    pressureOut=0;
-    solvePressures();
-    updateFlows();
-    Q2=getOutletFlow();
-
-    B=(Q1-Q2*1/2)/(1-1/2);
-    A=(Q1-B);
-
-    deltaP=flowRate/A-B/A;
-
-    pressureIn=deltaP;
-    pressureOut=0;
-    solvePressures();
-    updateFlows();
+        p->setConductivity(1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse));
+    });
 }
 
 }

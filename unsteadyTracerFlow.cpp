@@ -12,18 +12,15 @@
 
 namespace PNM {
 
-void network::runTracerFlowPT()
+void network::runTracerModel()
 {
     cout<<"Starting Tracer Flow Model... "<<endl;
-
-    double startTime,endTime;
-    startTime=tools::getCPUTime();
 
     //post-processing
     if(videoRecording)
         record=true;
 
-    initializeTwoPhaseSimulationPT();
+    initialiseTracerModel();
 
     //initialise flags
     double timeSoFar(0);
@@ -78,26 +75,52 @@ void network::runTracerFlowPT()
     }
 
     cout<<"Simulation Time: "<<timeSoFar<<" s"<<endl;
-    cout<<"Injected PVs: "<<injectedPVs<<endl;
-    endTime=tools::getCPUTime();
-    cout<<"Tracer Flow Time: "<<endTime-startTime<<" s"<<endl;
+    cout<<"Injected PVs: "<<injectedPVs<<endl; 
+}
+
+void network::initialiseTracerModel()
+{
+    cancel=false;
+    if(waterDistribution!=4){ //not after primary drainage
+        assignWWWettability();
+        fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
+    }
+    else{ //after primary drainage
+        initialiseTwoPhaseSSModel();
+        primaryDrainage(initialWaterSaturation);
+    }
+
+    initialiseCapillaries();
+
+    restoreWettability();
+
+    if(overrideByInjectedPVs){
+        simulationTime=totalElementsVolume*injectedPVs/flowRate;
+        cout<<"PVs to inject: "<<injectedPVs<<endl;
+    }
 }
 
 void network::solvePressureFieldInOil()
 {
     //Assign fluid properties and deactivate non-flowing capillaries (i.e. water, non-spanning oil)
-    assignViscositiesWithMixedFluids();
+    assignViscosities();
     assignConductivities();
     for (pore* p :accessiblePores)
     {
         p->setActive(true);
         if(p->getPhaseFlag()==phase::water){
            p->setActive(false);
-           p->setConductivity(1e-200);
         }
         if((p->getPhaseFlag()==phase::oil && !p->getClusterOil()->getSpanning()) || (p->getNodeIn()!=0 && !p->getNodeIn()->getClosed() && p->getNodeIn()->getPhaseFlag()==phase::water) || (p->getNodeOut()!=0 && !p->getNodeOut()->getClosed() && p->getNodeOut()->getPhaseFlag()==phase::water)){
             p->setActive(false);
-            p->setConductivity(1e-200);
+        }
+    }
+
+    clusterActiveElements();
+    for(pore* p : accessiblePores){
+        if(p->getActive() && p->getClusterActive()->getSpanning()==false){
+            p->setCapillaryPressure(0);
+            p->setActive(false);
         }
     }
 

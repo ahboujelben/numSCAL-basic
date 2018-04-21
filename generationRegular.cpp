@@ -15,14 +15,16 @@ namespace PNM {
 void network::setupRegularModel()
 {
     totalNodes=Nx*Ny*Nz;
-    tableOfAllNodes.reserve(totalNodes);
     totalPores=3*Nx*Ny*Nz+Ny*Nz+Nx*Nz+Nx*Ny;
-    tableOfAllPores.reserve(totalPores);
     totalElements=totalNodes+totalPores;
-    tableOfElements.reserve(totalPores+totalNodes);
+
     xEdgeLength=Nx*length;
     yEdgeLength=Ny*length;
     zEdgeLength=Nz*length;
+
+    tableOfAllNodes.reserve(totalNodes); 
+    tableOfAllPores.reserve(totalPores);
+    tableOfElements.reserve(totalPores+totalNodes);
 
     cout<<"Creating Nodes..."<<endl;
     createNodes();
@@ -46,11 +48,8 @@ void network::setupRegularModel()
     assignConductivities();
     cout<<"Assigning Wettability..."<<endl;
     assignWettability();
-    cout<<"Assigning General properties..."<<endl;
-    assignGeneralProperties();
 
-    if(absolutePermeabilityCalculation)
-    {
+    if(absolutePermeabilityCalculation){
         cout<<"Absolute Permeabilty Calculation..."<<endl;
         solvePressures();
         updateFlows();
@@ -130,6 +129,10 @@ void network::setNeighboors()
         node* n=getNode(i);
         vector<int> connectedPores;
         vector<int> neighboors;
+
+        connectedPores.reserve(6);
+        neighboors.reserve(6);
+
         pore *x=getPoreX(n->getIndexX(),n->getIndexY(),n->getIndexZ());
         pore *xout=getPoreXout(n->getIndexX(),n->getIndexY(),n->getIndexZ());
         pore *y=getPoreY(n->getIndexX(),n->getIndexY(),n->getIndexZ());
@@ -143,7 +146,7 @@ void network::setNeighboors()
         connectedPores.push_back(yout->getId());
         connectedPores.push_back(z->getId());
         connectedPores.push_back(zout->getId());
-        n->setConnectedPores(connectedPores);
+        n->setConnectedPores(std::move(connectedPores));
 
         neighboors.push_back(x->getNodeOut()==0?0:x->getNodeOut()->getId());
         neighboors.push_back(xout->getNodeIn()==0?0:xout->getNodeIn()->getId());
@@ -151,13 +154,16 @@ void network::setNeighboors()
         neighboors.push_back(yout->getNodeIn()==0?0:yout->getNodeIn()->getId());
         neighboors.push_back(z->getNodeOut()==0?0:z->getNodeOut()->getId());
         neighboors.push_back(zout->getNodeIn()==0?0:zout->getNodeIn()->getId());
-        n->setConnectedNodes(neighboors);
+        n->setConnectedNodes(std::move(neighboors));
     }
 
     for(int i=0;i<totalPores;++i)
     {
         pore*p=getPore(i);
         vector<pore*> neighboors;
+
+        neighboors.reserve(6);
+
         if(p->getNodeIn()!=0)
         {
             const vector<int>& neighboorsIn=p->getNodeIn()->getConnectedPores();
@@ -172,8 +178,23 @@ void network::setNeighboors()
                 if(neighboorsOut[j]!=p->getId())
                     neighboors.push_back(getPore(neighboorsOut[j]-1));
         }
-        p->setConnectedPores(neighboors);
+        p->setConnectedPores(std::move(neighboors));
     }
+
+    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
+        vector<element*> neighs;
+        if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());
+        if(p->getNodeOut()!=0)neighs.push_back(p->getNodeOut());
+        p->setNeighboors(neighs);
+    });
+
+    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* n){
+        vector<element*> neighs;
+        const vector<int>& neighboors=n->getConnectedPores();
+        for(unsigned j=0;j<neighboors.size();++j)
+           neighs.push_back(getPore(neighboors[j]-1));
+        n->setNeighboors(neighs);
+    });
 }
 
 void network::applyCoordinationNumber()
@@ -224,7 +245,8 @@ void network::applyCoordinationNumber()
         }
 
         //Clean Network from isolated pores
-        clusterOilPores();
+        clusterOilElements();
+
         for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* e){
             if(!e->getClosed() && !e->getClusterOil()->getSpanning()){
                 e->setClosed(true);
@@ -237,11 +259,19 @@ void network::applyCoordinationNumber()
 
         //Delete isolated nodes
         for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* e){
-            if(e->getConnectionNumber()==0){
+            if(e->getConnectionNumber()==0 || !e->getClusterOil()->getSpanning()){
                 e->setClosed(true);
             }
         });
     }
+
+    // delete closed pores from inlet/ outlet containers
+    inletPores.erase(remove_if(inletPores.begin(), inletPores.end(), [this](pore* p)->bool{
+                         return p->getClosed();
+                     }), inletPores.end());
+    outletPores.erase(remove_if(outletPores.begin(), outletPores.end(), [this](pore* p)->bool{
+                         return p->getClosed();
+                     }), outletPores.end());
 
     //Ranking for the solver
     auto rank(0);
@@ -282,21 +312,6 @@ void network::defineAccessibleElements()
             accessibleElements.push_back(p);
         }
     }
-
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
-        vector<element*> neighs;
-        if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());
-        if(p->getNodeOut()!=0)neighs.push_back(p->getNodeOut());
-        p->setNeighboors(neighs);
-    });
-
-    for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
-        vector<element*> neighs;
-        const vector<int>& neighboors=n->getConnectedPores();
-        for(unsigned j=0;j<neighboors.size();++j)
-           neighs.push_back(getPore(neighboors[j]-1));
-        n->setNeighboors(neighs);
-    });
 }
 
 void network::assignRadii()
@@ -383,6 +398,7 @@ void network::assignShapeFactors()
             e->setShapeFactorConstant(0.5623);
         else
             e->setShapeFactorConstant(0.5);
+        e->setEntryPressureCoefficient(1+2*sqrt(pi()*e->getShapeFactor()));
     });
 }
 
@@ -393,33 +409,16 @@ void network::assignVolumes()
         e->setVolume(volume);
         e->setEffectiveVolume(volume);
     });
-}
 
-void network::assignConductivities()
-{
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
-        node* nodeIn=p->getNodeIn();
-        node* nodeOut=p->getNodeOut();
-        auto throatConductivityInverse(0.0),nodeInConductivityInverse(0.0),nodeOutConductivityInverse(0.0);
-
-        throatConductivityInverse=1/(p->getShapeFactorConstant()*pow(p->getRadius(),4)/(16*p->getShapeFactor())/(p->getViscosity()*p->getLength()));
-
-        if(nodeIn!=0)
-            nodeInConductivityInverse=1/(nodeIn->getShapeFactorConstant()*pow(nodeIn->getRadius(),4)/(16*nodeIn->getShapeFactor())/(nodeIn->getViscosity()*p->getNodeInLength()));
-        if(nodeOut!=0)
-            nodeOutConductivityInverse=1/(nodeOut->getShapeFactorConstant()*pow(nodeOut->getRadius(),4)/(16*nodeOut->getShapeFactor())/(nodeOut->getViscosity()*p->getNodeOutLength()));
-
-        p->setConductivity(1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse));
-    });
-}
-
-void network::assignGeneralProperties()
-{
     totalNodesVolume=accumulate(accessibleNodes.begin(), accessibleNodes.end(), 0.0, [](double sum, const node* n){
         return sum+n->getVolume();
     });
 
     totalPoresVolume=accumulate(accessiblePores.begin(), accessiblePores.end(), 0.0, [](double sum, const pore* p){
+        return sum+p->getVolume();
+    });
+
+    inletPoresVolume=accumulate(inletPores.begin(), inletPores.end(), 0.0, [](double sum, const pore* p){
         return sum+p->getVolume();
     });
 

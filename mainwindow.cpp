@@ -98,6 +98,53 @@ void MainWindow::setup3dWidget()
     }
 }
 
+
+void MainWindow::on_loadNetworkButton_clicked()
+{
+    if(net->getSimulationRunning())
+        return;
+
+    ui->networkRunningLabel->setText("loading...");
+    ui->loadNetworkButton->setEnabled(false);
+
+    if(!ui->loadFromFileRadioButton->isChecked())
+        exportNetworkDataFromGUI();
+
+    QThread *t = new QThread;
+    worker *w = new worker(net,1);
+    w->moveToThread(t);
+    connect(t, SIGNAL(started()), w, SLOT(process()));
+    connect(w, SIGNAL(finished()), t, SLOT(quit()));
+    connect(w, SIGNAL(finished()), this, SLOT(getNetworkResults()));
+    connect(w, SIGNAL(finished()), w, SLOT(deleteLater()));
+    connect(t, SIGNAL(finished()), w, SLOT(deleteLater()));
+    t->start();
+}
+
+void MainWindow::on_twoPhaseSimButton_clicked()
+{
+    if(!net->getReady() || net->getSimulationRunning())
+        return;
+
+    ui->twoPhaseRunningLabel->setText("running...");
+    ui->twoPhaseSimButton->setEnabled(false);
+    ui->twoPhaseSimStopButton->setEnabled(true);
+    imageIndex=0;
+
+    if(!ui->twoPhaseLoadFromFileRadioButton->isChecked())
+        exportTwoPhaseDataFromGUI();
+
+    QThread *t = new QThread;
+    worker *w = new worker(net,2);
+    w->moveToThread(t);
+    connect(t, SIGNAL(started()), w, SLOT(process()));
+    connect(w, SIGNAL(finished()), t, SLOT(quit()));
+    connect(w, SIGNAL(finished()), this, SLOT(getTwoPhaseSimulationResults()));
+    connect(w, SIGNAL(finished()), w, SLOT(deleteLater()));
+    connect(t, SIGNAL(finished()), w, SLOT(deleteLater()));
+    t->start();
+}
+
 void MainWindow::exportNetworkDataFromGUI()
 {
     QSettings settings("Input Data/Parameters.txt", QSettings::IniFormat);
@@ -260,28 +307,6 @@ void MainWindow::updateNotificationArea()
     ui->SimNotif->setText(QString::fromStdString(net->getSimulationNotification()));
 }
 
-void MainWindow::on_loadNetworkButton_clicked()
-{
-    if(net->getSimulationRunning())
-        return;
-
-    ui->networkRunningLabel->setText("loading...");
-    ui->loadNetworkButton->setEnabled(false);
-
-    if(!ui->loadFromFileRadioButton->isChecked())
-        exportNetworkDataFromGUI();
-
-    QThread *t = new QThread;
-    worker *w = new worker(net,1);
-    w->moveToThread(t);
-    connect(t, SIGNAL(started()), w, SLOT(process()));
-    connect(w, SIGNAL(finished()), t, SLOT(quit()));
-    connect(w, SIGNAL(finished()), this, SLOT(getNetworkResults()));
-    connect(w, SIGNAL(finished()), w, SLOT(deleteLater()));
-    connect(t, SIGNAL(finished()), w, SLOT(deleteLater()));
-    t->start();
-}
-
 void MainWindow::on_calibratedRadioButton_clicked()
 {
     ui->pathToExtractedLabel->setEnabled(false);
@@ -296,30 +321,6 @@ void MainWindow::on_extractedRadioButton_clicked()
     ui->pathToExtractedLineEdit->setEnabled(true);
     ui->rockPrefixLabel->setEnabled(true);
     ui->rockList->setEnabled(true);
-}
-
-void MainWindow::on_twoPhaseSimButton_clicked()
-{
-    if(!net->getReady() || net->getSimulationRunning())
-        return;
-
-    ui->twoPhaseRunningLabel->setText("running...");
-    ui->twoPhaseSimButton->setEnabled(false);
-    ui->twoPhaseSimStopButton->setEnabled(true);
-    imageIndex=0;
-
-    if(!ui->twoPhaseLoadFromFileRadioButton->isChecked())
-        exportTwoPhaseDataFromGUI();
-
-    QThread *t = new QThread;
-    worker *w = new worker(net,2);
-    w->moveToThread(t);
-    connect(t, SIGNAL(started()), w, SLOT(process()));
-    connect(w, SIGNAL(finished()), t, SLOT(quit()));
-    connect(w, SIGNAL(finished()), this, SLOT(getTwoPhaseSimulationResults()));
-    connect(w, SIGNAL(finished()), w, SLOT(deleteLater()));
-    connect(t, SIGNAL(finished()), w, SLOT(deleteLater()));
-    t->start();
 }
 
 void MainWindow::on_twoPhaseSimStopButton_clicked()
@@ -520,119 +521,6 @@ void MainWindow::on_pushButton_3_clicked()
     totalCurves=0;
 }
 
-void MainWindow::on_plot_clicked()
-{
-    ifstream file(ui->fileToPlot->text().toStdString().c_str());
-
-    if(file && totalCurves<14)
-    {
-        string header;
-        getline(file,header);
-
-        std::stringstream ss(header);
-        std::istream_iterator<std::string> begin(ss);
-        std::istream_iterator<std::string> end;
-        std::vector<std::string> vstrings(begin, end);
-
-        if(vstrings.size()<=1) return;
-
-        vector<QVector<double> > data;
-        vector<QString> dataHeaders;
-        data.resize(vstrings.size());
-
-        for(int i=0;i<vstrings.size();++i)
-            dataHeaders.push_back(QString::fromStdString(( vstrings[i])));
-
-        double value;
-        while(file>>value)
-        {
-            data[0].push_back(value);
-            for(int i=1;i<vstrings.size();++i)
-            {
-                file>>value;
-                data[i].push_back(value);
-            }
-        }
-
-        for(int i=1;i<vstrings.size();++i)
-        {
-            QPen pen(QtColours[totalCurves]);
-            pen.setWidth(2);
-            ui->plotWidget->addGraph();
-            ui->plotWidget->graph(totalCurves)->setPen(pen);
-            ui->plotWidget->graph(totalCurves)->setName(dataHeaders[i]);
-            ui->plotWidget->graph(totalCurves)->setData(data[0], data[i]);
-            ui->plotWidget->rescaleAxes();
-            totalCurves++;
-        }
-        ui->plotWidget->replot();
-    }
-}
-
-void MainWindow::plotCurvesRealTime()
-{
-    if(ui->realTimeCheckBox->isChecked())
-    {
-        ui->plotWidget->clearGraphs();
-
-        totalCurves=0;
-
-        ifstream file(ui->fileToPlot->text().toStdString().c_str());
-
-        if(file && totalCurves<14)
-        {
-            string header;
-            getline(file,header);
-
-            std::stringstream ss(header);
-            std::istream_iterator<std::string> begin(ss);
-            std::istream_iterator<std::string> end;
-            std::vector<std::string> vstrings(begin, end);
-
-            if(vstrings.size()<=1) return;
-
-            vector<QVector<double> > data;
-            vector<QString> dataHeaders;
-            data.resize(vstrings.size());
-
-            for(int i=0;i<vstrings.size();++i)
-                dataHeaders.push_back(QString::fromStdString(( vstrings[i])));
-
-            double value;
-            while(file>>value)
-            {
-                data[0].push_back(value);
-                for(int i=1;i<vstrings.size();++i)
-                {
-                    file>>value;
-                    data[i].push_back(value);
-                }
-            }
-
-            for(int i=1;i<vstrings.size();++i)
-            {
-                QPen pen(QtColours[totalCurves]);
-                pen.setWidth(2);
-                ui->plotWidget->addGraph();
-                ui->plotWidget->graph(totalCurves)->setPen(pen);
-                ui->plotWidget->graph(totalCurves)->setName(dataHeaders[i]);
-                ui->plotWidget->graph(totalCurves)->setData(data[0], data[i]);
-                totalCurves++;
-            }
-            if(ui->title->text()!="") plotTitle->setText(ui->title->text());
-            if(ui->xAxisTitle->text()!="") ui->plotWidget->xAxis->setLabel(ui->xAxisTitle->text());
-            if(ui->yAxisTitle->text()!="") ui->plotWidget->yAxis->setLabel(ui->yAxisTitle->text());
-            if(ui->minXAxis->text()!="") ui->plotWidget->xAxis->setRangeLower(ui->minXAxis->text().toDouble());
-            if(ui->maxXAxis->text()!="") ui->plotWidget->xAxis->setRangeUpper(ui->maxXAxis->text().toDouble());
-            if(ui->minYAxis->text()!="") ui->plotWidget->yAxis->setRangeLower(ui->minYAxis->text().toDouble());
-            if(ui->maxYAxis->text()!="") ui->plotWidget->yAxis->setRangeUpper(ui->maxYAxis->text().toDouble());
-
-            if(ui->tickStep->text()!=""){ui->plotWidget->xAxis->setAutoTickStep(false);ui->plotWidget->xAxis->setTickStep(ui->tickStep->text().toDouble());}
-            ui->plotWidget->replot();
-        }
-    }
-}
-
 void MainWindow::on_oilColor_clicked()
 {
     ui->Rcolor->setValue(ui->widget->getPhase1Color().x*255.);
@@ -763,6 +651,120 @@ void MainWindow::on_linesCheckbox_clicked(bool checked)
 void MainWindow::on_actionExit_triggered()
 {
     this->close();
+}
+
+
+void MainWindow::on_plot_clicked()
+{
+    ifstream file(ui->fileToPlot->text().toStdString().c_str());
+
+    if(file && totalCurves<14)
+    {
+        string header;
+        getline(file,header);
+
+        std::stringstream ss(header);
+        std::istream_iterator<std::string> begin(ss);
+        std::istream_iterator<std::string> end;
+        std::vector<std::string> vstrings(begin, end);
+
+        if(vstrings.size()<=1) return;
+
+        vector<QVector<double> > data;
+        vector<QString> dataHeaders;
+        data.resize(vstrings.size());
+
+        for(int i=0;i<vstrings.size();++i)
+            dataHeaders.push_back(QString::fromStdString(( vstrings[i])));
+
+        double value;
+        while(file>>value)
+        {
+            data[0].push_back(value);
+            for(int i=1;i<vstrings.size();++i)
+            {
+                file>>value;
+                data[i].push_back(value);
+            }
+        }
+
+        for(int i=1;i<vstrings.size();++i)
+        {
+            QPen pen(QtColours[totalCurves]);
+            pen.setWidth(2);
+            ui->plotWidget->addGraph();
+            ui->plotWidget->graph(totalCurves)->setPen(pen);
+            ui->plotWidget->graph(totalCurves)->setName(dataHeaders[i]);
+            ui->plotWidget->graph(totalCurves)->setData(data[0], data[i]);
+            ui->plotWidget->rescaleAxes();
+            totalCurves++;
+        }
+        ui->plotWidget->replot();
+    }
+}
+
+void MainWindow::plotCurvesRealTime()
+{
+    if(ui->realTimeCheckBox->isChecked())
+    {
+        ui->plotWidget->clearGraphs();
+
+        totalCurves=0;
+
+        ifstream file(ui->fileToPlot->text().toStdString().c_str());
+
+        if(file && totalCurves<14)
+        {
+            string header;
+            getline(file,header);
+
+            std::stringstream ss(header);
+            std::istream_iterator<std::string> begin(ss);
+            std::istream_iterator<std::string> end;
+            std::vector<std::string> vstrings(begin, end);
+
+            if(vstrings.size()<=1) return;
+
+            vector<QVector<double> > data;
+            vector<QString> dataHeaders;
+            data.resize(vstrings.size());
+
+            for(int i=0;i<vstrings.size();++i)
+                dataHeaders.push_back(QString::fromStdString(( vstrings[i])));
+
+            double value;
+            while(file>>value)
+            {
+                data[0].push_back(value);
+                for(int i=1;i<vstrings.size();++i)
+                {
+                    file>>value;
+                    data[i].push_back(value);
+                }
+            }
+
+            for(int i=1;i<vstrings.size();++i)
+            {
+                QPen pen(QtColours[totalCurves]);
+                pen.setWidth(2);
+                ui->plotWidget->addGraph();
+                ui->plotWidget->graph(totalCurves)->setPen(pen);
+                ui->plotWidget->graph(totalCurves)->setName(dataHeaders[i]);
+                ui->plotWidget->graph(totalCurves)->setData(data[0], data[i]);
+                totalCurves++;
+            }
+            if(ui->title->text()!="") plotTitle->setText(ui->title->text());
+            if(ui->xAxisTitle->text()!="") ui->plotWidget->xAxis->setLabel(ui->xAxisTitle->text());
+            if(ui->yAxisTitle->text()!="") ui->plotWidget->yAxis->setLabel(ui->yAxisTitle->text());
+            if(ui->minXAxis->text()!="") ui->plotWidget->xAxis->setRangeLower(ui->minXAxis->text().toDouble());
+            if(ui->maxXAxis->text()!="") ui->plotWidget->xAxis->setRangeUpper(ui->maxXAxis->text().toDouble());
+            if(ui->minYAxis->text()!="") ui->plotWidget->yAxis->setRangeLower(ui->minYAxis->text().toDouble());
+            if(ui->maxYAxis->text()!="") ui->plotWidget->yAxis->setRangeUpper(ui->maxYAxis->text().toDouble());
+
+            if(ui->tickStep->text()!=""){ui->plotWidget->xAxis->setAutoTickStep(false);ui->plotWidget->xAxis->setTickStep(ui->tickStep->text().toDouble());}
+            ui->plotWidget->replot();
+        }
+    }
 }
 
 void MainWindow::on_actionAbout_triggered()

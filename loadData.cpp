@@ -9,8 +9,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
 
 namespace PNM {
 
@@ -47,10 +45,10 @@ void network::loadNetworkData()
     absolutePermeabilityCalculation=pt.get<bool>("NetworkGeneration_Misc.absolutePermeabilityCalculation");
 
     wettingTypeFlag=pt.get<int>("NetworkGeneration_Wettability.wettabilityFlag");
-    minWaterWetTheta=pt.get<double>("NetworkGeneration_Wettability.minWaterWetTheta")*(tools::pi()/180.);
-    maxWaterWetTheta=pt.get<double>("NetworkGeneration_Wettability.maxWaterWetTheta")*(tools::pi()/180.);
-    minOilWetTheta=pt.get<double>("NetworkGeneration_Wettability.minOilWetTheta")*(tools::pi()/180.);
-    maxOilWetTheta=pt.get<double>("NetworkGeneration_Wettability.maxOilWetTheta")*(tools::pi()/180.);
+    minWaterWetTheta=pt.get<double>("NetworkGeneration_Wettability.minWaterWetTheta")*(pi()/180.);
+    maxWaterWetTheta=pt.get<double>("NetworkGeneration_Wettability.maxWaterWetTheta")*(pi()/180.);
+    minOilWetTheta=pt.get<double>("NetworkGeneration_Wettability.minOilWetTheta")*(pi()/180.);
+    maxOilWetTheta=pt.get<double>("NetworkGeneration_Wettability.maxOilWetTheta")*(pi()/180.);
     oilWetFraction=pt.get<double>("NetworkGeneration_Wettability.oilWetFraction");
     shapeFactor=pt.get<double>("NetworkGeneration_Wettability.shapeFactor");
 }

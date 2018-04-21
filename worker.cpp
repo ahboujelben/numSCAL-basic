@@ -40,21 +40,12 @@ void worker::process()
         {
             n->setSimulationRunning(true);
             cout<<"Running Simulation..."<<endl;
-            n->runFluidInjectionSimulation();
+            n->runSimulation();
             cout<<"End of Simulation."<<endl;
             n->setSimulationRunning(false);
             emit finished();
             break;
         }
     }
-}
-int worker::getJob() const
-{
-    return job;
-}
-
-void worker::setJob(int value)
-{
-    job = value;
 }
 

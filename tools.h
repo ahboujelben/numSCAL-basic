@@ -31,22 +31,6 @@ using namespace std;
 class tools {
 
 public:
-    static double pi(){return 3.14159265358979323846264;}
-    static double g(){return 9.8;}
-    static double pAtm(){return 0.980665*1e5;}
-    static double R(){return 8.314;}
-    static double T(){return 313;}
-
-    static double PsiToPa(double const &pressure)
-    {
-        return pressure/14.50377*1e5;
-    }
-
-    static double PaToPsi(double const &pressure)
-    {
-        return pressure*14.50377/1e5;
-    }
-
     static void renderVideo()
     {
     #if defined(_WIN32)
