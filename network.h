@@ -93,16 +93,16 @@ public:
 
 
     ///////////// Methods for Quasi-steady state 2-Phase flow
-    void runTwoPhaseSSModelPT();
+    void runTwoPhaseSSModel();
     void initialiseTwoPhaseSSModel();
-    void primaryDrainagePT(double finalSaturation=0);
-    void spontaneousImbibitionPT();
-    void forcedWaterInjectionPT();
-    void spontaneousOilInvasionPT();
-    void secondaryOilDrainagePT();
-    void backupWettabilityPT();
-    void assignWWWettabilityPT(double theta=0);
-    void restoreWettabilityPT();
+    void primaryDrainage(double finalSaturation=0);
+    void spontaneousImbibition();
+    void forcedWaterInjection();
+    void spontaneousOilInvasion();
+    void secondaryOilDrainage();
+    void backupWettability();
+    void assignWWWettability(double theta=0);
+    void restoreWettability();
     //Films 2 phases
     void assignHalfAngles();
     void assignFilmStability();
@@ -112,14 +112,13 @@ public:
     void runUSSDrainageModel();
     void initialiseUSSDrainageModel();
     void addWaterChannel();
-    void setInitialFlagsPT();
-    void setAdvancedTrappingPT();
-    void updateCapillaryPropertiesPT(unordered_set<pore*>&, unordered_set<node*>&);
-    void solvePressureWithoutCounterImbibitionPT();
-    void calculateTimeStepUSSPT(unordered_set<pore *> &, unordered_set<node *> &, bool);
-    double updateElementaryFluidFractionsPT(unordered_set<pore*>&, unordered_set<node*>&, bool &);
-    void updateElementaryFluidFlagsPT(unordered_set<pore*>&, unordered_set<node *> &nodesToCheck);
-    void setConstantFlowRateAker();
+    void setInitialFlags();
+    void setAdvancedTrapping();
+    void updateCapillaryProperties(unordered_set<pore*>&, unordered_set<node*>&);
+    void solvePressureWithoutCounterImbibition();
+    void calculateTimeStepUSS(unordered_set<pore *> &, unordered_set<node *> &, bool);
+    double updateElementaryFluidFractions(unordered_set<pore*>&, unordered_set<node*>&, bool &);
+    void updateElementaryFluidFlags(unordered_set<pore*>&, unordered_set<node *> &nodesToCheck);
     //Output data
     void initializeTwoPhaseOutputs();
     void outputTwoPhaseData(double, int &, double);
@@ -164,10 +163,8 @@ public:
     int hkFind(int, vector<int>&);
     int hkUnion(vector<int>&,vector<int>&);
     int hkMakeSet(vector<int>&);
-
     template<typename T>
     void clusterElements(cluster*(element::*)(void) const,void(element::*)(cluster*),T(element::*)(void) const,T,vector<cluster *> &);
-
     void clusterWaterWetElements();
     void clusterOilWetElements();
     void clusterWaterElements();

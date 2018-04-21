@@ -22,7 +22,7 @@ void network::runUSSDrainageModel()
 
     initialiseUSSDrainageModel();
     initializeTwoPhaseOutputs();
-    setInitialFlagsPT();
+    setInitialFlags();
 
     assignViscosities();
     assignConductivities();
@@ -45,25 +45,25 @@ void network::runUSSDrainageModel()
         //Update viscosities/conductivities/thetas and trapping conditions
         if(solvePressure)
         {
-            setAdvancedTrappingPT();
+            setAdvancedTrapping();
 
             poresToCheck.clear();
             nodesToCheck.clear();
-            updateCapillaryPropertiesPT(poresToCheck,nodesToCheck);
+            updateCapillaryProperties(poresToCheck,nodesToCheck);
 
             //Solve pressure distribution and block counter imbibition flow
-            solvePressureWithoutCounterImbibitionPT();
+            solvePressureWithoutCounterImbibition();
             solvePressure=false;
         }
 
         //Calculate timestep
-        calculateTimeStepUSSPT(poresToCheck,nodesToCheck,waterSpanning);
+        calculateTimeStepUSS(poresToCheck,nodesToCheck,waterSpanning);
 
         //Update Fluid fractions
-        updateElementaryFluidFractionsPT(poresToCheck,nodesToCheck,solvePressure);
+        updateElementaryFluidFractions(poresToCheck,nodesToCheck,solvePressure);
 
         //Update Fluid Flags
-        updateElementaryFluidFlagsPT(poresToCheck, nodesToCheck);
+        updateElementaryFluidFlags(poresToCheck, nodesToCheck);
 
         if(timeStep!=1e50)
         {
@@ -121,18 +121,18 @@ void network::initialiseUSSDrainageModel()
 {
     cancel=false;
     if(waterDistribution!=4){ //not after primary drainage
-        assignWWWettabilityPT();
+        assignWWWettability();
         fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
     }
     else{ //after primary drainage
         initialiseTwoPhaseSSModel();
-        primaryDrainagePT(initialWaterSaturation);
+        primaryDrainage(initialWaterSaturation);
     }
 
     addWaterChannel();
     initialiseCapillaries();
 
-    restoreWettabilityPT();
+    restoreWettability();
 
     if(overrideByInjectedPVs){
         simulationTime=totalElementsVolume*injectedPVs/flowRate;
@@ -155,7 +155,7 @@ void network::addWaterChannel()
     });
 }
 
-void network::setInitialFlagsPT()
+void network::setInitialFlags()
 {
     clusterWaterElements();
 
@@ -192,7 +192,7 @@ void network::setInitialFlagsPT()
     }
 }
 
-void network::setAdvancedTrappingPT()
+void network::setAdvancedTrapping()
 {
     clusterOilElements();
     clusterWaterElements();
@@ -267,7 +267,7 @@ void network::setAdvancedTrappingPT()
     clusterOilElements();
 }
 
-void network::updateCapillaryPropertiesPT(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
+void network::updateCapillaryProperties(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
 {
     for(node* p : accessibleNodes){
         p->setActive(true);
@@ -346,7 +346,7 @@ void network::updateCapillaryPropertiesPT(unordered_set<pore *> &poresToCheck, u
     }
 }
 
-void network::solvePressureWithoutCounterImbibitionPT()
+void network::solvePressureWithoutCounterImbibition()
 {
     bool stillMorePoresToClose=true;
 
@@ -404,7 +404,7 @@ void network::solvePressureWithoutCounterImbibitionPT()
     }
 }
 
-void network::calculateTimeStepUSSPT(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool includeWater)
+void network::calculateTimeStepUSS(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool includeWater)
 {
     timeStep=1e50;
     for(pore* p : poresToCheck)
@@ -457,7 +457,7 @@ void network::calculateTimeStepUSSPT(unordered_set<pore *> &poresToCheck, unorde
     }
 }
 
-double network::updateElementaryFluidFractionsPT(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool &solvePressure)
+double network::updateElementaryFluidFractions(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool &solvePressure)
 {
     for(pore* p : poresToCheck)
     {
@@ -508,7 +508,7 @@ double network::updateElementaryFluidFractionsPT(unordered_set<pore *> &poresToC
     }
 }
 
-void network::updateElementaryFluidFlagsPT(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
+void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
 {
     for(pore* p: poresToCheck)
     {

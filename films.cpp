@@ -173,7 +173,7 @@ void network::assignWettability()
             e->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
             e->setWettabilityFlag(wettability::oilWet);
         });
-        backupWettabilityPT();
+        backupWettability();
         return;
     }
 
@@ -183,7 +183,7 @@ void network::assignWettability()
     });
 
     if(wettingTypeFlag==1){ //WW
-        backupWettabilityPT();
+        backupWettability();
         return;
     }
 
@@ -270,17 +270,17 @@ void network::assignWettability()
         }
     });
 
-    backupWettabilityPT();
+    backupWettability();
 }
 
-void network::backupWettabilityPT()
+void network::backupWettability()
 {
     for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
         e->setOriginalTheta(e->getTheta());
     });
 }
 
-void network::assignWWWettabilityPT(double theta)
+void network::assignWWWettability(double theta)
 {
     for_each(accessibleElements.begin(),accessibleElements.end(),[=,this](element* e){
         e->setTheta(theta);
@@ -291,7 +291,7 @@ void network::assignWWWettabilityPT(double theta)
     clusterOilWetElements();
 }
 
-void network::restoreWettabilityPT()
+void network::restoreWettability()
 {
     for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
         if(e->getPhaseFlag()==phase::oil){

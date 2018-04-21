@@ -12,7 +12,7 @@
 
 namespace PNM {
 
-void network::runTwoPhaseSSModelPT()
+void network::runTwoPhaseSSModel()
 {
     cout<<"Starting Two-Phase SS Simulation... "<<endl;
 
@@ -23,21 +23,21 @@ void network::runTwoPhaseSSModelPT()
     initialiseTwoPhaseSSModel();
 
     if(primaryDrainageSimulation && !cancel)
-        primaryDrainagePT();
+        primaryDrainage();
 
-    restoreWettabilityPT();
+    restoreWettability();
 
     if(spontaneousImbibitionSimulation && !cancel)
-        spontaneousImbibitionPT();
+        spontaneousImbibition();
 
     if(forcedWaterInjectionSimulation && !cancel)
-        forcedWaterInjectionPT();
+        forcedWaterInjection();
 
     if(spontaneousOilInvasionSimulation && !cancel)
-        spontaneousOilInvasionPT();
+        spontaneousOilInvasion();
 
     if(secondaryOilDrainageSimulation && !cancel)
-        secondaryOilDrainagePT();
+        secondaryOilDrainage();
 
     //post-processing
     if(videoRecording)
@@ -50,13 +50,13 @@ void network::runTwoPhaseSSModelPT()
 void network::initialiseTwoPhaseSSModel()
 {
     cancel=false;
-    assignWWWettabilityPT();
+    assignWWWettability();
     fillWithPhase(phase::water);
     initialiseCapillaries();
     assignHalfAngles();
 }
 
-void network::primaryDrainagePT(double finalSaturation)
+void network::primaryDrainage(double finalSaturation)
 
 {
     cout<<"Starting Primary Drainage... "<<endl;
@@ -234,7 +234,7 @@ void network::primaryDrainagePT(double finalSaturation)
     file3<<"Sw after PD: "<<finalSaturationPD<<endl;
 }
 
-void network::spontaneousImbibitionPT()
+void network::spontaneousImbibition()
 {
     cout<<"Starting Spontaneous Imbibition... "<<endl;
 
@@ -448,7 +448,7 @@ void network::spontaneousImbibitionPT()
     file3<<"Sw after SI: "<<finalSaturationPI<<endl;
 }
 
-void network::forcedWaterInjectionPT()
+void network::forcedWaterInjection()
 {
     cout<<"Starting Forced Water Injection ... "<<endl;
 
@@ -617,7 +617,7 @@ void network::forcedWaterInjectionPT()
     file3<<"Sw after FWI: "<<finalSaturationSD<<endl;
 }
 
-void network::spontaneousOilInvasionPT()
+void network::spontaneousOilInvasion()
 {
     cout<<"Starting Spontaneous Oil Invasion ... "<<endl;
 
@@ -829,7 +829,7 @@ void network::spontaneousOilInvasionPT()
     file3<<"Sw after SOI: "<<finalSaturationSI<<endl;
 }
 
-void network::secondaryOilDrainagePT()
+void network::secondaryOilDrainage()
 {
     cout<<"Starting Secondary Oil Drainage... "<<endl;
 

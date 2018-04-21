@@ -82,17 +82,17 @@ void network::initialiseTracerModel()
 {
     cancel=false;
     if(waterDistribution!=4){ //not after primary drainage
-        assignWWWettabilityPT();
+        assignWWWettability();
         fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
     }
     else{ //after primary drainage
         initialiseTwoPhaseSSModel();
-        primaryDrainagePT(initialWaterSaturation);
+        primaryDrainage(initialWaterSaturation);
     }
 
     initialiseCapillaries();
 
-    restoreWettabilityPT();
+    restoreWettability();
 
     if(overrideByInjectedPVs){
         simulationTime=totalElementsVolume*injectedPVs/flowRate;

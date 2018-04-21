@@ -238,34 +238,4 @@ void network::assignConductivities()
     });
 }
 
-void network::setConstantFlowRateAker()
-{
-    assignViscosities();
-    assignConductivities();
-
-    double Q1(0),Q2(0),A,B;
-
-    pressureIn=1;
-    pressureOut=0;
-    solvePressures();
-    updateFlows();
-    Q1=getOutletFlow();
-
-    pressureIn=2;
-    pressureOut=0;
-    solvePressures();
-    updateFlows();
-    Q2=getOutletFlow();
-
-    B=(Q1-Q2*1/2)/(1-1/2);
-    A=(Q1-B);
-
-    deltaP=flowRate/A-B/A;
-
-    pressureIn=deltaP;
-    pressureOut=0;
-    solvePressures();
-    updateFlows();
-}
-
 }

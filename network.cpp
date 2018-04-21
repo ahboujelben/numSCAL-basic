@@ -177,7 +177,7 @@ void network::runSimulation()
     auto startTime=tools::getCPUTime();
 
     if(twoPhaseSS)
-        runTwoPhaseSSModelPT();
+        runTwoPhaseSSModel();
     if(drainageUSS)
         runUSSDrainageModel();
     if(tracerFlow)
