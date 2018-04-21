@@ -296,11 +296,11 @@ void network::updateCapillaryPropertiesPT(unordered_set<pore *> &poresToCheck, u
                 //Update capilary pressures a pores with an oil/water interface
                 if(!p->getInlet() && !p->getOutlet() && p->getNodeIn()!=0 && p->getNodeOut()!=0){
                     if(p->getNodeOut()->getPhaseFlag()==phase::oil && p->getNodeIn()->getPhaseFlag()==phase::water)
-                        p->setCapillaryPressure(2*OWSurfaceTension*cos(p->getTheta())/p->getRadius());
+                        p->setCapillaryPressure(p->getEntryPressureCoefficient()*OWSurfaceTension*cos(p->getTheta())/p->getRadius());
                 }
                 if(!p->getInlet() && !p->getOutlet() && p->getNodeIn()!=0 && p->getNodeOut()!=0){
                     if(p->getNodeOut()->getPhaseFlag()==phase::water && p->getNodeIn()->getPhaseFlag()==phase::oil)
-                        p->setCapillaryPressure(-2*OWSurfaceTension*cos(p->getTheta())/p->getRadius());
+                        p->setCapillaryPressure(-p->getEntryPressureCoefficient()*OWSurfaceTension*cos(p->getTheta())/p->getRadius());
                 }
             }
         }
@@ -329,16 +329,16 @@ void network::updateCapillaryPropertiesPT(unordered_set<pore *> &poresToCheck, u
 
                     if(nodeOut->getPhaseFlag()==phase::oil && nodeIn->getPhaseFlag()==phase::water){
                         if(p->getTheta()>pi()/2)//drainage
-                            p->setCapillaryPressure(2*OWSurfaceTension*cos(p->getTheta())/nodeOut->getRadius());
+                            p->setCapillaryPressure(p->getEntryPressureCoefficient()*OWSurfaceTension*cos(p->getTheta())/nodeOut->getRadius());
                         if(p->getTheta()<pi()/2)//imbibition
-                            p->setCapillaryPressure(2*OWSurfaceTension*cos(p->getTheta())/nodeOut->getRadius()-oilNeighboorsNumber*OWSurfaceTension/nodeOut->getRadius());
+                            p->setCapillaryPressure(p->getEntryPressureCoefficient()*OWSurfaceTension*cos(p->getTheta())/nodeOut->getRadius()-oilNeighboorsNumber*OWSurfaceTension/nodeOut->getRadius());
                     }
 
                     if(nodeOut->getPhaseFlag()==phase::water && nodeIn->getPhaseFlag()==phase::oil){
                         if(p->getTheta()>pi()/2)//drainage
-                            p->setCapillaryPressure(-2*OWSurfaceTension*cos(p->getTheta())/nodeIn->getRadius());
+                            p->setCapillaryPressure(-p->getEntryPressureCoefficient()*OWSurfaceTension*cos(p->getTheta())/nodeIn->getRadius());
                         if(p->getTheta()<pi()/2)//imbibition
-                            p->setCapillaryPressure(-2*OWSurfaceTension*cos(p->getTheta())/nodeIn->getRadius()+oilNeighboorsNumber*OWSurfaceTension/nodeIn->getRadius());
+                            p->setCapillaryPressure(-p->getEntryPressureCoefficient()*OWSurfaceTension*cos(p->getTheta())/nodeIn->getRadius()+oilNeighboorsNumber*OWSurfaceTension/nodeIn->getRadius());
                     }
                 }
             }

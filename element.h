@@ -61,6 +61,9 @@ public:
     double getShapeFactorConstant() const {return shapeFactorConstant;}
     void setShapeFactorConstant(double value) {shapeFactorConstant=value;}
 
+    double getEntryPressureCoefficient() const {return entryPressureCoefficient;}
+    void setEntryPressureCoefficient(double value) {entryPressureCoefficient=value;}
+
     double getConductivity() const {return conductivity;}
     void setConductivity(double value) {conductivity=value;}
 
@@ -187,6 +190,7 @@ protected:
     double volume; // capillary volume (SI)
     double shapeFactor; // capillary shape factor (dimensionless)
     double shapeFactorConstant; // capillary shape factor constant (dimensionless)
+    double entryPressureCoefficient;
     double conductivity; // capillary conductivity (SI)
     double theta, originalTheta; // capillary oil-water contact angle
     double viscosity; // capillary average viscosity (SI)

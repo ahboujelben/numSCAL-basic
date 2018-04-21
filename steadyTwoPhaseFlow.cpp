@@ -78,7 +78,7 @@ void network::primaryDrainagePT(double finalSaturation)
     double minPc(1e20),maxPc(0);
     for(element* e:accessibleElements)
     {
-        double pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        double pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(pc<minPc)
         {
             minPc=pc;
@@ -123,7 +123,7 @@ void network::primaryDrainagePT(double finalSaturation)
             vector<element*> invadedElements;
             for(element* e: elementsToInvade)
             {
-                double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                double entryPressure=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                 if(currentPc+1e-5>=entryPressure && e->getClusterWaterFilm()->getOutlet())
                     invadedElements.push_back(e);
             }
@@ -261,7 +261,7 @@ void network::spontaneousImbibitionPT()
             minPc=abs(pc);
         }
 
-        pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)>maxPc)
         {
             maxPc=abs(pc);
@@ -333,7 +333,7 @@ void network::spontaneousImbibitionPT()
                 //throat
                 if(e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletWaterCluster) && e->getClusterOilFilm()->getOutlet())
                 {
-                    double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                    double entryPressure=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                     if(currentPc-1e-5<=entryPressure)
                         invadedElements.push_back(e);
                 }
@@ -355,9 +355,9 @@ void network::spontaneousImbibitionPT()
 
                    double entryPressureBodyFilling=0;
                    if(oilNeighboorsNumber==1)
-                       entryPressureBodyFilling=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                       entryPressureBodyFilling=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                    if(oilNeighboorsNumber>1)
-                       entryPressureBodyFilling=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius()/double(oilNeighboorsNumber);
+                       entryPressureBodyFilling=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius()/double(oilNeighboorsNumber);
 
                     if(currentPc-1e-5<=entryPressureBodyFilling)
                         invadedElements.push_back(e);
@@ -468,7 +468,7 @@ void network::forcedWaterInjectionPT()
     double minPc(1e20),maxPc(0);
     for(element* e:accessibleElements)
     {
-        double pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        double pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
         {
             minPc=abs(pc);
@@ -520,7 +520,7 @@ void network::forcedWaterInjectionPT()
                 {
                     if(e->getClusterOilFilm()->getOutlet())
                     {
-                        double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                        double entryPressure=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                         if(currentPc-1e-5<=entryPressure)
                             invadedElements.push_back(e);
                     }
@@ -644,7 +644,7 @@ void network::spontaneousOilInvasionPT()
             minPc=abs(pc);
         }
 
-        pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)>maxPc)
         {
             maxPc=abs(pc);
@@ -714,7 +714,7 @@ void network::spontaneousOilInvasionPT()
                 //throat
                 if(e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletOilCluster) && e->getClusterWaterFilm()->getOutlet())
                 {
-                    double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                    double entryPressure=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                     if(currentPc+1e-5>=entryPressure)
                         invadedElements.push_back(e);
                 }
@@ -736,9 +736,9 @@ void network::spontaneousOilInvasionPT()
 
                    double entryPressureBodyFilling=0;
                    if(waterNeighboorsNumber==1)
-                       entryPressureBodyFilling=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                       entryPressureBodyFilling=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                    if(waterNeighboorsNumber>1)
-                       entryPressureBodyFilling=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius()/double(waterNeighboorsNumber);
+                       entryPressureBodyFilling=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius()/double(waterNeighboorsNumber);
 
                     if(currentPc+1e-5>=entryPressureBodyFilling)
                         invadedElements.push_back(e);
@@ -849,7 +849,7 @@ void network::secondaryOilDrainagePT()
     double minPc(1e20),maxPc(0);
     for(element* e:accessibleElements)
     {
-        double pc=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+        double pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
         {
             minPc=abs(pc);
@@ -901,7 +901,7 @@ void network::secondaryOilDrainagePT()
                 {
                     if(e->getClusterWaterFilm()->getOutlet())//change
                     {
-                        double entryPressure=(1+2*sqrt(pi()*e->getShapeFactor()))*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
+                        double entryPressure=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
                         if(currentPc+1e-5>=entryPressure)
                             invadedElements.push_back(e);
                     }

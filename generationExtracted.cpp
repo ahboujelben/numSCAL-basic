@@ -274,6 +274,7 @@ void network::assignShapeFactorConstants()
                 p->setShapeFactorConstant(0.5623);
             else
                 p->setShapeFactorConstant(0.5);
+            p->setEntryPressureCoefficient(1+2*sqrt(pi()*p->getShapeFactor()));
         }
     }
 
@@ -288,6 +289,7 @@ void network::assignShapeFactorConstants()
                 n->setShapeFactorConstant(0.5623);
             else
                 n->setShapeFactorConstant(0.5);
+            n->setEntryPressureCoefficient(1+2*sqrt(pi()*n->getShapeFactor()));
         }
     }
 }
