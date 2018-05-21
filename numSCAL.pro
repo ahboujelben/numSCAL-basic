@@ -67,7 +67,8 @@ HEADERS += \
     worker.h \
     element.h \
     qcustomplot.h \
-    shader.h
+    shader.h \
+    iterator.h
 
 OTHER_FILES +=
 
