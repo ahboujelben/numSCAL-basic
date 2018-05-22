@@ -52,11 +52,11 @@ public:
     bool getNodeOutOil() const {return nodeOutOil;}
     void setNodeOutOil(bool value) {nodeOutOil=value;}
 
+    //implemented methods
+
     double getXCoordinate() const;
     double getYCoordinate() const;
     double getZCoordinate() const;
-
-    void assignConductivity(); //calculate pore conductivity
 
 protected:
 

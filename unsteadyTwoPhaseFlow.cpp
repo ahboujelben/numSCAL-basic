@@ -171,7 +171,7 @@ void network::setInitialFlags()
     for(node* p: accessibleNodes) //create Pc in oil-filled pores next to inlet-connected water
     {
         if(p->getPhaseFlag()==phase::water)
-        for(auto  e : p->getConnectedPores())
+        for(auto  e : p->getNeighboors())
         {
             pore* neigh= static_cast<pore*>(e);
             if(!neigh->getClosed() && neigh->getPhaseFlag()==phase::oil)
@@ -469,8 +469,8 @@ double network::updateElementaryFluidFractions(unordered_set<pore *> &poresToChe
                 p->setWaterFraction(p->getWaterFraction()+incrementalWater/p->getVolume());
                 p->setOilFraction(1-p->getWaterFraction());
 
-                p->assignViscosity(oilViscosity, waterViscosity);
-                p->assignConductivity();
+                p->setViscosity(oilViscosity*p->getOilFraction()+waterViscosity*p->getWaterFraction());
+                updateConductivity(p);
 
                 if(p->getWaterFraction()>1-1e-8)
                 {
@@ -491,7 +491,7 @@ double network::updateElementaryFluidFractions(unordered_set<pore *> &poresToChe
             p->setWaterFraction(p->getWaterFraction()+incrementalWater/p->getVolume());
             p->setOilFraction(1-p->getWaterFraction());
 
-            p->assignViscosity(oilViscosity, waterViscosity);
+            p->setViscosity(oilViscosity*p->getOilFraction()+waterViscosity*p->getWaterFraction());
 
             if(p->getWaterFraction()>1-1e-8)
             {
@@ -506,6 +506,22 @@ double network::updateElementaryFluidFractions(unordered_set<pore *> &poresToChe
             if(p->getWaterFraction()>1.0001 || p->getWaterFraction()<-0.0001) {cout<<"Something wrong: water fraction >1 or <0 "<<p->getWaterFraction()<<endl;cancel=true;}
         }
     }
+}
+
+void network::updateConductivity(pore * p)
+{
+    node* nodeIn=p->getNodeIn();
+    node* nodeOut=p->getNodeOut();
+    auto throatConductivityInverse(0.0),nodeInConductivityInverse(0.0),nodeOutConductivityInverse(0.0);
+
+    throatConductivityInverse=1/(p->getShapeFactorConstant()*pow(p->getRadius(),4)/(16*p->getShapeFactor())/(p->getViscosity()*p->getLength()));
+
+    if(nodeIn!=0)
+        nodeInConductivityInverse=1/(nodeIn->getShapeFactorConstant()*pow(nodeIn->getRadius(),4)/(16*nodeIn->getShapeFactor())/(nodeIn->getViscosity()*p->getNodeInLength()));
+    if(nodeOut!=0)
+        nodeOutConductivityInverse=1/(nodeOut->getShapeFactorConstant()*pow(nodeOut->getRadius(),4)/(16*nodeOut->getShapeFactor())/(nodeOut->getViscosity()*p->getNodeOutLength()));
+
+    p->setConductivity(1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse));
 }
 
 void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
@@ -532,7 +548,7 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
             for(node* nn: accessibleNodes)
             {
                 if(nn->getPhaseFlag()==phase::water && nn->getClusterWater()==n->getClusterWater())
-                for(auto e : nn->getConnectedPores())
+                for(auto e : nn->getNeighboors())
                 {
                     pore* nnn= static_cast<pore*>(e);
                     if(!nnn->getClosed() && nnn->getPhaseFlag()==phase::oil)
@@ -558,7 +574,7 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
     {
         if(p->getPhaseFlag()==phase::water)
         {
-            for(auto e : p->getConnectedPores())
+            for(auto e : p->getNeighboors())
             {
                 pore* n= static_cast<pore*>(e);
                 if(!n->getClosed() && n->getPhaseFlag()==phase::oil)
@@ -581,7 +597,7 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
                     for(node* nn: accessibleNodes)
                     {
                         if(nn->getPhaseFlag()==phase::water && nn->getClusterWater()==n->getClusterWater())
-                        for(auto e : nn->getConnectedPores())
+                        for(auto e : nn->getNeighboors())
                         {
                             pore* nnn= static_cast<pore*>(e);;
                             if(!nnn->getClosed() && nnn->getPhaseFlag()==phase::oil)

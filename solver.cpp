@@ -28,7 +28,7 @@ void network::solvePressures()
         if(!n->getClosed())
         {
             double conductivity(1e-200);
-            for(element* e : n->getConnectedPores())
+            for(element* e : n->getNeighboors())
             {
                 pore* p = static_cast<pore*>(e);
                 if(!p->getClosed() && p->getActive())
@@ -96,7 +96,7 @@ void network::solvePressuresWithCapillaryPressures()
         if(!n->getClosed())
         {
             double conductivity(1e-200);
-            for(element* e : n->getConnectedPores())
+            for(element* e : n->getNeighboors())
             {
                 pore* p = static_cast<pore*>(e);
                 if(!p->getClosed() && p->getActive())

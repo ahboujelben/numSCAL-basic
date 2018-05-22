@@ -68,7 +68,6 @@ public:
     void assignLengths();
     void distortNetwork();
     void assignShapeFactors();
-    void assignShapeFactorConstants();
     void assignVolumes();
     void assignConductivities();
     void assignWettability();
@@ -78,7 +77,6 @@ public:
     ///////////// Methods for generating network models extracted from microCT images
     void setupExtractedModel();
     void loadExtractedNetwork();
-    void setNeighboorsForExtractedModel();
     void cleanExtractedNetwork();
     void calculateExtractedNetworkVolume();
 
@@ -115,6 +113,7 @@ public:
     void setInitialFlags();
     void setAdvancedTrapping();
     void updateCapillaryProperties(unordered_set<pore*>&, unordered_set<node*>&);
+    void updateConductivity(pore*);
     void solvePressureWithoutCounterImbibition();
     void calculateTimeStepUSS(unordered_set<pore *> &, unordered_set<node *> &, bool);
     double updateElementaryFluidFractions(unordered_set<pore*>&, unordered_set<node*>&, bool &);

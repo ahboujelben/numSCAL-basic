@@ -124,6 +124,13 @@ void network::loadExtractedNetwork()
         n->setEffectiveVolume(volume);
         n->setRadius(radius);
         n->setShapeFactor(shapeFactor);
+        if(n->getShapeFactor()<=sqrt(3)/36.)
+            n->setShapeFactorConstant(0.6);
+        else if (n->getShapeFactor()<=1./16.)
+            n->setShapeFactorConstant(0.5623);
+        else
+            n->setShapeFactorConstant(0.5);
+        n->setEntryPressureCoefficient(1+2*sqrt(pi()*n->getShapeFactor()));
         n->setLength(volume/pow(radius,2)*(4*shapeFactor));
 
         filen<<n->getId()<<" "<<n->getRadius()<<endl;
@@ -196,6 +203,13 @@ void network::loadExtractedNetwork()
         p->setId(id);
         p->setAbsId(i+totalNodes);
         p->setShapeFactor(shapeFactor);
+        if(p->getShapeFactor()<=sqrt(3)/36.)
+            p->setShapeFactorConstant(0.6);
+        else if (p->getShapeFactor()<=1./16.)
+            p->setShapeFactorConstant(0.5623);
+        else
+            p->setShapeFactorConstant(0.5);
+        p->setEntryPressureCoefficient(1+2*sqrt(pi()*p->getShapeFactor()));
         p->setFullLength(poreLength);
         if(p->getNodeIn()!=0 && p->getNodeOut()!=0)
         {
@@ -264,66 +278,24 @@ void network::loadExtractedNetwork()
             node1>>dummy;
         node1>>dummy>>dummy;
 
-        vector<element*> connectedPores;
+        vector<element*> neighboors;
         for(int j=0;j<numberOfNeighboors;++j){
             int poreId;
             node1>>poreId;
-            connectedPores.push_back(getPore(poreId-1));
+            neighboors.push_back(getPore(poreId-1));
         }
-        n->setConnectedPores(connectedPores);
+        n->setNeighboors(neighboors);
     }
 
-    assignShapeFactorConstants();
-
-    //setting neighboors
-    setNeighboorsForExtractedModel();
-}
-
-void network::assignShapeFactorConstants()
-{
-    for (int i = 0; i < totalPores; ++i)
+    for(pore* p : tableOfAllPores)
     {
-        pore* p=getPore(i);
-        if(!p->getClosed())
-        {
-            if(p->getShapeFactor()<=sqrt(3)/36.)
-                p->setShapeFactorConstant(0.6);
-            else if (p->getShapeFactor()<=1./16.)
-                p->setShapeFactorConstant(0.5623);
-            else
-                p->setShapeFactorConstant(0.5);
-            p->setEntryPressureCoefficient(1+2*sqrt(pi()*p->getShapeFactor()));
-        }
+        vector<element*> neighboors;
+        if(p->getNodeIn()!=0)
+            neighboors.push_back(p->getNodeIn());
+        if(p->getNodeOut()!=0)
+            neighboors.push_back(p->getNodeOut());
+        p->setNeighboors(neighboors);
     }
-
-    for (int i = 0; i < totalNodes; ++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-        {
-            if(n->getShapeFactor()<=sqrt(3)/36.)
-                n->setShapeFactorConstant(0.6);
-            else if (n->getShapeFactor()<=1./16.)
-                n->setShapeFactorConstant(0.5623);
-            else
-                n->setShapeFactorConstant(0.5);
-            n->setEntryPressureCoefficient(1+2*sqrt(pi()*n->getShapeFactor()));
-        }
-    }
-}
-
-void network::setNeighboorsForExtractedModel()
-{
-    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
-        vector<element*> neighs;
-        if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());
-        if(p->getNodeOut()!=0)neighs.push_back(p->getNodeOut());
-        p->setNeighboors(neighs);
-    });
-
-    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* n){
-        n->setNeighboors(n->getConnectedPores());
-    });
 }
 
 void network::cleanExtractedNetwork()

@@ -126,8 +126,8 @@ void network::setNeighboors()
 {
     for(node* n : tableOfAllNodes)
     {
-        vector<element*> connectedPores;
-        connectedPores.reserve(6);
+        vector<element*> neighboors;
+        neighboors.reserve(6);
 
         pore *x=getPoreX(n->getIndexX(),n->getIndexY(),n->getIndexZ());
         pore *xout=getPoreXout(n->getIndexX(),n->getIndexY(),n->getIndexZ());
@@ -136,25 +136,24 @@ void network::setNeighboors()
         pore *z=getPoreZ(n->getIndexX(),n->getIndexY(),n->getIndexZ());
         pore *zout=getPoreZout(n->getIndexX(),n->getIndexY(),n->getIndexZ());
 
-        connectedPores.push_back(x);
-        connectedPores.push_back(xout);
-        connectedPores.push_back(y);
-        connectedPores.push_back(yout);
-        connectedPores.push_back(z);
-        connectedPores.push_back(zout);
-        n->setConnectedPores(std::move(connectedPores));
+        neighboors.push_back(x);
+        neighboors.push_back(xout);
+        neighboors.push_back(y);
+        neighboors.push_back(yout);
+        neighboors.push_back(z);
+        neighboors.push_back(zout);
+        n->setNeighboors(neighboors);
     }
 
-    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
-        vector<element*> neighs;
-        if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());
-        if(p->getNodeOut()!=0)neighs.push_back(p->getNodeOut());
-        p->setNeighboors(neighs);
-    });
-
-    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* n){
-        n->setNeighboors(n->getConnectedPores());
-    });
+    for(pore* p : tableOfAllPores)
+    {
+        vector<element*> neighboors;
+        if(p->getNodeIn()!=0)
+            neighboors.push_back(p->getNodeIn());
+        if(p->getNodeOut()!=0)
+            neighboors.push_back(p->getNodeOut());
+        p->setNeighboors(neighboors);
+    }
 }
 
 void network::applyCoordinationNumber()
@@ -293,7 +292,7 @@ void network::assignRadii()
     for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
         double maxRadius(0),averageRadius(0);
         int neighboorsNumber(0);
-        for(element* p : n->getConnectedPores())
+        for(element* p : n->getNeighboors())
         {
             if(!p->getClosed())
             {
