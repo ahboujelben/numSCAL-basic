@@ -234,9 +234,9 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
         {
             //Convection
             double massIn=0;
-            for(unsigned j : n->getConnectedPores())
+            for(element* e : n->getConnectedPores())
             {
-                pore* p=getPore(j-1);
+                pore* p= static_cast<pore*>(e);
                 if(!p->getClosed() && p->getPhaseFlag()==phase::oil && p->getActive())
                 {
                     if((p->getNodeIn()==n && p->getFlow()>1e-24) || (p->getNodeOut()==n && p->getFlow()<-1e-24))

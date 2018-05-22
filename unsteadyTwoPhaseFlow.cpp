@@ -171,9 +171,9 @@ void network::setInitialFlags()
     for(node* p: accessibleNodes) //create Pc in oil-filled pores next to inlet-connected water
     {
         if(p->getPhaseFlag()==phase::water)
-        for(int i : p->getConnectedPores())
+        for(auto  e : p->getConnectedPores())
         {
-            pore* neigh=getPore(i-1);
+            pore* neigh= static_cast<pore*>(e);
             if(!neigh->getClosed() && neigh->getPhaseFlag()==phase::oil)
             {
                 if(p==neigh->getNodeIn())
@@ -532,9 +532,9 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
             for(node* nn: accessibleNodes)
             {
                 if(nn->getPhaseFlag()==phase::water && nn->getClusterWater()==n->getClusterWater())
-                for(auto j : nn->getConnectedPores())
+                for(auto e : nn->getConnectedPores())
                 {
-                    pore* nnn=getPore(j-1);
+                    pore* nnn= static_cast<pore*>(e);
                     if(!nnn->getClosed() && nnn->getPhaseFlag()==phase::oil)
                     {
                         if(nnn->getNodeIn()==nn)
@@ -558,9 +558,9 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
     {
         if(p->getPhaseFlag()==phase::water)
         {
-            for(auto i : p->getConnectedPores())
+            for(auto e : p->getConnectedPores())
             {
-                pore* n=getPore(i-1);
+                pore* n= static_cast<pore*>(e);
                 if(!n->getClosed() && n->getPhaseFlag()==phase::oil)
                 {
                     if(n->getNodeIn()==p)
@@ -581,9 +581,9 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
                     for(node* nn: accessibleNodes)
                     {
                         if(nn->getPhaseFlag()==phase::water && nn->getClusterWater()==n->getClusterWater())
-                        for(auto j : nn->getConnectedPores())
+                        for(auto e : nn->getConnectedPores())
                         {
-                            pore* nnn=getPore(j-1);
+                            pore* nnn= static_cast<pore*>(e);;
                             if(!nnn->getClosed() && nnn->getPhaseFlag()==phase::oil)
                             {
                                 if(nnn->getNodeIn()==nn)

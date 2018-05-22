@@ -124,14 +124,10 @@ void network::createPores()
 
 void network::setNeighboors()
 {
-    for(int i=0;i<totalNodes;++i)
+    for(node* n : tableOfAllNodes)
     {
-        node* n=getNode(i);
-        vector<int> connectedPores;
-        vector<int> neighboors;
-
+        vector<element*> connectedPores;
         connectedPores.reserve(6);
-        neighboors.reserve(6);
 
         pore *x=getPoreX(n->getIndexX(),n->getIndexY(),n->getIndexZ());
         pore *xout=getPoreXout(n->getIndexX(),n->getIndexY(),n->getIndexZ());
@@ -140,12 +136,12 @@ void network::setNeighboors()
         pore *z=getPoreZ(n->getIndexX(),n->getIndexY(),n->getIndexZ());
         pore *zout=getPoreZout(n->getIndexX(),n->getIndexY(),n->getIndexZ());
 
-        connectedPores.push_back(x->getId());
-        connectedPores.push_back(xout->getId());
-        connectedPores.push_back(y->getId());
-        connectedPores.push_back(yout->getId());
-        connectedPores.push_back(z->getId());
-        connectedPores.push_back(zout->getId());
+        connectedPores.push_back(x);
+        connectedPores.push_back(xout);
+        connectedPores.push_back(y);
+        connectedPores.push_back(yout);
+        connectedPores.push_back(z);
+        connectedPores.push_back(zout);
         n->setConnectedPores(std::move(connectedPores));
     }
 
@@ -157,11 +153,7 @@ void network::setNeighboors()
     });
 
     for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* n){
-        vector<element*> neighs;
-        const vector<int>& neighboors=n->getConnectedPores();
-        for(unsigned j=0;j<neighboors.size();++j)
-           neighs.push_back(getPore(neighboors[j]-1));
-        n->setNeighboors(neighs);
+        n->setNeighboors(n->getConnectedPores());
     });
 }
 
@@ -301,9 +293,8 @@ void network::assignRadii()
     for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
         double maxRadius(0),averageRadius(0);
         int neighboorsNumber(0);
-        for(unsigned j=0;j<n->getConnectedPores().size();++j)
+        for(element* p : n->getConnectedPores())
         {
-            pore* p=getPore(n->getConnectedPores()[j]-1);
             if(!p->getClosed())
             {
                 if(p->getRadius()>maxRadius)maxRadius=p->getRadius();

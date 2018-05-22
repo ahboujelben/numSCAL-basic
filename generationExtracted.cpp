@@ -98,14 +98,10 @@ void network::loadExtractedNetwork()
         n->setInlet(isInlet);
         n->setOutlet(isOutlet);
 
-        vector<int> connectedPores;
-        for(int j=0;j<numberOfNeighboors;++j)
-        {
+        for(int j=0;j<numberOfNeighboors;++j){
             int poreId;
             node1>>poreId;
-            connectedPores.push_back(poreId);
         }
-        n->setConnectedPores(connectedPores);
     }
 
     cout<<"Average Connection Number: "<<averageConnectionNumber/totalNodes<<endl;
@@ -251,6 +247,32 @@ void network::loadExtractedNetwork()
         p->setEffectiveVolume(volume);
     }
 
+    //Assigning neighboors
+    node1.seekg(0);
+
+    string dummy;
+    node1>>dummy>>dummy>>dummy>>dummy;
+    getline(node1,dummy);
+
+    for(int i=0;i<totalNodes;++i)
+    {
+        node* n=getNode(i);
+        int numberOfNeighboors;
+
+        node1>>dummy>>dummy>>dummy>>dummy>>numberOfNeighboors;
+        for(int j=0;j<numberOfNeighboors;++j)
+            node1>>dummy;
+        node1>>dummy>>dummy;
+
+        vector<element*> connectedPores;
+        for(int j=0;j<numberOfNeighboors;++j){
+            int poreId;
+            node1>>poreId;
+            connectedPores.push_back(getPore(poreId-1));
+        }
+        n->setConnectedPores(connectedPores);
+    }
+
     assignShapeFactorConstants();
 
     //setting neighboors
@@ -300,11 +322,7 @@ void network::setNeighboorsForExtractedModel()
     });
 
     for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* n){
-        vector<element*> neighs;
-        const vector<int>& neighboors=n->getConnectedPores();
-        for(unsigned j=0;j<neighboors.size();++j)
-           neighs.push_back(getPore(neighboors[j]-1));
-        n->setNeighboors(neighs);
+        n->setNeighboors(n->getConnectedPores());
     });
 }
 
