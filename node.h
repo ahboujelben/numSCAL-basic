@@ -48,9 +48,6 @@ public:
     int getRank() const {return rank;}
     void setRank(int value) {rank=value;}
 
-    std::vector<int> &getConnectedNodes() {return connectedNodes;}
-    void setConnectedNodes(const std::vector<int> &value) {connectedNodes=value;}
-
     std::vector<int> &getConnectedPores() {return connectedPores;}
     void setConnectedPores(const std::vector<int> &value) {connectedPores=value;}
 
@@ -68,7 +65,6 @@ private:
     double pressure; // pressure (SI)
     int rank; // solver ranking
 
-    std::vector<int> connectedNodes; // table of connected nodes ID
     std::vector<int> connectedPores; // table of connected pores ID
 };
 

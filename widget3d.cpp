@@ -117,9 +117,9 @@ unsigned widget3d::bufferCylinderData()
                     if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
                     if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
                     if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
-                    if(cutX && p->getMaxXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
-                    if(cutY && p->getMaxYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
-                    if(cutZ && p->getMaxZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
+                    if(cutX && p->getXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
+                    if(cutY && p->getYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
+                    if(cutZ && p->getZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
 
                     // center
                     h_data[index] = (p->getNodeIn()->getXCoordinate()+p->getNodeOut()->getXCoordinate())/2/aspect; // vertex.x
@@ -178,9 +178,9 @@ unsigned widget3d::bufferLinesData()
                     if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
                     if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
                     if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
-                    if(cutX && p->getMaxXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
-                    if(cutY && p->getMaxYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
-                    if(cutZ && p->getMaxZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
+                    if(cutX && p->getXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
+                    if(cutY && p->getYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
+                    if(cutZ && p->getZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
 
                     // node1
                     h_data[index] = (p->getNodeIn()->getXCoordinate())/aspect; // vertex.x

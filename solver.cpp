@@ -27,10 +27,9 @@ void network::solvePressures()
         node* n=getNode(i);
         if(!n->getClosed())
         {
-            vector<int>& neighboors=n->getConnectedNodes();
             vector<int>& connectedPores=n->getConnectedPores();
             double conductivity(1e-200);
-            for(unsigned j=0;j<neighboors.size();++j)
+            for(unsigned j=0;j<connectedPores.size();++j)
             {
                 pore* p=getPore(connectedPores[j]-1);
                 if(!p->getClosed() && p->getActive())
@@ -47,7 +46,7 @@ void network::solvePressures()
                     }
                     if(!p->getInlet() && !p->getOutlet())
                     {
-                        node* neighboor=getNode(neighboors[j]-1);
+                        node* neighboor=p->getOtherNode(n);
                         conductivityMatrix.insert(row,neighboor->getRank())=p->getConductivity();
                         conductivity-=p->getConductivity();
                     }
@@ -97,13 +96,11 @@ void network::solvePressuresWithCapillaryPressures()
         node* n=getNode(i);
         if(!n->getClosed())
         {
-            vector<int>& neighboors=n->getConnectedNodes();
             vector<int>& connectedPores=n->getConnectedPores();
             double conductivity(1e-200);
-            for(unsigned j=0;j<neighboors.size();++j)
+            for(unsigned j=0;j<connectedPores.size();++j)
             {
                 pore* p=getPore(connectedPores[j]-1);
-                node* neighboor=getNode(neighboors[j]-1);
                 if(!p->getClosed() && p->getActive())
                 {
                     if(p->getInlet())
@@ -116,6 +113,8 @@ void network::solvePressuresWithCapillaryPressures()
                     }
                     if(!p->getInlet() && !p->getOutlet())
                     {
+                        node* neighboor=p->getOtherNode(n);
+
                         conductivityMatrix.insert(row,neighboor->getRank())=p->getConductivity();
                         conductivity-=p->getConductivity();
 

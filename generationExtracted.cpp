@@ -89,14 +89,10 @@ void network::loadExtractedNetwork()
         n->setConnectionNumber(numberOfNeighboors);
         averageConnectionNumber+=numberOfNeighboors;
 
-        vector<int> neighboors;
-        for(int j=0;j<numberOfNeighboors;++j)
-        {
+        for(int j=0;j<numberOfNeighboors;++j){
             int neighboor;
             node1>>neighboor;
-            neighboors.push_back(neighboor);
         }
-        n->setConnectedNodes(neighboors);
 
         node1>>isInlet>>isOutlet;
         n->setInlet(isInlet);
@@ -296,27 +292,6 @@ void network::assignShapeFactorConstants()
 
 void network::setNeighboorsForExtractedModel()
 {
-    for(int i=0;i<totalPores;++i)
-    {
-        pore*p=getPore(i);
-        vector<pore*> neighboors;
-        if(p->getNodeIn()!=0)
-        {
-            const vector<int>& neighboorsIn=p->getNodeIn()->getConnectedPores();
-            for(unsigned j=0;j<neighboorsIn.size();++j)
-                if(neighboorsIn[j]!=p->getId())
-                    neighboors.push_back(getPore(neighboorsIn[j]-1));
-        }
-        if(p->getNodeOut()!=0)
-        {
-            const vector<int>& neighboorsOut=p->getNodeOut()->getConnectedPores();
-            for(unsigned j=0;j<neighboorsOut.size();++j)
-                if(neighboorsOut[j]!=p->getId())
-                    neighboors.push_back(getPore(neighboorsOut[j]-1));
-        }
-        p->setConnectedPores(neighboors);
-    }
-
     for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
         vector<element*> neighs;
         if(p->getNodeIn()!=0)neighs.push_back(p->getNodeIn());

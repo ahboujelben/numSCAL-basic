@@ -147,38 +147,6 @@ void network::setNeighboors()
         connectedPores.push_back(z->getId());
         connectedPores.push_back(zout->getId());
         n->setConnectedPores(std::move(connectedPores));
-
-        neighboors.push_back(x->getNodeOut()==0?0:x->getNodeOut()->getId());
-        neighboors.push_back(xout->getNodeIn()==0?0:xout->getNodeIn()->getId());
-        neighboors.push_back(y->getNodeOut()==0?0:y->getNodeOut()->getId());
-        neighboors.push_back(yout->getNodeIn()==0?0:yout->getNodeIn()->getId());
-        neighboors.push_back(z->getNodeOut()==0?0:z->getNodeOut()->getId());
-        neighboors.push_back(zout->getNodeIn()==0?0:zout->getNodeIn()->getId());
-        n->setConnectedNodes(std::move(neighboors));
-    }
-
-    for(int i=0;i<totalPores;++i)
-    {
-        pore*p=getPore(i);
-        vector<pore*> neighboors;
-
-        neighboors.reserve(6);
-
-        if(p->getNodeIn()!=0)
-        {
-            const vector<int>& neighboorsIn=p->getNodeIn()->getConnectedPores();
-            for(unsigned j=0;j<neighboorsIn.size();++j)
-                if(neighboorsIn[j]!=p->getId())
-                    neighboors.push_back(getPore(neighboorsIn[j]-1));
-        }
-        if(p->getNodeOut()!=0)
-        {
-            const vector<int>& neighboorsOut=p->getNodeOut()->getConnectedPores();
-            for(unsigned j=0;j<neighboorsOut.size();++j)
-                if(neighboorsOut[j]!=p->getId())
-                    neighboors.push_back(getPore(neighboorsOut[j]-1));
-        }
-        p->setConnectedPores(std::move(neighboors));
     }
 
     for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
