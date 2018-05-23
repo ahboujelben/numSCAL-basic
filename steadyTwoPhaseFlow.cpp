@@ -137,7 +137,7 @@ void network::primaryDrainage(double finalSaturation)
                 elementsToInvade.erase(e);
 
                 for(element* n:e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::water && e->getClusterWaterFilm()->getOutlet())
+                    if(n->getPhaseFlag()==phase::water && e->getClusterWaterFilm()->getOutlet())
                         elementsToInvade.insert(n);
 
                 stillMore=true;
@@ -327,7 +327,7 @@ void network::spontaneousImbibition()
             {
                 bool connectedToInletWaterCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
+                    if(n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
                     {connectedToInletWaterCluster=true;break;}
 
                 //throat
@@ -346,11 +346,9 @@ void network::spontaneousImbibition()
                     int totalNeighboorsNumber(0);
                     for(element* n : e->getNeighboors())
                     {
-                        if(!n->getClosed() && n->getPhaseFlag()==phase::oil)
+                        if(n->getPhaseFlag()==phase::oil)
                             oilNeighboorsNumber++;
-
-                        if(!n->getClosed())
-                            totalNeighboorsNumber++;
+                        totalNeighboorsNumber++;
                     }
 
                    double entryPressureBodyFilling=0;
@@ -513,7 +511,7 @@ void network::forcedWaterInjection()
             {
                 bool connectedToInletWaterCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
+                    if(n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
                     {connectedToInletWaterCluster=true;break;}
 
                 if((e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletWaterCluster)) || (e->getType()==capillaryType::poreBody && connectedToInletWaterCluster))
@@ -708,7 +706,7 @@ void network::spontaneousOilInvasion()
             {
                 bool connectedToInletOilCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
+                    if(n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
                     {connectedToInletOilCluster=true;break;}
 
                 //throat
@@ -727,11 +725,9 @@ void network::spontaneousOilInvasion()
                     int totalNeighboorsNumber(0);
                     for(element* n : e->getNeighboors())
                     {
-                        if(!n->getClosed() && n->getPhaseFlag()==phase::water)
+                        if(n->getPhaseFlag()==phase::water)
                             waterNeighboorsNumber++;
-
-                        if(!n->getClosed())
-                            totalNeighboorsNumber++;
+                        totalNeighboorsNumber++;
                     }
 
                    double entryPressureBodyFilling=0;
@@ -894,7 +890,7 @@ void network::secondaryOilDrainage()
             {
                 bool connectedToInletOilCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
+                    if(n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
                     {connectedToInletOilCluster=true;break;}
 
                 if((e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletOilCluster)) || (e->getType()==capillaryType::poreBody && connectedToInletOilCluster))

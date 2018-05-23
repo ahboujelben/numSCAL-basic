@@ -7,6 +7,7 @@
 /// Licence:     Attribution-NonCommercial 4.0 International
 /////////////////////////////////////////////////////////////////////////////
 #include "widget3d.h"
+#include "iterator.h"
 
 widget3d::widget3d(QWidget *parent)
     : QGLWidget (QGLFormat(QGL::SampleBuffers),parent)
@@ -103,50 +104,47 @@ unsigned widget3d::bufferCylinderData()
     if(net!=0)
         if(net->getReady())
         {
-            int NUMBER_CYLINDERS=net->getTotalPores();
+            int NUMBER_CYLINDERS=net->getTotalOpenedPores();
             GLfloat *h_data = new GLfloat[11 * NUMBER_CYLINDERS];
-            for(int i=0;i<NUMBER_CYLINDERS;++i)
+            for(pore* p : networkRange<pore*>(net))
             {
-                pore* p=net->getPore(i);
-                if(!p->getClosed())
-                {
-                    if(p->getInlet() || p->getOutlet()) continue;
-                    if(p->getPhaseFlag()==phase::invalid) continue;
-                    if(p->getPhaseFlag()==phase::oil && !oilVisible) continue;
-                    if(p->getPhaseFlag()==phase::temp && !oilVisible) continue;
-                    if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
-                    if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
-                    if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
-                    if(cutX && p->getXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
-                    if(cutY && p->getYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
-                    if(cutZ && p->getZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
+                if(p->getInlet() || p->getOutlet()) continue;
+                if(p->getPhaseFlag()==phase::invalid) continue;
+                if(p->getPhaseFlag()==phase::oil && !oilVisible) continue;
+                if(p->getPhaseFlag()==phase::temp && !oilVisible) continue;
+                if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
+                if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
+                if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
+                if(cutX && p->getXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
+                if(cutY && p->getYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
+                if(cutZ && p->getZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
 
-                    // center
-                    h_data[index] = (p->getNodeIn()->getXCoordinate()+p->getNodeOut()->getXCoordinate())/2/aspect; // vertex.x
-                    h_data[index + 1] = (p->getNodeIn()->getYCoordinate()+p->getNodeOut()->getYCoordinate())/2/aspect;; // vertex.y
-                    h_data[index + 2] = (p->getNodeIn()->getZCoordinate()+p->getNodeOut()->getZCoordinate())/2/aspect;; // vertex.z
+                // center
+                h_data[index] = (p->getNodeIn()->getXCoordinate()+p->getNodeOut()->getXCoordinate())/2/aspect; // vertex.x
+                h_data[index + 1] = (p->getNodeIn()->getYCoordinate()+p->getNodeOut()->getYCoordinate())/2/aspect;; // vertex.y
+                h_data[index + 2] = (p->getNodeIn()->getZCoordinate()+p->getNodeOut()->getZCoordinate())/2/aspect;; // vertex.z
 
-                    // height
-                    h_data[index + 3] = p->getFullLength()/2/aspect;
+                // height
+                h_data[index + 3] = p->getFullLength()/2/aspect;
 
-                    // direction
-                    glm::vec3 dir=glm::vec3(float((p->getNodeIn()->getXCoordinate()-p->getNodeOut()->getXCoordinate())/aspect), float((p->getNodeIn()->getYCoordinate()-p->getNodeOut()->getYCoordinate())/aspect), float((p->getNodeIn()->getZCoordinate()-p->getNodeOut()->getZCoordinate())/aspect));
-                    h_data[index + 4] = dir[0]; // vertex.x
-                    h_data[index + 5] = dir[1]; // vertex.y
-                    h_data[index + 6] = dir[2]; // vertex.z
+                // direction
+                glm::vec3 dir=glm::vec3(float((p->getNodeIn()->getXCoordinate()-p->getNodeOut()->getXCoordinate())/aspect), float((p->getNodeIn()->getYCoordinate()-p->getNodeOut()->getYCoordinate())/aspect), float((p->getNodeIn()->getZCoordinate()-p->getNodeOut()->getZCoordinate())/aspect));
+                h_data[index + 4] = dir[0]; // vertex.x
+                h_data[index + 5] = dir[1]; // vertex.y
+                h_data[index + 6] = dir[2]; // vertex.z
 
-                    // color data
-                    glm::vec3 color= p->getPhaseFlag()==phase::oil ||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
-                    color= color+float(p->getConcentration())*(phase3Color-color);
-                    h_data[index + 7] = color.x;
-                    h_data[index + 8] = color.y;
-                    h_data[index + 9] = color.z;
-                    // radius
-                    h_data[index + 10] = p->getRadius()/aspect;
+                // color data
+                glm::vec3 color= p->getPhaseFlag()==phase::oil ||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
+                color= color+float(p->getConcentration())*(phase3Color-color);
+                h_data[index + 7] = color.x;
+                h_data[index + 8] = color.y;
+                h_data[index + 9] = color.z;
+                // radius
+                h_data[index + 10] = p->getRadius()/aspect;
 
-                    index+=11;
-                    numberOfObjectsToDraw++;
-                }
+                index+=11;
+                numberOfObjectsToDraw++;
+
             }
             if(numberOfObjectsToDraw!=0)
                 uploadDataToGPU(cylinderVBO, h_data, 11 * NUMBER_CYLINDERS, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
@@ -164,54 +162,50 @@ unsigned widget3d::bufferLinesData()
     if(net!=0)
         if(net->getReady())
         {
-            int NUMBER_CYLINDERS=net->getTotalPores();
+            int NUMBER_CYLINDERS=net->getTotalOpenedPores();
             GLfloat *h_data = new GLfloat[2 * 6 * NUMBER_CYLINDERS];
-            for(int i=0;i<NUMBER_CYLINDERS;++i)
+            for(pore* p : networkRange<pore*>(net))
             {
-                pore* p=net->getPore(i);
-                if(!p->getClosed())
-                {
-                    if(p->getInlet() || p->getOutlet()) continue;
-                    if(p->getPhaseFlag()==phase::invalid) continue;
-                    if(p->getPhaseFlag()==phase::oil && !oilVisible) continue;
-                    if(p->getPhaseFlag()==phase::temp && !oilVisible) continue;
-                    if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
-                    if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
-                    if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
-                    if(cutX && p->getXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
-                    if(cutY && p->getYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
-                    if(cutZ && p->getZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
+                if(p->getInlet() || p->getOutlet()) continue;
+                if(p->getPhaseFlag()==phase::invalid) continue;
+                if(p->getPhaseFlag()==phase::oil && !oilVisible) continue;
+                if(p->getPhaseFlag()==phase::temp && !oilVisible) continue;
+                if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
+                if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
+                if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
+                if(cutX && p->getXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
+                if(cutY && p->getYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
+                if(cutZ && p->getZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
 
-                    // node1
-                    h_data[index] = (p->getNodeIn()->getXCoordinate())/aspect; // vertex.x
-                    h_data[index + 1] = (p->getNodeIn()->getYCoordinate())/aspect;; // vertex.y
-                    h_data[index + 2] = (p->getNodeIn()->getZCoordinate())/aspect;; // vertex.z
+                // node1
+                h_data[index] = (p->getNodeIn()->getXCoordinate())/aspect; // vertex.x
+                h_data[index + 1] = (p->getNodeIn()->getYCoordinate())/aspect;; // vertex.y
+                h_data[index + 2] = (p->getNodeIn()->getZCoordinate())/aspect;; // vertex.z
 
-                    // color data
-                    glm::vec3 color= p->getPhaseFlag()==phase::oil||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
-                    color= color+float(p->getConcentration())*(phase3Color-color);
-                    h_data[index + 3] = color.x;
-                    h_data[index + 4] = color.y;
-                    h_data[index + 5] = color.z;
+                // color data
+                glm::vec3 color= p->getPhaseFlag()==phase::oil||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
+                color= color+float(p->getConcentration())*(phase3Color-color);
+                h_data[index + 3] = color.x;
+                h_data[index + 4] = color.y;
+                h_data[index + 5] = color.z;
 
-                    index+=6;
-                    numberOfObjectsToDraw++;
+                index+=6;
+                numberOfObjectsToDraw++;
 
-                    // node2
-                    h_data[index] = (p->getNodeOut()->getXCoordinate())/aspect; // vertex.x
-                    h_data[index + 1] = (p->getNodeOut()->getYCoordinate())/aspect;; // vertex.y
-                    h_data[index + 2] = (p->getNodeOut()->getZCoordinate())/aspect;; // vertex.z
+                // node2
+                h_data[index] = (p->getNodeOut()->getXCoordinate())/aspect; // vertex.x
+                h_data[index + 1] = (p->getNodeOut()->getYCoordinate())/aspect;; // vertex.y
+                h_data[index + 2] = (p->getNodeOut()->getZCoordinate())/aspect;; // vertex.z
 
-                    // color data
-                    color= p->getPhaseFlag()==phase::oil||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
-                    color= color+float(p->getConcentration())*(phase3Color-color);
-                    h_data[index + 3] = color.x;
-                    h_data[index + 4] = color.y;
-                    h_data[index + 5] = color.z;
+                // color data
+                color= p->getPhaseFlag()==phase::oil||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
+                color= color+float(p->getConcentration())*(phase3Color-color);
+                h_data[index + 3] = color.x;
+                h_data[index + 4] = color.y;
+                h_data[index + 5] = color.z;
 
-                    index+=6;
-                    numberOfObjectsToDraw++;
-                }
+                index+=6;
+                numberOfObjectsToDraw++;
             }
             if(numberOfObjectsToDraw!=0)
                 uploadDataToGPU(lineVBO, h_data, 2 * 6 * NUMBER_CYLINDERS, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
@@ -229,41 +223,37 @@ unsigned widget3d::bufferSphereData()
     if(net!=0)
         if(net->getReady())
         {
-            int NUMBER_SPHERES=net->getTotalNodes();
+            int NUMBER_SPHERES=net->getTotalOpenedNodes();
             GLfloat *h_data = new GLfloat[7 * NUMBER_SPHERES];
-            for(int i=0;i<NUMBER_SPHERES;++i)
+            for(node* p : networkRange<node*>(net))
             {
-                node* p=net->getNode(i);
-                if(!p->getClosed())
-                {
-                    if(p->getPhaseFlag()==phase::invalid) continue;
-                    if(p->getPhaseFlag()==phase::oil && !oilVisible) continue;
-                    if(p->getPhaseFlag()==phase::temp && !oilVisible) continue;
-                    if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
-                    if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
-                    if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
-                    if(cutX && p->getXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
-                    if(cutY && p->getYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
-                    if(cutZ && p->getZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
+                if(p->getPhaseFlag()==phase::invalid) continue;
+                if(p->getPhaseFlag()==phase::oil && !oilVisible) continue;
+                if(p->getPhaseFlag()==phase::temp && !oilVisible) continue;
+                if(p->getPhaseFlag()==phase::water && !waterVisible) continue;
+                if(p->getWettabilityFlag()==wettability::waterWet && !waterWetVisible) continue;
+                if(p->getWettabilityFlag()==wettability::oilWet && !oilWetVisible) continue;
+                if(cutX && p->getXCoordinate()>cutXValue*net->getXEdgeLength()) continue;
+                if(cutY && p->getYCoordinate()>cutYValue*net->getYEdgeLength()) continue;
+                if(cutZ && p->getZCoordinate()>cutZValue*net->getZEdgeLength()) continue;
 
-                    // center
-                    h_data[index] = p->getXCoordinate()/aspect; // vertex.x
-                    h_data[index + 1] = p->getYCoordinate()/aspect; // vertex.y
-                    h_data[index + 2] = p->getZCoordinate()/aspect; // vertex.z
+                // center
+                h_data[index] = p->getXCoordinate()/aspect; // vertex.x
+                h_data[index + 1] = p->getYCoordinate()/aspect; // vertex.y
+                h_data[index + 2] = p->getZCoordinate()/aspect; // vertex.z
 
-                    // radius
-                    h_data[index + 3] = p->getRadius()/aspect;
+                // radius
+                h_data[index + 3] = p->getRadius()/aspect;
 
-                    // color data
-                    glm::vec3 color= p->getPhaseFlag()==phase::oil||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
-                    color= color+float(p->getConcentration())*(phase3Color-color);
-                    h_data[index + 4] = color.x;
-                    h_data[index + 5] = color.y;
-                    h_data[index + 6] = color.z;
+                // color data
+                glm::vec3 color= p->getPhaseFlag()==phase::oil||p->getPhaseFlag()==phase::temp?phase1Color:phase2Color;
+                color= color+float(p->getConcentration())*(phase3Color-color);
+                h_data[index + 4] = color.x;
+                h_data[index + 5] = color.y;
+                h_data[index + 6] = color.z;
 
-                    index+=7;
-                    numberOfObjectsToDraw++;
-                }
+                index+=7;
+                numberOfObjectsToDraw++;
             }
 
             if(numberOfObjectsToDraw!=0)

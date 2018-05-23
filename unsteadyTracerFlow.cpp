@@ -111,7 +111,7 @@ void network::solvePressureFieldInOil()
         if(p->getPhaseFlag()==phase::water){
            p->setActive(false);
         }
-        if((p->getPhaseFlag()==phase::oil && !p->getClusterOil()->getSpanning()) || (p->getNodeIn()!=0 && !p->getNodeIn()->getClosed() && p->getNodeIn()->getPhaseFlag()==phase::water) || (p->getNodeOut()!=0 && !p->getNodeOut()->getClosed() && p->getNodeOut()->getPhaseFlag()==phase::water)){
+        if((p->getPhaseFlag()==phase::oil && !p->getClusterOil()->getSpanning()) || (p->getNodeIn()!=0 && p->getNodeIn()->getPhaseFlag()==phase::water) || (p->getNodeOut()!=0 && p->getNodeOut()->getPhaseFlag()==phase::water)){
             p->setActive(false);
         }
     }
@@ -162,7 +162,7 @@ void network::calculateTracerTimeStep()
             double sumDiffusionSource=0;
             for(element*e : p->getNeighboors())
             {
-                if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
+                if(e->getPhaseFlag()==phase::oil)
                 {
                     double area=min(e->getVolume()/e->getLength(), p->getVolume()/p->getLength());
                     sumDiffusionSource+=tracerDiffusionCoef/area;
@@ -206,7 +206,7 @@ void network::calculateTracerTimeStep()
             double sumDiffusionSource=0;
             for(element*e : p->getNeighboors())
             {
-                if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
+                if(e->getPhaseFlag()==phase::oil)
                 {
                     double area=min(e->getVolume()/e->getLength(), p->getVolume()/p->getLength());
                     sumDiffusionSource+=tracerDiffusionCoef/area;
@@ -237,7 +237,7 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
             for(element* e : n->getNeighboors())
             {
                 pore* p= static_cast<pore*>(e);
-                if(!p->getClosed() && p->getPhaseFlag()==phase::oil && p->getActive())
+                if(p->getPhaseFlag()==phase::oil && p->getActive())
                 {
                     if((p->getNodeIn()==n && p->getFlow()>1e-24) || (p->getNodeOut()==n && p->getFlow()<-1e-24))
                     {
@@ -252,7 +252,7 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
             double sumDiffusionOut=0;
             for(element*e : n->getNeighboors())
             {
-                if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
+                if(e->getPhaseFlag()==phase::oil)
                 {
                     double area=min(e->getVolume()/e->getLength(), n->getVolume()/n->getLength());
                     sumDiffusionIn+=e->getConcentration()*tracerDiffusionCoef/area;
@@ -306,7 +306,7 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
             //Diffusion
             for(element*e : p->getNeighboors())
             {
-                if(!e->getClosed() && e->getPhaseFlag()==phase::oil)
+                if(e->getPhaseFlag()==phase::oil)
                 {
                     double area=min(e->getVolume()/e->getLength(), p->getVolume()/p->getLength());
                     sumDiffusionIn+=e->getConcentration()*tracerDiffusionCoef/area;

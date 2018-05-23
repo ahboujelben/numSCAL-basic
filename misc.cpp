@@ -42,17 +42,22 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
 
     if(distribution==1) //random
     {
+        vector<node*> shuffledNodes;
+        shuffledNodes.reserve(totalOpenedNodes);
+        for(node* n : accessibleNodes)
+            shuffledNodes.push_back(n);
+        shuffle(shuffledNodes.begin(), shuffledNodes.end(), gen);
+
         auto  actualWaterVolume(0.0);
         while((actualWaterVolume/totalNodesVolume)<saturation)
         {
-            auto index=uniform_int(0,totalElements-1);
-            auto p=getElement(index);
-            if(!p->getClosed() && p->getPhaseFlag()!=phase){
+            node* p=shuffledNodes.back();
+            shuffledNodes.pop_back();
+            if(p->getPhaseFlag()!=phase){
                 p->setPhaseFlag(phase);
                 actualWaterVolume+=p->getVolume();
             }
         }
-        return;
     }
 
     if(distribution==2) //phase in biggest elements
@@ -107,11 +112,6 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
                 p->setPhaseFlag(connectedNode1->getPhaseFlag());
             }
             else{
-                if(connectedNode1->getClosed())
-                    p->setPhaseFlag(connectedNode2->getPhaseFlag());
-                else if(connectedNode2->getClosed())
-                    p->setPhaseFlag(connectedNode1->getPhaseFlag());
-                else
                 p->setPhaseFlag(uniform_int()?connectedNode1->getPhaseFlag():connectedNode2->getPhaseFlag());
             }
         }
@@ -150,9 +150,7 @@ double network::getOutletFlow()
 {
     auto Q(0.0);
     for_each(outletPores.begin(),outletPores.end(),[this,&Q](pore* e){
-        if(!e->getClosed()){
-            Q+=e->getFlow();
-        }
+        Q+=e->getFlow();
     });
     return Q;
 }

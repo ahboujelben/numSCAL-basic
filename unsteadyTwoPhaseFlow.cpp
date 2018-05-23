@@ -174,7 +174,7 @@ void network::setInitialFlags()
         for(auto  e : p->getNeighboors())
         {
             pore* neigh= static_cast<pore*>(e);
-            if(!neigh->getClosed() && neigh->getPhaseFlag()==phase::oil)
+            if(neigh->getPhaseFlag()==phase::oil)
             {
                 if(p==neigh->getNodeIn())
                 {
@@ -249,10 +249,10 @@ void network::setAdvancedTrapping()
     //Identify oil-filled pores without bulk oil to outlet
     for(pore* p :partiallyFilled)
     {
-        if(p->getNodeInOil() && p->getNodeIn()!=0 && !p->getNodeIn()->getClosed() && p->getNodeIn()->getPhaseFlag()==phase::oil && p->getNodeIn()->getClusterOil()->getOutlet())
+        if(p->getNodeInOil() && p->getNodeIn()!=0 && p->getNodeIn()->getPhaseFlag()==phase::oil && p->getNodeIn()->getClusterOil()->getOutlet())
             p->setOilTrapped(false);
 
-        if(p->getNodeOutOil() && p->getNodeOut()!=0 && !p->getNodeOut()->getClosed() && p->getNodeOut()->getPhaseFlag()==phase::oil && p->getNodeOut()->getClusterOil()->getOutlet())
+        if(p->getNodeOutOil() && p->getNodeOut()!=0 && p->getNodeOut()->getPhaseFlag()==phase::oil && p->getNodeOut()->getClusterOil()->getOutlet())
             p->setOilTrapped(false);
 
         //Allow slow filling of throats connecting water clusters (a workaround to mimic experimental observations)
@@ -289,8 +289,8 @@ void network::updateCapillaryProperties(unordered_set<pore *> &poresToCheck, uno
                 p->setActive(false);
             else{
                 //Determine pores to check for phase changes
-                if(     (p->getNodeIn()!=0 && !p->getNodeIn()->getClosed() && p->getNodeIn()->getPhaseFlag()==phase::water && !p->getNodeIn()->getWaterTrapped())
-                      ||(p->getNodeOut()!=0 && !p->getNodeOut()->getClosed() &&  p->getNodeOut()->getPhaseFlag()==phase::water && !p->getNodeOut()->getWaterTrapped()))
+                if((p->getNodeIn()!=0 && p->getNodeIn()->getPhaseFlag()==phase::water && !p->getNodeIn()->getWaterTrapped())
+                      ||(p->getNodeOut()!=0 && p->getNodeOut()->getPhaseFlag()==phase::water && !p->getNodeOut()->getWaterTrapped()))
                     poresToCheck.insert(p);
 
                 //Update capilary pressures a pores with an oil/water interface
@@ -313,9 +313,9 @@ void network::updateCapillaryProperties(unordered_set<pore *> &poresToCheck, uno
                 //Determine nodes to check for phase changes
                 node* nodeIn=p->getNodeIn();
                 node* nodeOut=p->getNodeOut();
-                if(nodeIn!=0 && !nodeIn->getClosed() && nodeIn->getPhaseFlag()==phase::oil && !nodeIn->getOilTrapped())
+                if(nodeIn!=0 && nodeIn->getPhaseFlag()==phase::oil && !nodeIn->getOilTrapped())
                     nodesToCheck.insert(nodeIn);
-                if(nodeOut!=0 && !nodeOut->getClosed() && nodeOut->getPhaseFlag()==phase::oil && !nodeOut->getOilTrapped())
+                if(nodeOut!=0 && nodeOut->getPhaseFlag()==phase::oil && !nodeOut->getOilTrapped())
                     nodesToCheck.insert(nodeOut);
 
                 //Update capilary pressures a nodes with an oil/water interfac
@@ -324,7 +324,7 @@ void network::updateCapillaryProperties(unordered_set<pore *> &poresToCheck, uno
                     //pore filling mechanism
                     int oilNeighboorsNumber(0);
                     for(element* n : nodeOut->getNeighboors())
-                        if(!n->getClosed() && n->getPhaseFlag()==phase::oil)
+                        if(n->getPhaseFlag()==phase::oil)
                             oilNeighboorsNumber++;
 
                     if(nodeOut->getPhaseFlag()==phase::oil && nodeIn->getPhaseFlag()==phase::water){
@@ -551,7 +551,7 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
                 for(auto e : nn->getNeighboors())
                 {
                     pore* nnn= static_cast<pore*>(e);
-                    if(!nnn->getClosed() && nnn->getPhaseFlag()==phase::oil)
+                    if(nnn->getPhaseFlag()==phase::oil)
                     {
                         if(nnn->getNodeIn()==nn)
                         {
@@ -577,7 +577,7 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
             for(auto e : p->getNeighboors())
             {
                 pore* n= static_cast<pore*>(e);
-                if(!n->getClosed() && n->getPhaseFlag()==phase::oil)
+                if(n->getPhaseFlag()==phase::oil)
                 {
                     if(n->getNodeIn()==p)
                     {
@@ -592,7 +592,7 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
                     }
                 }
 
-                if(!n->getClosed() && n->getPhaseFlag()==phase::water && n->getWaterTrapped())
+                if(n->getPhaseFlag()==phase::water && n->getWaterTrapped())
                 {
                     for(node* nn: accessibleNodes)
                     {
@@ -600,7 +600,7 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
                         for(auto e : nn->getNeighboors())
                         {
                             pore* nnn= static_cast<pore*>(e);;
-                            if(!nnn->getClosed() && nnn->getPhaseFlag()==phase::oil)
+                            if(nnn->getPhaseFlag()==phase::oil)
                             {
                                 if(nnn->getNodeIn()==nn)
                                 {

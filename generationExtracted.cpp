@@ -49,8 +49,6 @@ void network::loadExtractedNetwork()
     xEdgeLength=0;
     yEdgeLength=0;
     zEdgeLength=0;
-    maxNodeRadius=0;
-    minNodeRadius=1e10;
 
     ofstream filep("Results/Network_Description/pores_radii.txt");
     ofstream filen("Results/Network_Description/nodes_radii.txt");
@@ -115,9 +113,6 @@ void network::loadExtractedNetwork()
         double volume,radius,shapeFactor;
 
         node2>>id>>volume>>radius>>shapeFactor>>line;
-
-        if(radius>maxNodeRadius)maxNodeRadius=radius;
-        if(radius<minNodeRadius)minNodeRadius=radius;
 
         node* n=getNode(id-1);
         n->setVolume(volume);

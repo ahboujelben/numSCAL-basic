@@ -301,25 +301,17 @@ void network::assignRadii()
             p->setRadius(normal(minRadius,maxRadius,normalMuParameter,normalSigmaParameter));
     });
 
-    maxNodeRadius=0;
-    minNodeRadius=1e10;
-
     for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
         double maxRadius(0),averageRadius(0);
         int neighboorsNumber(0);
-        for(element* p : n->getNeighboors())
-        {
-            if(!p->getClosed())
-            {
-                if(p->getRadius()>maxRadius)maxRadius=p->getRadius();
-                averageRadius+=p->getRadius();
-                neighboorsNumber++;
-            }
+        for(element* p : n->getNeighboors()){
+            if(p->getRadius()>maxRadius)
+                maxRadius=p->getRadius();
+            averageRadius+=p->getRadius();
+            neighboorsNumber++;
         }
         averageRadius=aspectRatio*averageRadius/neighboorsNumber;
         double radius=max(maxRadius,averageRadius);
-        if(radius>maxNodeRadius)maxNodeRadius=radius;
-        if(radius<minNodeRadius)minNodeRadius=radius;
         n->setRadius(radius);
     });
 }

@@ -257,8 +257,6 @@ private:
     double coordinationNumber;
     double minRadius;
     double maxRadius;
-    double minNodeRadius;
-    double maxNodeRadius;
     int radiusDistribution;
     double length;
     double degreeOfDistortion;
