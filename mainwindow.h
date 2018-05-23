@@ -12,12 +12,8 @@
 #define MAINWINDOW_H
 
 #include "network.h"
-#include "worker.h"
 #include "qcustomplot.h"
 #include <QMainWindow>
-#include "QThread"
-#include <unistd.h>
-
 
 namespace Ui {
 class MainWindow;

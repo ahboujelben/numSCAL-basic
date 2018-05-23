@@ -39,7 +39,6 @@ SOURCES += main.cpp \
     network.cpp \
     mainwindow.cpp \
     cluster.cpp \
-    worker.cpp \
     widget3d.cpp \
     hoshenKopelmann.cpp \
     loadData.cpp \
@@ -64,7 +63,6 @@ HEADERS += \
     mainwindow.h \
     widget3d.h \
     cluster.h \
-    worker.h \
     element.h \
     qcustomplot.h \
     shader.h \

@@ -10,8 +10,7 @@
 
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
-#include <QLayout>
-#include <QStyle>
+#include <thread>
 
 Qt::GlobalColor QtColours[]= { Qt::blue, Qt::red, Qt::green, Qt::gray, Qt::black, Qt::magenta, Qt::yellow, Qt::gray, Qt::darkBlue, Qt::darkRed, Qt::darkGreen, Qt::darkGray, Qt::darkMagenta, Qt::cyan};
 
@@ -110,15 +109,14 @@ void MainWindow::on_loadNetworkButton_clicked()
     if(!ui->loadFromFileRadioButton->isChecked())
         exportNetworkDataFromGUI();
 
-    QThread *t = new QThread;
-    worker *w = new worker(net,1);
-    w->moveToThread(t);
-    connect(t, SIGNAL(started()), w, SLOT(process()));
-    connect(w, SIGNAL(finished()), t, SLOT(quit()));
-    connect(w, SIGNAL(finished()), this, SLOT(getNetworkResults()));
-    connect(w, SIGNAL(finished()), w, SLOT(deleteLater()));
-    connect(t, SIGNAL(finished()), w, SLOT(deleteLater()));
-    t->start();
+    std::thread([this](){
+        net->setSimulationRunning(true);
+        cout<<"Setting up Model..."<<endl;
+        net->setupModel();
+        cout<<"Model loaded."<<endl;
+        net->setSimulationRunning(false);
+        getNetworkResults();
+    }).detach();
 }
 
 void MainWindow::on_twoPhaseSimButton_clicked()
@@ -134,15 +132,14 @@ void MainWindow::on_twoPhaseSimButton_clicked()
     if(!ui->twoPhaseLoadFromFileRadioButton->isChecked())
         exportTwoPhaseDataFromGUI();
 
-    QThread *t = new QThread;
-    worker *w = new worker(net,2);
-    w->moveToThread(t);
-    connect(t, SIGNAL(started()), w, SLOT(process()));
-    connect(w, SIGNAL(finished()), t, SLOT(quit()));
-    connect(w, SIGNAL(finished()), this, SLOT(getTwoPhaseSimulationResults()));
-    connect(w, SIGNAL(finished()), w, SLOT(deleteLater()));
-    connect(t, SIGNAL(finished()), w, SLOT(deleteLater()));
-    t->start();
+    std::thread([this](){
+        net->setSimulationRunning(true);
+        cout<<"Running Simulation..."<<endl;
+        net->runSimulation();
+        cout<<"End of Simulation."<<endl;
+        net->setSimulationRunning(false);
+        getTwoPhaseSimulationResults();
+    }).detach();
 }
 
 void MainWindow::exportNetworkDataFromGUI()
