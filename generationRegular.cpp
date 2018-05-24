@@ -9,6 +9,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "randomGenerator.h"
+
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 
 namespace PNM {
 
@@ -186,7 +191,7 @@ void network::applyCoordinationNumber()
         auto closedPoresNumber=(Nz==1? int(totalOpenedPoresSoFar*(1-coordinationNumber/4.0)) :int(totalPores*(1-coordinationNumber/6.0)));
 
         auto shuffledPores=tableOfAllPores;
-        shuffle(shuffledPores.begin(), shuffledPores.end(), gen);
+        shuffle(shuffledPores.begin(), shuffledPores.end(), randomGenerator(seed).getGen());
 
         while(closedPoresNumber>0)
         {
@@ -290,15 +295,16 @@ void network::defineAccessibleElements()
 
 void network::assignRadii()
 {
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+    randomGenerator gen(seed);
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this, &gen](pore* p){
         if(radiusDistribution==1)
-            p->setRadius(uniform_real(minRadius,maxRadius));
+            p->setRadius(gen.uniform_real(minRadius,maxRadius));
         if(radiusDistribution==2)
-            p->setRadius(rayleigh(minRadius,maxRadius,rayleighParameter));
+            p->setRadius(gen.rayleigh(minRadius,maxRadius,rayleighParameter));
         if(radiusDistribution==3)
-            p->setRadius(triangular(minRadius,maxRadius,triangularParameter));
+            p->setRadius(gen.triangular(minRadius,maxRadius,triangularParameter));
         if(radiusDistribution==4)
-            p->setRadius(normal(minRadius,maxRadius,normalMuParameter,normalSigmaParameter));
+            p->setRadius(gen.normal(minRadius,maxRadius,normalMuParameter,normalSigmaParameter));
     });
 
     for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
@@ -334,11 +340,12 @@ void network::distortNetwork()
 {
     if(degreeOfDistortion>0)
     {
-        for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
-            n->setXCoordinate(n->getXCoordinate()+length*degreeOfDistortion*(-1+2*uniform_real()));
-            n->setYCoordinate(n->getYCoordinate()+length*degreeOfDistortion*(-1+2*uniform_real()));
+        randomGenerator gen(seed);
+        for_each(accessibleNodes.begin(),accessibleNodes.end(),[this, &gen](node* n){
+            n->setXCoordinate(n->getXCoordinate()+length*degreeOfDistortion*(-1+2*gen.uniform_real()));
+            n->setYCoordinate(n->getYCoordinate()+length*degreeOfDistortion*(-1+2*gen.uniform_real()));
             if(Nz!=1)
-            n->setZCoordinate(n->getZCoordinate()+length*degreeOfDistortion*(-1+2*uniform_real()));
+            n->setZCoordinate(n->getZCoordinate()+length*degreeOfDistortion*(-1+2*gen.uniform_real()));
         });
 
         //update pores' lengths

@@ -10,6 +10,8 @@
 
 #include "network.h"
 
+#include "randomGenerator.h"
+
 namespace PNM {
 
 void network::assignHalfAngles()
@@ -17,11 +19,12 @@ void network::assignHalfAngles()
     for (element* p : accessibleElements)
     {
         double beta1(0), beta2(0),beta3(0);
+        randomGenerator gen(seed);
         if(p->getShapeFactor()<=sqrt(3)/36.)
         {
             double beta2Min=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3+4*pi()/3));
             double beta2Max=atan(2/sqrt(3)*cos(acos(-12*sqrt(3)*p->getShapeFactor())/3));
-            beta2=uniform_real(beta2Min,beta2Max);
+            beta2=gen.uniform_real(beta2Min,beta2Max);
             beta1=-0.5*beta2+0.5*asin((tan(beta2)+4*p->getShapeFactor())/(tan(beta2)-4*p->getShapeFactor())*sin(beta2));
             beta3=pi()/2-beta1-beta2;
         }
@@ -88,17 +91,18 @@ void network::assignFilmStability()
 
 void network::assignWettability()
 {
+    randomGenerator gen(seed);
     if(wettingTypeFlag==2){ //OW
-        for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
-            e->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
+        for_each(accessibleElements.begin(),accessibleElements.end(),[this, &gen](element* e){
+            e->setTheta(gen.uniform_real(minOilWetTheta,maxOilWetTheta));
             e->setWettabilityFlag(wettability::oilWet);
         });
         backupWettability();
         return;
     }
 
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
-        e->setTheta(uniform_real(minWaterWetTheta,maxWaterWetTheta));
+    for_each(accessibleElements.begin(),accessibleElements.end(),[this, &gen](element* e){
+        e->setTheta(gen.uniform_real(minWaterWetTheta,maxWaterWetTheta));
         e->setWettabilityFlag(wettability::waterWet);
     });
 
@@ -113,7 +117,7 @@ void network::assignWettability()
         shuffledNodes.reserve(totalOpenedNodes);
         for(node* n : accessibleNodes)
             shuffledNodes.push_back(n);
-        shuffle(shuffledNodes.begin(), shuffledNodes.end(), gen);
+        shuffle(shuffledNodes.begin(), shuffledNodes.end(), gen.getGen());
 
         auto oilWetSoFar(0);
         while((double(oilWetSoFar)/totalOpenedNodes)<oilWetFraction)
@@ -121,7 +125,7 @@ void network::assignWettability()
             node* p=shuffledNodes.back();
             shuffledNodes.pop_back();
             if(p->getWettabilityFlag()!=wettability::oilWet){
-                p->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
+                p->setTheta(gen.uniform_real(minOilWetTheta,maxOilWetTheta));
                 p->setWettabilityFlag(wettability::oilWet);
                 oilWetSoFar++;
             }
@@ -139,7 +143,7 @@ void network::assignWettability()
 
         while((double(oilWetSoFar)/totalOpenedNodes)<oilWetFraction){
             auto biggestElement=workingElements.back();
-            biggestElement->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
+            biggestElement->setTheta(gen.uniform_real(minOilWetTheta,maxOilWetTheta));
             biggestElement->setWettabilityFlag(wettability::oilWet);
             oilWetSoFar++;
             workingElements.pop_back();
@@ -158,14 +162,14 @@ void network::assignWettability()
 
         while((double(oilWetSoFar)/totalOpenedNodes)<oilWetFraction){
             auto smallestElement=workingElements.back();
-            smallestElement->setTheta(uniform_real(minOilWetTheta,maxOilWetTheta));
+            smallestElement->setTheta(gen.uniform_real(minOilWetTheta,maxOilWetTheta));
             smallestElement->setWettabilityFlag(wettability::oilWet);
             oilWetSoFar++;
             workingElements.pop_back();
         }
     }
 
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+    for_each(accessiblePores.begin(),accessiblePores.end(),[this, &gen](pore* p){
         if(p->getNodeIn()==0){
             auto connectedNode=p->getNodeOut();
             p->setTheta(connectedNode->getTheta());
@@ -184,7 +188,7 @@ void network::assignWettability()
                 p->setWettabilityFlag(connectedNode1->getWettabilityFlag());
             }
             else{
-                p->setTheta(uniform_int()?connectedNode1->getTheta():connectedNode2->getTheta());
+                p->setTheta(gen.uniform_int()?connectedNode1->getTheta():connectedNode2->getTheta());
                 if(p->getTheta()>pi()/2)
                     p->setWettabilityFlag(wettability::oilWet);
             }

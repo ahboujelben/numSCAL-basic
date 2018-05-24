@@ -10,6 +10,8 @@
 
 #include "network.h"
 
+#include <iostream>
+
 namespace PNM{
 
 network::network(QObject *parent):
@@ -150,8 +152,6 @@ void network::setupModel()
 
     reset();
     loadNetworkData();
-
-    gen.seed(seed);
 
     try{
         if(networkSource==2)

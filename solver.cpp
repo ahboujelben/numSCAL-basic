@@ -10,6 +10,11 @@
 
 #include "network.h"
 
+//Eigen library
+#include <Eigen/Sparse>
+#include <Eigen/IterativeLinearSolvers>
+#include <Eigen/SparseCholesky>
+
 namespace PNM {
 
 using namespace Eigen;
@@ -199,8 +204,6 @@ void network::calculatePermeabilityAndPorosity()
     flow=getOutletFlow();
     absolutePermeability=(flow*xEdgeLength)/(yEdgeLength*zEdgeLength*(pressureIn-pressureOut));
     porosity=totalElementsVolume/(xEdgeLength*yEdgeLength*zEdgeLength);
-    cout<<"Absolute permeability (mD): "<<absolutePermeability/0.987e-15<<endl;
-    cout<<"Porosity: "<<porosity<<endl;
     file<<"Absolute permeability (mD):\t"<<absolutePermeability/0.987e-15<<endl<<"Porosity:\t"<<porosity<<endl;
 }
 

@@ -53,7 +53,8 @@ SOURCES += main.cpp \
     relativePermeabilities.cpp \
     steadyTwoPhaseFlow.cpp \
     unsteadyTwoPhaseFlow.cpp \
-    unsteadyTracerFlow.cpp
+    unsteadyTracerFlow.cpp \
+    randomGenerator.cpp
 
 HEADERS += \
     pore.h \
@@ -66,7 +67,8 @@ HEADERS += \
     element.h \
     qcustomplot.h \
     shader.h \
-    iterator.h
+    iterator.h \
+    randomGenerator.h
 
 OTHER_FILES +=
 

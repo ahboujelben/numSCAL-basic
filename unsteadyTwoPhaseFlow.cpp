@@ -10,6 +10,10 @@
 
 #include "network.h"
 
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+
 namespace PNM {
 
 void network::runUSSDrainageModel()

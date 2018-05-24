@@ -27,19 +27,8 @@
 #include <math.h>
 
 //Boost library
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/random.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
 
-//Eigen library
-#include <Eigen/Sparse>
-#include <Eigen/IterativeLinearSolvers>
-#include <Eigen/SparseCholesky>
+
 
 #include <QObject>
 
@@ -146,14 +135,6 @@ public:
     double getOutletFlow();
     double getWaterSaturation();
     double getWaterSaturationWithFilms();
-
-    //Random generators
-    int uniform_int(int a=0, int b=1);
-    double uniform_real(double a=0, double b=1);
-    double rayleigh(double, double, double);
-    double triangular(double, double, double);
-    double normal(double,double,double,double);
-    double weibull(double,double,double,double);
 
     //Video Recording
     void extractVideo();
@@ -393,10 +374,6 @@ private:
     bool cancel;
     bool ready;
     bool simulationRunning;
-
-
-    ////////// Random generator
-    boost::random::mt19937 gen;
 };
 
 }

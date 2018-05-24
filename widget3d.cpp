@@ -9,6 +9,8 @@
 #include "widget3d.h"
 #include "iterator.h"
 
+#include <boost/lexical_cast.hpp>
+
 widget3d::widget3d(QWidget *parent)
     : QGLWidget (QGLFormat(QGL::SampleBuffers),parent)
 {

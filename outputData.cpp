@@ -10,6 +10,8 @@
 
 #include "network.h"
 
+#include <boost/lexical_cast.hpp>
+
 namespace PNM {
 
 void network::initializeTwoPhaseOutputs()
