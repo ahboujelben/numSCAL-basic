@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
 
 namespace PNM {
 
@@ -51,14 +52,14 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
         delete c;
     clustersList.clear();
 
-    for(element* e: tableOfElements)
+    for(element* e: networkRange<element*, filter::all>(this))
        if((e->*status)()==flag)
            e->setClusterTemp(0);
 
     vector<int> labels;
     labels.push_back(0);
 
-    for(element* e: tableOfElements){
+    for(element* e: networkRange<element*, filter::all>(this)){
         if((e->*status)()==flag){
             vector<int> neighboorsClusters;
             vector<element*>& neighboors=e->getNeighboors();
@@ -79,7 +80,7 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
 
     vector<int> new_labels(labels.size(),0);
 
-    for(element* e: tableOfElements){
+    for(element* e: networkRange<element*, filter::all>(this)){
         if((e->*status)()==flag)
         {
             int x=hkFind(e->getClusterTemp(),labels);
