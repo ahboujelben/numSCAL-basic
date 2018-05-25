@@ -71,10 +71,6 @@ void network::destroy()
     totalNodes=0;
     tableOfAllPores.clear();
     tableOfAllNodes.clear();
-    tableOfElements.clear();
-    accessiblePores.clear();
-    accessibleNodes.clear();
-    accessibleElements.clear();
     inletPores.clear();
     outletPores.clear();
 
@@ -249,13 +245,6 @@ node *network::getNode(int i) const
     if(i<0 || i>totalNodes-1)
         return 0;
     return tableOfAllNodes[i];
-}
-
-element *network::getElement(int i) const
-{
-if(i<0 || i>totalElements-1)
-    return 0;
-return tableOfElements[i];
 }
 
 int network::getTotalPores() const

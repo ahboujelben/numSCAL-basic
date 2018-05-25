@@ -10,6 +10,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
 
 #include <iomanip>
 #include <iostream>
@@ -66,7 +67,6 @@ void network::loadExtractedNetwork()
     totalOpenedNodes=totalNodes;
 
     tableOfAllNodes.resize(totalNodes);
-    tableOfElements.reserve(totalNodes);
 
     getline(node1,line);
 
@@ -85,7 +85,6 @@ void network::loadExtractedNetwork()
 
         tableOfAllNodes[i]= new node(x,y,z);
         node* n=tableOfAllNodes[i];
-        tableOfElements.push_back(n);
         n->setId(id);
         n->setAbsId(i);
         n->setConnectionNumber(numberOfNeighboors);
@@ -151,7 +150,6 @@ void network::loadExtractedNetwork()
     totalElements=totalNodes+totalPores;
 
     tableOfAllPores.resize(totalPores);
-    tableOfElements.reserve(totalNodes+totalPores);
 
     getline(link1,line);
 
@@ -187,7 +185,6 @@ void network::loadExtractedNetwork()
 
         tableOfAllPores[i]=new pore(nodeIn,nodeOut);
         pore* p=tableOfAllPores[i];
-        tableOfElements.push_back(p);
 
         if(p->getNodeOut()==0)
         {
@@ -354,11 +351,11 @@ void network::cleanExtractedNetwork()
 
 void network::calculateExtractedNetworkVolume()
 {
-    totalNodesVolume=accumulate(accessibleNodes.begin(), accessibleNodes.end(), 0.0, [](double sum, const node* n){
+    totalNodesVolume=accumulate(networkRange<node*>(this).begin(), networkRange<node*>(this).end(), 0.0, [](double sum, const node* n){
         return sum+n->getVolume();
     });
 
-    totalPoresVolume=accumulate(accessiblePores.begin(), accessiblePores.end(), 0.0, [](double sum, const pore* p){
+    totalPoresVolume=accumulate(networkRange<pore*>(this).begin(), networkRange<pore*>(this).end(), 0.0, [](double sum, const pore* p){
         return sum+p->getVolume();
     });
 

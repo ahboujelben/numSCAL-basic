@@ -11,12 +11,13 @@
 #include "network.h"
 
 #include "randomGenerator.h"
+#include "iterator.h"
 
 namespace PNM {
 
 void network::assignHalfAngles()
 {
-    for (element* p : accessibleElements)
+    for (element* p : networkRange<element*>(this))
     {
         double beta1(0), beta2(0),beta3(0);
         randomGenerator gen(seed);
@@ -36,7 +37,7 @@ void network::assignHalfAngles()
 
 void network::assignFilmStability()
 {
-    for (element* p : accessibleElements)
+    for (element* p : networkRange<element*>(this))
     {
         bool oilCanFlowViaFilm(false), waterCanFlowViaFilm(false);
         if(p->getShapeFactor()<=sqrt(3)/36.)
@@ -93,7 +94,7 @@ void network::assignWettability()
 {
     randomGenerator gen(seed);
     if(wettingTypeFlag==2){ //OW
-        for_each(accessibleElements.begin(),accessibleElements.end(),[this, &gen](element* e){
+        for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this, &gen](element* e){
             e->setTheta(gen.uniform_real(minOilWetTheta,maxOilWetTheta));
             e->setWettabilityFlag(wettability::oilWet);
         });
@@ -101,7 +102,7 @@ void network::assignWettability()
         return;
     }
 
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this, &gen](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this, &gen](element* e){
         e->setTheta(gen.uniform_real(minWaterWetTheta,maxWaterWetTheta));
         e->setWettabilityFlag(wettability::waterWet);
     });
@@ -115,7 +116,7 @@ void network::assignWettability()
 
         vector<node*> shuffledNodes;
         shuffledNodes.reserve(totalOpenedNodes);
-        for(node* n : accessibleNodes)
+        for(node* n : networkRange<node*>(this))
             shuffledNodes.push_back(n);
         shuffle(shuffledNodes.begin(), shuffledNodes.end(), gen.getGen());
 
@@ -133,7 +134,9 @@ void network::assignWettability()
     }
 
     if(wettingTypeFlag==4){ //MWL
-        auto workingElements=accessibleNodes;
+        vector<node*> workingElements;
+        for(node* n : networkRange<node*>(this))
+            workingElements.push_back(n);
 
         sort(workingElements.begin(),workingElements.end(), [this](node* e1, node* e2){
             return e1->getRadius()>e2->getRadius();
@@ -152,7 +155,9 @@ void network::assignWettability()
 
     if(wettingTypeFlag==5) //MWS
     {
-        auto workingElements=accessibleNodes;
+        vector<node*> workingElements;
+        for(node* n : networkRange<node*>(this))
+            workingElements.push_back(n);
 
         sort(workingElements.begin(),workingElements.end(), [this](node* e1, node* e2){
             return e1->getRadius()<e2->getRadius();
@@ -169,7 +174,7 @@ void network::assignWettability()
         }
     }
 
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this, &gen](pore* p){
+    for_each(networkRange<pore*>(this).begin(),networkRange<pore*>(this).end(),[this, &gen](pore* p){
         if(p->getNodeIn()==0){
             auto connectedNode=p->getNodeOut();
             p->setTheta(connectedNode->getTheta());
@@ -200,14 +205,14 @@ void network::assignWettability()
 
 void network::backupWettability()
 {
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this](element* e){
         e->setOriginalTheta(e->getTheta());
     });
 }
 
 void network::assignWWWettability(double theta)
 {
-    for_each(accessibleElements.begin(),accessibleElements.end(),[=,this](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[=,this](element* e){
         e->setTheta(theta);
         e->setWettabilityFlag(wettability::waterWet);
     });
@@ -218,7 +223,7 @@ void network::assignWWWettability(double theta)
 
 void network::restoreWettability()
 {
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this](element* e){
         if(e->getPhaseFlag()==phase::oil){
             e->setTheta(e->getOriginalTheta());
             if(e->getTheta()<=pi()/2){

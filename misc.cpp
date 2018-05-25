@@ -10,12 +10,13 @@
 #include "network.h"
 
 #include "randomGenerator.h"
+#include "iterator.h"
 
 namespace PNM {
 
 void network::assignViscosities()
 {
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this](element* e){
         if(e->getPhaseFlag()==phase::oil){
             e->setViscosity(oilViscosity);
         }
@@ -27,14 +28,16 @@ void network::assignViscosities()
 
 void network::fillWithPhase(PNM::phase phase, double saturation, int distribution, PNM::phase otherPhase)
 {
+    randomGenerator gen(seed);
+
     if(saturation==1){
-        for_each(accessibleElements.begin(),accessibleElements.end(),[this,phase](element* e){
+        for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this,phase](element* e){
             e->setPhaseFlag(phase);
         });
         return;
     }
 
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this,otherPhase](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this,otherPhase](element* e){
         e->setPhaseFlag(otherPhase);
     });
 
@@ -46,9 +49,9 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
     {
         vector<node*> shuffledNodes;
         shuffledNodes.reserve(totalOpenedNodes);
-        for(node* n : accessibleNodes)
+        for(node* n : networkRange<node*>(this))
             shuffledNodes.push_back(n);
-        shuffle(shuffledNodes.begin(), shuffledNodes.end(), randomGenerator(seed).getGen());
+        shuffle(shuffledNodes.begin(), shuffledNodes.end(), gen.getGen());
 
         auto  actualWaterVolume(0.0);
         while((actualWaterVolume/totalNodesVolume)<saturation)
@@ -64,7 +67,9 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
 
     if(distribution==2) //phase in biggest elements
     {
-        auto workingElements=accessibleNodes;
+        vector<node*> workingElements;
+        for(node* n : networkRange<node*>(this))
+            workingElements.push_back(n);
 
         sort(workingElements.begin(),workingElements.end(), [this](node* e1, node* e2){
             return e1->getRadius()>e2->getRadius();
@@ -82,7 +87,9 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
 
     if(distribution==3) //phase in smallest elements
     {
-        auto workingElements=accessibleNodes;
+        vector<node*> workingElements;
+        for(node* n : networkRange<node*>(this))
+            workingElements.push_back(n);
 
         sort(workingElements.begin(),workingElements.end(), [this](node* e1, node* e2){
             return e1->getRadius()<e2->getRadius();
@@ -98,7 +105,7 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
         }
     }
 
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+    for_each(networkRange<pore*>(this).begin(),networkRange<pore*>(this).end(),[this, &gen](pore* p){
         if(p->getNodeIn()==0){
             auto connectedNode=p->getNodeOut();
             p->setPhaseFlag(connectedNode->getPhaseFlag());
@@ -108,14 +115,11 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
             p->setPhaseFlag(connectedNode->getPhaseFlag());
         }
         else{
-            auto connectedNode1=p->getNodeIn();
-            auto connectedNode2=p->getNodeOut();
-            if(connectedNode1->getPhaseFlag()==connectedNode2->getPhaseFlag()){
-                p->setPhaseFlag(connectedNode1->getPhaseFlag());
+            if(p->getNodeIn()->getPhaseFlag()==p->getNodeOut()->getPhaseFlag()){
+                p->setPhaseFlag(p->getNodeIn()->getPhaseFlag());
             }
             else{
-                randomGenerator g(seed);
-                p->setPhaseFlag(g.uniform_int()?connectedNode1->getPhaseFlag():connectedNode2->getPhaseFlag());
+                p->setPhaseFlag(gen.uniform_int()?p->getNodeIn()->getPhaseFlag():p->getNodeOut()->getPhaseFlag());
             }
         }
     });
@@ -123,7 +127,7 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
 
 void network::initialiseCapillaries()
 {
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this](element* e){
         e->setOilFraction(e->getPhaseFlag()==phase::oil?1:0);
         e->setWaterFraction(e->getPhaseFlag()==phase::water?1:0);
         e->setConcentration(0);
@@ -161,7 +165,7 @@ double network::getOutletFlow()
 double network::getWaterSaturation()
 {
     auto volume(0.0);
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this, &volume](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this, &volume](element* e){
         volume+=e->getWaterFraction()*e->getVolume();
     });
     return volume/totalElementsVolume;
@@ -170,7 +174,7 @@ double network::getWaterSaturation()
 double network::getWaterSaturationWithFilms()
 {
     auto volume(0.0);
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this, &volume](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this, &volume](element* e){
         if(e->getPhaseFlag()==phase::oil){
             volume+=e->getWaterFilmVolume();
         }

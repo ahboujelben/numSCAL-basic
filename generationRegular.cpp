@@ -10,6 +10,7 @@
 
 #include "network.h"
 #include "randomGenerator.h"
+#include "iterator.h"
 
 #include <iomanip>
 #include <iostream>
@@ -29,7 +30,6 @@ void network::setupRegularModel()
 
     tableOfAllNodes.reserve(totalNodes); 
     tableOfAllPores.reserve(totalPores);
-    tableOfElements.reserve(totalPores+totalNodes);
 
     cout<<"Creating Nodes..."<<endl;
     createNodes();
@@ -86,7 +86,6 @@ void network::createNodes()
         e->setXCoordinate(e->getIndexX()*length);
         e->setYCoordinate(e->getIndexY()*length);
         e->setZCoordinate(e->getIndexZ()*length);
-        tableOfElements.push_back(e);
     });
 
 }
@@ -121,7 +120,6 @@ void network::createPores()
             p->setOutlet(true);
             outletPores.push_back(p);
         }
-        tableOfElements.push_back(p);
     });
 
     setNeighboors();
@@ -270,16 +268,10 @@ void network::defineAccessibleElements()
     totalOpenedPores=0;
     totalOpenedNodes=0;
 
-    accessibleNodes.reserve(totalNodes);
-    accessiblePores.reserve(totalPores);
-    accessibleElements.reserve(totalNodes+totalPores);
-
     for(node* n:tableOfAllNodes){
         if(!n->getClosed()){
             totalOpenedElements++;
             totalOpenedNodes++;
-            accessibleNodes.push_back(n);
-            accessibleElements.push_back(n);
         }
     }
 
@@ -287,8 +279,6 @@ void network::defineAccessibleElements()
         if(!p->getClosed()){
             totalOpenedElements++;
             totalOpenedPores++;
-            accessiblePores.push_back(p);
-            accessibleElements.push_back(p);
         }
     }
 }
@@ -296,7 +286,7 @@ void network::defineAccessibleElements()
 void network::assignRadii()
 {
     randomGenerator gen(seed);
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this, &gen](pore* p){
+    for_each(networkRange<pore*>(this).begin(),networkRange<pore*>(this).end(),[this, &gen](pore* p){
         if(radiusDistribution==1)
             p->setRadius(gen.uniform_real(minRadius,maxRadius));
         if(radiusDistribution==2)
@@ -307,7 +297,7 @@ void network::assignRadii()
             p->setRadius(gen.normal(minRadius,maxRadius,normalMuParameter,normalSigmaParameter));
     });
 
-    for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
+    for_each(networkRange<node*>(this).begin(),networkRange<node*>(this).end(),[this](node* n){
         double maxRadius(0),averageRadius(0);
         int neighboorsNumber(0);
         for(element* p : n->getNeighboors()){
@@ -324,14 +314,14 @@ void network::assignRadii()
 
 void network::assignLengths()
 {
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+    for_each(networkRange<pore*>(this).begin(),networkRange<pore*>(this).end(),[this](pore* p){
         p->setFullLength(length);
         p->setNodeInLength(p->getNodeIn()==0 ?0:p->getNodeIn()->getRadius());
         p->setNodeOutLength(p->getNodeOut()==0 ?0:p->getNodeOut()->getRadius());
         p->setLength(length-p->getNodeInLength()-p->getNodeOutLength()>0?length-p->getNodeInLength()-p->getNodeOutLength():length/2);
     });
 
-    for_each(accessibleNodes.begin(),accessibleNodes.end(),[this](node* n){
+    for_each(networkRange<node*>(this).begin(),networkRange<node*>(this).end(),[this](node* n){
         n->setLength(2*n->getRadius());
     });
 }
@@ -341,7 +331,7 @@ void network::distortNetwork()
     if(degreeOfDistortion>0)
     {
         randomGenerator gen(seed);
-        for_each(accessibleNodes.begin(),accessibleNodes.end(),[this, &gen](node* n){
+        for_each(networkRange<node*>(this).begin(),networkRange<node*>(this).end(),[this, &gen](node* n){
             n->setXCoordinate(n->getXCoordinate()+length*degreeOfDistortion*(-1+2*gen.uniform_real()));
             n->setYCoordinate(n->getYCoordinate()+length*degreeOfDistortion*(-1+2*gen.uniform_real()));
             if(Nz!=1)
@@ -349,7 +339,7 @@ void network::distortNetwork()
         });
 
         //update pores' lengths
-        for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+        for_each(networkRange<pore*>(this).begin(),networkRange<pore*>(this).end(),[this](pore* p){
             if(p->getNodeIn()==0 || p->getNodeOut()==0) return;
             double length=sqrt(pow(p->getNodeIn()->getXCoordinate()-p->getNodeOut()->getXCoordinate(),2)+pow(p->getNodeIn()->getYCoordinate()-p->getNodeOut()->getYCoordinate(),2)+pow(p->getNodeIn()->getZCoordinate()-p->getNodeOut()->getZCoordinate(),2));
             p->setFullLength(length);
@@ -362,7 +352,7 @@ void network::assignShapeFactors()
 {
     auto circleThreshold=sqrt(3)/36.0;
     auto squareThreshold=1.0/16.0;
-    for_each(accessibleElements.begin(),accessibleElements.end(),[=,this](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[=,this](element* e){
         e->setShapeFactor(shapeFactor);
         if(shapeFactor<=circleThreshold)
             e->setShapeFactorConstant(0.6);
@@ -376,17 +366,17 @@ void network::assignShapeFactors()
 
 void network::assignVolumes()
 {
-    for_each(accessibleElements.begin(),accessibleElements.end(),[this](element* e){
+    for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this](element* e){
         double volume=pow(poreVolumeConstant,2-poreVolumeExponent)*e->getLength()*pow(e->getRadius(),poreVolumeExponent)/(4*e->getShapeFactor())*pow(10,(6*poreVolumeExponent-12));
         e->setVolume(volume);
         e->setEffectiveVolume(volume);
     });
 
-    totalNodesVolume=accumulate(accessibleNodes.begin(), accessibleNodes.end(), 0.0, [](double sum, const node* n){
+    totalNodesVolume=accumulate(networkRange<node*>(this).begin(), networkRange<node*>(this).end(), 0.0, [](double sum, const node* n){
         return sum+n->getVolume();
     });
 
-    totalPoresVolume=accumulate(accessiblePores.begin(), accessiblePores.end(), 0.0, [](double sum, const pore* p){
+    totalPoresVolume=accumulate(networkRange<pore*>(this).begin(), networkRange<pore*>(this).end(), 0.0, [](double sum, const pore* p){
         return sum+p->getVolume();
     });
 

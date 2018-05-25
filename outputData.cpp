@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -77,7 +78,7 @@ void network::outputTwoPhaseData(double injectedPVs, int& outputCount, double wa
         string path="Results/Network_Status/phases_pores"+boost::lexical_cast<std::string>(1000000000+outputCount)+".txt";
 
         ofstream file1(path.c_str());
-        for(pore* p : accessiblePores)
+        for(pore* p : networkRange<pore*>(this))
         {
              char phaseFlag=p->getPhaseFlag()==phase::oil?'o':'w';
              file1<<p->getId()<<" "<<phaseFlag<<" "<<p->getConcentration()<<endl;
@@ -87,7 +88,7 @@ void network::outputTwoPhaseData(double injectedPVs, int& outputCount, double wa
         {
             string path="Results/Network_Status/phases_nodes"+boost::lexical_cast<std::string>(1000000000+outputCount)+".txt";
             ofstream file2(path.c_str());
-            for(node* n : accessibleNodes)
+            for(node* n : networkRange<node*>(this))
             {
                 char phaseFlag=n->getPhaseFlag()==phase::oil?'o':'w';
                 file2<<n->getId()<<" "<<phaseFlag<<" "<<n->getConcentration()<<endl;

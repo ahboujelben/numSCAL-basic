@@ -160,7 +160,7 @@ public:
     void loadTwoPhaseData();
 
 
-    ///////////// Access to pores/nodes/elements
+    ///////////// Access to pores/nodes
     pore *getPoreX(int,int,int) const;
     pore *getPoreY(int,int,int) const;
     pore *getPoreZ(int,int,int) const;
@@ -170,7 +170,6 @@ public:
     pore *getPore(int) const;
     node *getNode(int,int,int) const;
     node *getNode(int) const;
-    element *getElement(int) const;
     int getTotalPores() const;
     int getTotalNodes() const;
     int getTotalOpenedPores() const;
@@ -218,10 +217,6 @@ private:
     int Nz;
     vector<pore*> tableOfAllPores;
     vector<node*> tableOfAllNodes;
-    vector<element*> tableOfElements;
-    vector<pore*> accessiblePores;
-    vector<node*> accessibleNodes;
-    vector<element*> accessibleElements;
     std::vector<pore*> inletPores;
     std::vector<pore*> outletPores;
 

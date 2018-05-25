@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
 
 #include <iomanip>
 #include <iostream>
@@ -80,7 +81,7 @@ void network::primaryDrainage(double finalSaturation)
 
     //Calculate the incremental increase of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(pc<minPc)
@@ -104,7 +105,7 @@ void network::primaryDrainage(double finalSaturation)
     //Look for capillaries connected to water
     clusterWaterFlowingElements();
     unordered_set<element*> elementsToInvade;
-    for(pore* e:accessiblePores)
+    for(pore* e:networkRange<pore*>(this))
         if(e->getPhaseFlag()==phase::water && e->getInlet())
             elementsToInvade.insert(e);
 
@@ -171,7 +172,7 @@ void network::primaryDrainage(double finalSaturation)
 
         //Update water film volume
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
             if(e->getPhaseFlag()==phase::oil)
@@ -257,7 +258,7 @@ void network::spontaneousImbibition()
 
     //Calculate the incremental reduction of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
@@ -282,7 +283,7 @@ void network::spontaneousImbibition()
 
     //Look for capillaries connected to water
     unordered_set<element*> elementsToInvade;
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
         if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::waterWet)
             elementsToInvade.insert(e);
 
@@ -395,7 +396,7 @@ void network::spontaneousImbibition()
         //Update water film volume
         clusterWaterFlowingElements();
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
             if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::waterWet)
@@ -468,7 +469,7 @@ void network::forcedWaterInjection()
 
     //Calculate the incremental reduction of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
@@ -488,7 +489,7 @@ void network::forcedWaterInjection()
 
     //Look for capillaries connected to water
     unordered_set<element*> elementsToInvade;
-    for(element* e: accessibleElements)
+    for(element* e: networkRange<element*>(this))
     {
         if(e->getPhaseFlag()==phase::oil)
             elementsToInvade.insert(e);
@@ -560,7 +561,7 @@ void network::forcedWaterInjection()
         clusterWaterFlowingElements();
         clusterOilFlowingElements();
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
             if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::oilWet)
@@ -638,7 +639,7 @@ void network::spontaneousOilInvasion()
 
     //Calculate the incremental increase of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
@@ -661,7 +662,7 @@ void network::spontaneousOilInvasion()
     //Look for capillaries connected to oil
     clusterWaterFlowingElements();
     unordered_set<element*> elementsToInvade;
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
         if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::oilWet)
             elementsToInvade.insert(e);
 
@@ -774,7 +775,7 @@ void network::spontaneousOilInvasion()
         //Update oil film volume
         clusterOilFlowingElements();
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
             if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::oilWet)
@@ -847,7 +848,7 @@ void network::secondaryOilDrainage()
 
     //Calculate the incremental reduction of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
@@ -867,7 +868,7 @@ void network::secondaryOilDrainage()
 
     //Look for capillaries connected to oil
     unordered_set<element*> elementsToInvade;
-    for(element* e: accessibleElements)
+    for(element* e: networkRange<element*>(this))
     {
         if(e->getPhaseFlag()==phase::water)
             elementsToInvade.insert(e);
@@ -936,7 +937,7 @@ void network::secondaryOilDrainage()
         //Account for film volumes
         clusterOilFlowingElements();
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             if(e->getPhaseFlag()==phase::oil)
                 waterVolume+=e->getWaterFilmVolume();

@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
 
 //Eigen library
 #include <Eigen/Sparse>
@@ -27,7 +28,7 @@ void network::solvePressures()
     VectorXd pressures=VectorXd::Zero(totalOpenedNodes);
 
     int row=0;
-    for(node* n : accessibleNodes)
+    for(node* n : networkRange<node*>(this))
     {
         double conductivity(1e-200);
         for(element* e : n->getNeighboors())
@@ -75,7 +76,7 @@ void network::solvePressures()
         pressures=solver.solve(b);
     }
 
-    for(node* n : accessibleNodes)
+    for(node* n : networkRange<node*>(this))
         n->setPressure(pressures[n->getRank()]);
 
 }
@@ -88,7 +89,7 @@ void network::solvePressuresWithCapillaryPressures()
     VectorXd pressures=VectorXd::Zero(totalOpenedNodes);
 
     int row=0;
-    for(node* n : accessibleNodes)
+    for(node* n : networkRange<node*>(this))
     {
         double conductivity(1e-200);
         for(element* e : n->getNeighboors())
@@ -141,7 +142,7 @@ void network::solvePressuresWithCapillaryPressures()
         pressures=solver.solve(b);
     }
 
-    for(node* n : accessibleNodes)
+    for(node* n : networkRange<node*>(this))
         n->setPressure(pressures[n->getRank()]);
 
 }
@@ -149,7 +150,7 @@ void network::solvePressuresWithCapillaryPressures()
 double network::updateFlows()
 {
     double outletFlow(0);
-    for(pore* p : accessiblePores)
+    for(pore* p : networkRange<pore*>(this))
     {
         p->setFlow(0);
         if(p->getActive())
@@ -175,7 +176,7 @@ double network::updateFlows()
 double network::updateFlowsWithCapillaryPressure()
 {
     double outletFlow(0);
-    for(pore* p : accessiblePores)
+    for(pore* p : networkRange<pore*>(this))
     {
         p->setFlow(0);
         if(p->getActive())
@@ -209,7 +210,7 @@ void network::calculatePermeabilityAndPorosity()
 
 void network::assignConductivities()
 {
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+    for_each(networkRange<pore*>(this).begin(),networkRange<pore*>(this).end(),[this](pore* p){
         node* nodeIn=p->getNodeIn();
         node* nodeOut=p->getNodeOut();
         auto throatConductivityInverse(0.0),nodeInConductivityInverse(0.0),nodeOutConductivityInverse(0.0);

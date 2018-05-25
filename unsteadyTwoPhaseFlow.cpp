@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
 
 #include <iomanip>
 #include <iostream>
@@ -146,13 +147,13 @@ void network::initialiseUSSDrainageModel()
 
 void network::addWaterChannel()
 {
-    for_each(accessiblePores.begin(), accessiblePores.end(), [this](pore* p){
+    for_each(networkRange<pore*>(this).begin(), networkRange<pore*>(this).end(), [this](pore* p){
         if(p->getInlet() || p->getNodeIn()!=0 & p->getNodeOut()!=0 && p->getNodeIn()->getInlet() && p->getNodeOut()->getInlet()){
             p->setPhaseFlag(phase::water);
         }
     });
 
-    for_each(accessibleNodes.begin(), accessibleNodes.end(), [this](node* n){
+    for_each(networkRange<node*>(this).begin(), networkRange<node*>(this).end(), [this](node* n){
         if(n->getInlet()){
             n->setPhaseFlag(phase::water);
         }
@@ -163,7 +164,7 @@ void network::setInitialFlags()
 {
     clusterWaterElements();
 
-    for(pore* p : accessiblePores)
+    for(pore* p : networkRange<pore*>(this))
     {
         if(p->getInlet() && p->getPhaseFlag()==phase::oil) //create Pc in oil-filled inlet pores
         {
@@ -172,7 +173,7 @@ void network::setInitialFlags()
         }
     }
 
-    for(node* p: accessibleNodes) //create Pc in oil-filled pores next to inlet-connected water
+    for(node* p: networkRange<node*>(this)) //create Pc in oil-filled pores next to inlet-connected water
     {
         if(p->getPhaseFlag()==phase::water)
         for(auto  e : p->getNeighboors())
@@ -202,7 +203,7 @@ void network::setAdvancedTrapping()
     clusterWaterElements();
 
     vector<pore*> partiallyFilled;
-    for(pore* p :accessiblePores)
+    for(pore* p :networkRange<pore*>(this))
     {
         if(p->getPhaseFlag()==phase::oil)
         {
@@ -225,7 +226,7 @@ void network::setAdvancedTrapping()
         }
     }
 
-    for(node* p :accessibleNodes)
+    for(node* p :networkRange<node*>(this))
     {
         if(p->getPhaseFlag()==phase::oil)
         {
@@ -244,7 +245,7 @@ void network::setAdvancedTrapping()
 
     clusterOilElements();
 
-    for(pore* p :accessiblePores)
+    for(pore* p :networkRange<pore*>(this))
     {
         if(p->getPhaseFlag()==phase::oil && p->getClusterOil()->getOutlet())
             p->setOilTrapped(false);
@@ -273,7 +274,7 @@ void network::setAdvancedTrapping()
 
 void network::updateCapillaryProperties(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
 {
-    for(node* p : accessibleNodes){
+    for(node* p : networkRange<node*>(this)){
         p->setActive(true);
 
         if(p->getPhaseFlag()==phase::oil && p->getOilTrapped())
@@ -283,7 +284,7 @@ void network::updateCapillaryProperties(unordered_set<pore *> &poresToCheck, uno
             p->setActive(false);
     }
 
-    for(pore* p : accessiblePores){
+    for(pore* p : networkRange<pore*>(this)){
         p->setActive(true);
         p->setCapillaryPressure(0);
 
@@ -357,7 +358,7 @@ void network::solvePressureWithoutCounterImbibition()
     while(stillMorePoresToClose)
     {
         clusterActiveElements();
-        for(pore* p : accessiblePores){
+        for(pore* p : networkRange<pore*>(this)){
             if(p->getActive() && p->getClusterActive()->getSpanning()==false){
                 p->setCapillaryPressure(0);
                 p->setActive(false);
@@ -369,7 +370,7 @@ void network::solvePressureWithoutCounterImbibition()
         solvePressuresWithCapillaryPressures();
         updateFlowsWithCapillaryPressure();
 
-        for(pore* p : accessiblePores){
+        for(pore* p : networkRange<pore*>(this)){
             if(p->getActive() && p->getNodeIn()!=0 && p->getNodeOut()!=0
                     && ((p->getFlow()>0 && p->getNodeOut()->getPhaseFlag()==phase::oil && p->getNodeIn()->getPhaseFlag()==phase::water)
                         || (p->getFlow()<0 && p->getNodeOut()->getPhaseFlag()==phase::water && p->getNodeIn()->getPhaseFlag()==phase::oil)
@@ -388,10 +389,10 @@ void network::solvePressureWithoutCounterImbibition()
         if(cancel)break;
     }
 
-    for(node* n : accessibleNodes)
+    for(node* n : networkRange<node*>(this))
         n->setFlow(0);
 
-    for(pore* p : accessiblePores){
+    for(pore* p : networkRange<pore*>(this)){
         if(p->getPhaseFlag()==phase::water)
         {
             if(p->getFlow()>1e-24 && p->getActive()){
@@ -433,7 +434,7 @@ void network::calculateTimeStepUSS(unordered_set<pore *> &poresToCheck, unordere
 
     if(includeWater) //if water is forming a spanning cluster
     {
-        for(pore* p: accessiblePores)
+        for(pore* p: networkRange<pore*>(this))
         {
             if(p->getActive() && p->getPhaseFlag()==phase::water && abs(p->getFlow())>1e-24)
             {
@@ -443,7 +444,7 @@ void network::calculateTimeStepUSS(unordered_set<pore *> &poresToCheck, unordere
             }
         }
 
-        for(node* p : accessibleNodes)
+        for(node* p : networkRange<node*>(this))
         {
             if(p->getActive() && p->getPhaseFlag()==phase::water && abs(p->getFlow())>1e-24)
             {
@@ -549,7 +550,7 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
 
         if(n!=nullptr && n->getPhaseFlag()==phase::water && n->getWaterTrapped())
         {
-            for(node* nn: accessibleNodes)
+            for(node* nn: networkRange<node*>(this))
             {
                 if(nn->getPhaseFlag()==phase::water && nn->getClusterWater()==n->getClusterWater())
                 for(auto e : nn->getNeighboors())
@@ -598,7 +599,7 @@ void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, un
 
                 if(n->getPhaseFlag()==phase::water && n->getWaterTrapped())
                 {
-                    for(node* nn: accessibleNodes)
+                    for(node* nn: networkRange<node*>(this))
                     {
                         if(nn->getPhaseFlag()==phase::water && nn->getClusterWater()==n->getClusterWater())
                         for(auto e : nn->getNeighboors())

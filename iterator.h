@@ -2,7 +2,7 @@
 #define ITERATOR_H
 
 #include "network.h"
-
+#include <iostream>
 namespace PNM {
 
 enum class filter{all, closed};
@@ -28,7 +28,7 @@ public:
         if(current < net->getTotalNodes()){ // node
             return net->getNode(current);
         }
-        else{ //pore
+        else if(current < net->getTotalNodes() + net->getTotalPores()){ //pore
            return net->getPore(current-net->getTotalNodes());
         }
     }
@@ -50,9 +50,8 @@ public:
         else if(current < net->getTotalNodes()+net->getTotalPores()){ //pore
            currentState=net->getPore(current-net->getTotalNodes())->getClosed();
         }
-        if(currentState){
-            this->operator ++();
-        }
+        if(currentState)
+           this->operator ++();
     }
 
     bool operator ==(const networkIterator& it) const{
@@ -69,12 +68,12 @@ public:
                 { ++current;}
             if(current == net->getTotalNodes()){
                 auto poreIndex(0);
-                while(net->getPore(poreIndex)->getClosed()){
+                while(poreIndex<net->getTotalPores() && net->getPore(poreIndex)->getClosed()){
                     ++poreIndex; ++current;
                 }
             }
         }
-        else{ //pore
+        else if (current < net->getTotalNodes() + net->getTotalPores()){ //pore
             ++current;
             auto poreIndex = current-net->getTotalNodes();
             while(poreIndex<net->getTotalPores() && net->getPore(poreIndex)->getClosed()){
@@ -87,7 +86,7 @@ public:
         if(current < net->getTotalNodes()){ // node
             return net->getNode(current);
         }
-        else{ //pore
+        else if(current < net->getTotalNodes() + net->getTotalPores()){ //pore
            return net->getPore(current-net->getTotalNodes());
         }
     }
@@ -111,8 +110,7 @@ public:
         return !(*this==it);
     }
     networkIterator& operator ++(){
-        ++current;
-        while(current<net->getTotalPores())
+        if(current<net->getTotalPores())
             ++current;
         return *this;
     }
@@ -173,8 +171,7 @@ public:
         return !(*this==it);
     }
     networkIterator& operator ++(){
-        ++current;
-        while(current<net->getTotalNodes())
+        if(current<net->getTotalNodes())
             ++current;
         return *this;
     }

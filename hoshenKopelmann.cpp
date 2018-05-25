@@ -171,7 +171,7 @@ void network::clusterOilElements()
 
 void network::clusterOilFlowingElements()
 {
-    for_each(accessibleElements.begin(), accessibleElements.end(), [this] (element* e){
+    for_each(networkRange<element*>(this).begin(), networkRange<element*>(this).end(), [this] (element* e){
         if(e->getPhaseFlag()==phase::oil || e->getOilLayerActivated())
             e->setOilConductor(true);
         else
@@ -198,7 +198,7 @@ void network::clusterOilFlowingElements()
 
 void network::clusterWaterFlowingElements()
 {
-    for_each(accessibleElements.begin(), accessibleElements.end(), [this] (element* e){
+    for_each(networkRange<element*>(this).begin(), networkRange<element*>(this).end(), [this] (element* e){
         if(e->getPhaseFlag()==phase::water || e->getWaterCornerActivated())
             e->setWaterConductor(true);
         else

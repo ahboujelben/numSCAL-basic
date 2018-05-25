@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
 
 #include <iomanip>
 #include <iostream>
@@ -109,7 +110,7 @@ void network::solvePressureFieldInOil()
     //Assign fluid properties and deactivate non-flowing capillaries (i.e. water, non-spanning oil)
     assignViscosities();
     assignConductivities();
-    for (pore* p :accessiblePores)
+    for (pore* p :networkRange<pore*>(this))
     {
         p->setActive(true);
         if(p->getPhaseFlag()==phase::water){
@@ -121,7 +122,7 @@ void network::solvePressureFieldInOil()
     }
 
     clusterActiveElements();
-    for(pore* p : accessiblePores){
+    for(pore* p : networkRange<pore*>(this)){
         if(p->getActive() && p->getClusterActive()->getSpanning()==false){
             p->setCapillaryPressure(0);
             p->setActive(false);
@@ -158,7 +159,7 @@ void network::calculateTracerTimeStep()
 {
     timeStep=1e50;
 
-    for(pore* p : accessiblePores)
+    for(pore* p : networkRange<pore*>(this))
     {
         if(p->getPhaseFlag()==phase::oil && p->getClusterOil()->getSpanning())
         {
@@ -202,7 +203,7 @@ void network::calculateTracerTimeStep()
         }
     }
 
-    for(node* p : accessibleNodes)
+    for(node* p : networkRange<node*>(this))
     {
         if(p->getPhaseFlag()==phase::oil && p->getClusterOil()->getSpanning())
         {
@@ -232,7 +233,7 @@ void network::calculateTracerTimeStep()
 
 void network::updateConcentrationValues(vector<double> &newConcentration)
 {
-    for(node* n: accessibleNodes)
+    for(node* n: networkRange<node*>(this))
     {
         if(n->getPhaseFlag()==phase::oil  && n->getClusterOil()->getSpanning())
         {
@@ -269,7 +270,7 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
         }
     }
 
-    for(pore* p : accessiblePores)
+    for(pore* p : networkRange<pore*>(this))
     {
         if(p->getPhaseFlag()==phase::oil  && p->getClusterOil()->getSpanning())
         {
@@ -324,7 +325,7 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
     }
 
     //Update concentrations
-    for(element* e: accessibleElements)
+    for(element* e: networkRange<element*>(this))
     {
         if(e->getPhaseFlag()==phase::oil && e->getClusterOil()->getSpanning())
         {
