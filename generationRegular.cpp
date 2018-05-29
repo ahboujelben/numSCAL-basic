@@ -90,10 +90,7 @@ void network::createNodes()
     auto key(0);
     for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this, &key](node* e){
         e->setId(key+1);
-        e->setAbsId(key);
-        ++key;
-        if(e->getIndexX()==0)e->setInlet(true);
-        if(e->getIndexX()==Nx-1)e->setOutlet(true);
+        e->setAbsId(key++);
         e->setXCoordinate(e->getIndexX()*length);
         e->setYCoordinate(e->getIndexY()*length);
         e->setZCoordinate(e->getIndexZ()*length);
@@ -119,25 +116,13 @@ void network::createPores()
     auto key(0);
     for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this, &key](pore* p){
         p->setId(key+1);
-        p->setAbsId(totalNodes+key);
-        ++key;
-        if(p->getNodeOut()==0)
-        {
-            p->setInlet(true);
-            inletPores.push_back(p);
-        }
-        if(p->getNodeIn()==0)
-        {
-            p->setOutlet(true);
-            outletPores.push_back(p);
-        }
+        p->setAbsId(totalNodes+key++);
     });
 }
 
 void network::setNeighboors()
 {
-    for(node* n : tableOfAllNodes)
-    {
+    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* n){
         vector<element*> neighboors;
         neighboors.reserve(6);
 
@@ -155,21 +140,38 @@ void network::setNeighboors()
         neighboors.push_back(z);
         neighboors.push_back(zout);
         n->setNeighboors(neighboors);
-    }
+    });
 
-    for(pore* p : tableOfAllPores)
-    {
+    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
         vector<element*> neighboors;
         if(p->getNodeIn()!=0)
             neighboors.push_back(p->getNodeIn());
         if(p->getNodeOut()!=0)
             neighboors.push_back(p->getNodeOut());
         p->setNeighboors(neighboors);
-    }
+    });
 }
 
 void network::setBoundaryConditions()
 {
+    //Define inlet/outlet elements
+    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
+        if(p->getNodeOut()==0){
+            p->setInlet(true);
+            inletPores.push_back(p);
+        }
+        if(p->getNodeIn()==0){
+            p->setOutlet(true);
+            outletPores.push_back(p);
+        }
+    });
+
+    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* n){
+        if(n->getIndexX()==0)n->setInlet(true);
+        if(n->getIndexX()==Nx-1)n->setOutlet(true);
+    });
+
+    //Remove throats at both sides
     for (int i = 0; i < Nx; ++i)
         for (int j = 0; j < Ny; ++j)
         {
@@ -187,6 +189,7 @@ void network::setBoundaryConditions()
             yOut->setClosed(true);
         }
 
+    //Update the total of enabled Pores
     totalOpenedPores = totalPores - 2*Nx*Ny - 2*Nx*Nz;
 
 }

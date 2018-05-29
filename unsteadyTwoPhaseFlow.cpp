@@ -148,7 +148,7 @@ void network::initialiseUSSDrainageModel()
 void network::addWaterChannel()
 {
     for_each(networkRange<pore*>(this).begin(), networkRange<pore*>(this).end(), [this](pore* p){
-        if(p->getInlet() || p->getNodeIn()!=0 & p->getNodeOut()!=0 && p->getNodeIn()->getInlet() && p->getNodeOut()->getInlet()){
+        if(p->getInlet() || p->getNodeIn()!=0 && p->getNodeOut()!=0 && p->getNodeIn()->getInlet() && p->getNodeOut()->getInlet()){
             p->setPhaseFlag(phase::water);
         }
     });
