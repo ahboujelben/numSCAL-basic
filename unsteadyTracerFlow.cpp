@@ -288,8 +288,15 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
                     flowIn=abs(p->getFlow());
                 }
             }
-            else
-            {
+            else if(p->getOutlet()){
+                if(abs(p->getFlow())>1e-24 && p->getActive())
+                {
+                    node* activeNode = p->getNodeIn() == 0? p->getNodeOut() : p->getNodeIn();
+                    massIn=activeNode->getMassFlow();
+                    flowIn=activeNode->getFlow();
+                }
+            }
+            else{
                 if(p->getFlow()>1e-24 && p->getActive() && p->getNodeOut()->getPhaseFlag()==phase::oil)
                 {
                     massIn=p->getNodeOut()->getMassFlow();

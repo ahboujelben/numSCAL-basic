@@ -165,12 +165,14 @@ double network::updateFlows()
         {
             if(p->getOutlet())
             {
-                p->setFlow((p->getNodeOut()->getPressure()-pressureOut)*p->getConductivity());
+                node* activeNode = p->getNodeIn() == 0? p->getNodeOut() : p->getNodeIn();
+                p->setFlow((activeNode->getPressure()-pressureOut)*p->getConductivity());
                 outletFlow+=p->getFlow();
             }
             if(p->getInlet())
             {
-                p->setFlow((pressureIn-p->getNodeIn()->getPressure())*p->getConductivity());
+                node* activeNode = p->getNodeIn() == 0? p->getNodeOut() : p->getNodeIn();
+                p->setFlow((pressureIn-activeNode->getPressure())*p->getConductivity());
             }
             if(!p->getInlet() && !p->getOutlet())
             {
@@ -191,7 +193,8 @@ double network::updateFlowsWithCapillaryPressure()
         {
             if(p->getOutlet())
             {
-                p->setFlow((p->getNodeOut()->getPressure())*p->getConductivity());
+                node* activeNode = p->getNodeIn() == 0? p->getNodeOut() : p->getNodeIn();
+                p->setFlow((activeNode->getPressure())*p->getConductivity());
                 outletFlow+=p->getFlow();
             }
             if(p->getInlet())
