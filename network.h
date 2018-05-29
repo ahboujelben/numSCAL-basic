@@ -26,10 +26,6 @@
 #include <unistd.h>
 #include <math.h>
 
-//Boost library
-
-
-
 #include <QObject>
 
 namespace PNM {
