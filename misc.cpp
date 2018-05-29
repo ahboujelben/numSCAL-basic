@@ -77,7 +77,7 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
 
         auto  actualWaterVolume(0.0);
 
-        while(actualWaterVolume/totalElementsVolume<saturation){
+        while(actualWaterVolume/totalNetworkVolume<saturation){
             auto biggestElement=workingElements.back();
             biggestElement->setPhaseFlag(phase);
             actualWaterVolume+=biggestElement->getVolume();
@@ -97,7 +97,7 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
 
         auto  actualWaterVolume(0.0);
 
-        while(actualWaterVolume/totalElementsVolume<saturation){
+        while(actualWaterVolume/totalNetworkVolume<saturation){
             auto smallestElement=workingElements.back();
             smallestElement->setPhaseFlag(phase);
             actualWaterVolume+=smallestElement->getVolume();
@@ -168,7 +168,7 @@ double network::getWaterSaturation()
     for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this, &volume](element* e){
         volume+=e->getWaterFraction()*e->getVolume();
     });
-    return volume/totalElementsVolume;
+    return volume/totalNetworkVolume;
 }
 
 double network::getWaterSaturationWithFilms()
@@ -187,7 +187,7 @@ double network::getWaterSaturationWithFilms()
             }
         }
     });
-    return volume/totalElementsVolume;
+    return volume/totalNetworkVolume;
 }
 
 // Postprocessing

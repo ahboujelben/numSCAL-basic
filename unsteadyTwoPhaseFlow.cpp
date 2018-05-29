@@ -73,7 +73,7 @@ void network::runUSSDrainageModel()
         if(timeStep!=1e50)
         {
             timeSoFar+=timeStep;
-            double injectedVolume=timeStep*flowRate/totalElementsVolume;
+            double injectedVolume=timeStep*flowRate/totalNetworkVolume;
             injectedPVs+=injectedVolume;
             outputPVs+=injectedVolume;
         }
@@ -140,7 +140,7 @@ void network::initialiseUSSDrainageModel()
     restoreWettability();
 
     if(overrideByInjectedPVs){
-        simulationTime=totalElementsVolume*injectedPVs/flowRate;
+        simulationTime=totalNetworkVolume*injectedPVs/flowRate;
         cout<<"PVs to inject: "<<injectedPVs<<endl;
     }
 }

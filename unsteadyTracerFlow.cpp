@@ -47,14 +47,14 @@ void network::runTracerModel()
     }
 
     //Define working concentration vector to avoid frequent allocations
-    vector<double> newConcentration(totalElements);
+    vector<double> newConcentration(totalPores + totalNodes);
 
     while(!cancel && timeSoFar<simulationTime)
     {       
         updateConcentrationValues(newConcentration);
 
         timeSoFar+=timeStep;
-        injectedPVs+=timeStep*flowRate/totalElementsVolume;
+        injectedPVs+=timeStep*flowRate/totalNetworkVolume;
 
         //Display notification
         std::ostringstream ss;
@@ -100,7 +100,7 @@ void network::initialiseTracerModel()
     restoreWettability();
 
     if(overrideByInjectedPVs){
-        simulationTime=totalElementsVolume*injectedPVs/flowRate;
+        simulationTime=totalNetworkVolume*injectedPVs/flowRate;
         cout<<"PVs to inject: "<<injectedPVs<<endl;
     }
 }

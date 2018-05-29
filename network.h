@@ -44,11 +44,14 @@ public:
 
     ///////////// Methods for generating regular networks models
     void setupRegularModel();
+    void calculateRegularNetworkAttributes();
     void createNodes();
     void createPores();
     void setNeighboors(); 
+    void setBoundaryConditions();
     void applyCoordinationNumber();
-    void defineAccessibleElements();
+    void cleanNetwork();
+    void calculateNetworkAttributes();
     void assignRadii();
     void assignLengths();
     void distortNetwork();
@@ -62,8 +65,6 @@ public:
     ///////////// Methods for generating network models extracted from microCT images
     void setupExtractedModel();
     void loadExtractedNetwork();
-    void cleanExtractedNetwork();
-    void calculateExtractedNetworkVolume();
 
 
     ///////////// Methods for solvers and permeability calculations
@@ -220,11 +221,9 @@ private:
     int totalOpenedPores;
     int totalNodes;
     int totalOpenedNodes;
-    int totalElements;
-    int totalOpenedElements;
     double totalPoresVolume;
     double totalNodesVolume;
-    double totalElementsVolume;
+    double totalNetworkVolume;
     double inletPoresVolume;
     double coordinationNumber;
     double minRadius;

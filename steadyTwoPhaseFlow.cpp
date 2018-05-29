@@ -76,7 +76,7 @@ void network::primaryDrainage(double finalSaturation)
 
     //Initialise variables
     double outputWaterSaturation=1;//used to print Kr plots at regular intervals
-    double currentWaterVolume(totalElementsVolume);
+    double currentWaterVolume(totalNetworkVolume);
     bool spanningOil=false;//used to detect the onset of breakthrough
 
     //Calculate the incremental increase of capillary pressure
@@ -151,7 +151,7 @@ void network::primaryDrainage(double finalSaturation)
             //Update Graphics
             emitPlotSignal();
 
-            if(finalSaturation!=0 && currentWaterVolume/totalElementsVolume<finalSaturation)
+            if(finalSaturation!=0 && currentWaterVolume/totalNetworkVolume<finalSaturation)
                 break;
 
             //Thread Management
@@ -195,21 +195,21 @@ void network::primaryDrainage(double finalSaturation)
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume<outputWaterSaturation+1e-5)
+            if(currentWaterVolume/totalNetworkVolume<outputWaterSaturation+1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 outputWaterSaturation-=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
 
         //Extract data at Breakthrough
@@ -219,16 +219,16 @@ void network::primaryDrainage(double finalSaturation)
             {
                 spanningOil=true;
                 criticalPcPD=currentPc;
-                criticalSaturationPD=abs(currentWaterVolume/totalElementsVolume);
+                criticalSaturationPD=abs(currentWaterVolume/totalNetworkVolume);
                 file3<<"Pc at Breakthrough: "<<criticalPcPD<<endl;
                 file3<<"Sw at Breakthrough: "<<criticalSaturationPD<<endl;
             }
         }
 
         finalPcPD=currentPc;
-        finalSaturationPD=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationPD=abs(currentWaterVolume/totalNetworkVolume);
 
-        if(finalSaturation!=0 && currentWaterVolume/totalElementsVolume<finalSaturation)
+        if(finalSaturation!=0 && currentWaterVolume/totalNetworkVolume<finalSaturation)
             break;
 
         //Thread Management
@@ -254,7 +254,7 @@ void network::spontaneousImbibition()
 
     //Initialise variables
     double waterSaturation=getWaterSaturationWithFilms();
-    double currentWaterVolume(waterSaturation*totalElementsVolume);
+    double currentWaterVolume(waterSaturation*totalNetworkVolume);
 
     //Calculate the incremental reduction of capillary pressure
     double minPc(1e20),maxPc(0);
@@ -423,25 +423,25 @@ void network::spontaneousImbibition()
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume>waterSaturation-1e-5)
+            if(currentWaterVolume/totalNetworkVolume>waterSaturation-1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 waterSaturation+=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
 
         finalPcPI=currentPc;
-        finalSaturationPI=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationPI=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
         if(cancel)break;
@@ -465,7 +465,7 @@ void network::forcedWaterInjection()
 
     //Initialise variables
     double waterSaturation=getWaterSaturationWithFilms();
-    double currentWaterVolume=waterSaturation*totalElementsVolume;
+    double currentWaterVolume=waterSaturation*totalNetworkVolume;
 
     //Calculate the incremental reduction of capillary pressure
     double minPc(1e20),maxPc(0);
@@ -592,25 +592,25 @@ void network::forcedWaterInjection()
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume>waterSaturation-1e-5)
+            if(currentWaterVolume/totalNetworkVolume>waterSaturation-1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 waterSaturation+=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
 
         finalPcSD=currentPc;
-        finalSaturationSD=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationSD=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
         if(cancel)break;
@@ -635,7 +635,7 @@ void network::spontaneousOilInvasion()
 
     //Initialise variables
     double waterSaturation=getWaterSaturationWithFilms();
-    double currentWaterVolume=waterSaturation*totalElementsVolume;
+    double currentWaterVolume=waterSaturation*totalNetworkVolume;
 
     //Calculate the incremental increase of capillary pressure
     double minPc(1e20),maxPc(0);
@@ -802,25 +802,25 @@ void network::spontaneousOilInvasion()
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume<waterSaturation+1e-5)
+            if(currentWaterVolume/totalNetworkVolume<waterSaturation+1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 waterSaturation-=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
 
         finalPcSI=currentPc;
-        finalSaturationSI=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationSI=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
         if(cancel)break;
@@ -844,7 +844,7 @@ void network::secondaryOilDrainage()
 
     //Initialise variables
     double waterSaturation=getWaterSaturationWithFilms();
-    double currentWaterVolume=waterSaturation*totalElementsVolume;
+    double currentWaterVolume=waterSaturation*totalNetworkVolume;
 
     //Calculate the incremental reduction of capillary pressure
     double minPc(1e20),maxPc(0);
@@ -950,25 +950,25 @@ void network::secondaryOilDrainage()
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume<waterSaturation+1e-5)
+            if(currentWaterVolume/totalNetworkVolume<waterSaturation+1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 waterSaturation-=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
 
         finalPcTD=currentPc;
-        finalSaturationTD=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationTD=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
         if(cancel)break;

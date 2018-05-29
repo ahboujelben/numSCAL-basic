@@ -39,7 +39,7 @@ void network::initializeTwoPhaseOutputs()
     double inletFlux=flowRate/inletArea;
     outfileCap<<"Inlet Flux: "<<inletFlux*86400<<"m/day"<<endl;
     outfileCap<<"Capillary Number: "<<waterViscosity*inletFlux/OWSurfaceTension<<endl;
-    outfileCap<<"Network Volume: "<<totalElementsVolume<<endl;
+    outfileCap<<"Network Volume: "<<totalNetworkVolume<<endl;
 
     double waterSat=0.0;
     waterSat=initialWaterSaturation=getWaterSaturation();

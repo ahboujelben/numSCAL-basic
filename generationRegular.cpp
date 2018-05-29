@@ -20,25 +20,20 @@ namespace PNM {
 
 void network::setupRegularModel()
 {
-    totalNodes=Nx*Ny*Nz;
-    totalPores=3*Nx*Ny*Nz+Ny*Nz+Nx*Nz+Nx*Ny;
-    totalElements=totalNodes+totalPores;
-
-    xEdgeLength=Nx*length;
-    yEdgeLength=Ny*length;
-    zEdgeLength=Nz*length;
-
-    tableOfAllNodes.reserve(totalNodes); 
-    tableOfAllPores.reserve(totalPores);
-
+    cout<<"Loading Global Attributes..."<<endl;
+    calculateRegularNetworkAttributes();
     cout<<"Creating Nodes..."<<endl;
     createNodes();
     cout<<"Creating Pores..."<<endl;
     createPores();
+    cout<<"Assigning Neighboors..."<<endl;
+    setNeighboors();
+    cout<<"Setting Boundary Conditions..."<<endl;
+    setBoundaryConditions();
     cout<<"Applying Coordination Number..."<<endl;
     applyCoordinationNumber();
-    cout<<"Defining accessible elements..."<<endl;
-    defineAccessibleElements();
+    cout<<"Cleaning Network..."<<endl;
+    cleanNetwork();
     cout<<"Assigning Radii..."<<endl;
     assignRadii();
     cout<<"Assigning Lengths..."<<endl;
@@ -53,9 +48,11 @@ void network::setupRegularModel()
     assignConductivities();
     cout<<"Assigning Wettability..."<<endl;
     assignWettability();
+    cout<<"Calculating Network Attributes.."<<endl;
+    calculateNetworkAttributes();
 
     if(absolutePermeabilityCalculation){
-        cout<<"Absolute Permeabilty Calculation..."<<endl;
+        cout<<"Calculating Absolute Permeabilty..."<<endl;
         solvePressures();
         updateFlows();
         calculatePermeabilityAndPorosity();
@@ -66,6 +63,20 @@ void network::setupRegularModel()
     ss << std::fixed << std::setprecision(2);
     ss << "Perm.(mD): " << absolutePermeability/0.987e-15<<" / Porosity(%): "<<porosity*100<<" / Dx(mm): "<< xEdgeLength*1e3 << " / Dy(mm): "  << yEdgeLength*1e3<<" / Dz(mm): "<<zEdgeLength*1e3;
     simulationNotification = ss.str();
+}
+
+void network::calculateRegularNetworkAttributes()
+{
+    totalNodes=Nx*Ny*Nz;
+    totalPores=3*Nx*Ny*Nz+Ny*Nz+Nx*Nz+Nx*Ny;
+    tableOfAllNodes.reserve(totalNodes);
+    tableOfAllPores.reserve(totalPores);
+
+    xEdgeLength=Nx*length;
+    yEdgeLength=Ny*length;
+    zEdgeLength=Nz*length;
+
+    maxConnectionNumber = 6;
 }
 
 void network::createNodes()
@@ -121,8 +132,6 @@ void network::createPores()
             outletPores.push_back(p);
         }
     });
-
-    setNeighboors();
 }
 
 void network::setNeighboors()
@@ -159,7 +168,7 @@ void network::setNeighboors()
     }
 }
 
-void network::applyCoordinationNumber()
+void network::setBoundaryConditions()
 {
     for (int i = 0; i < Nx; ++i)
         for (int j = 0; j < Ny; ++j)
@@ -167,9 +176,7 @@ void network::applyCoordinationNumber()
             pore* zIn=getPoreZ(i,j,0);
             pore* zOut=getPoreZ(i,j,Nz);
             zIn->setClosed(true);
-            zIn->getNodeIn()->setConnectionNumber(zIn->getNodeIn()->getConnectionNumber()-1);
             zOut->setClosed(true);
-            zOut->getNodeOut()->setConnectionNumber(zOut->getNodeOut()->getConnectionNumber()-1);
         }
     for (int i = 0; i < Nx; ++i)
         for (int k = 0; k < Nz; ++k)
@@ -177,16 +184,18 @@ void network::applyCoordinationNumber()
             pore* yIn=getPoreY(i,0,k);
             pore* yOut=getPoreY(i,Ny,k);
             yIn->setClosed(true);
-            yIn->getNodeIn()->setConnectionNumber(yIn->getNodeIn()->getConnectionNumber()-1);
             yOut->setClosed(true);
-            yOut->getNodeOut()->setConnectionNumber(yOut->getNodeOut()->getConnectionNumber()-1);
         }
 
+    totalOpenedPores = totalPores - 2*Nx*Ny - 2*Nx*Nz;
 
+}
+
+void network::applyCoordinationNumber()
+{
     if (coordinationNumber<6 || (coordinationNumber<4 && Nz==1))
     {
-        auto totalOpenedPoresSoFar=totalPores-2*Nx*Ny-2*Nx*Nz;
-        auto closedPoresNumber=(Nz==1? int(totalOpenedPoresSoFar*(1-coordinationNumber/4.0)) :int(totalPores*(1-coordinationNumber/6.0)));
+        auto closedPoresNumber=(Nz==1? int(totalOpenedPores*(1-coordinationNumber/4.0)) :int(totalPores*(1-coordinationNumber/6.0)));
 
         auto shuffledPores=tableOfAllPores;
         shuffle(shuffledPores.begin(), shuffledPores.end(), randomGenerator(seed).getGen());
@@ -195,37 +204,31 @@ void network::applyCoordinationNumber()
         {
             pore* p=shuffledPores.back();
             shuffledPores.pop_back();
-            if(!p->getClosed())
-            {
+            if(!p->getClosed()){
                 p->setClosed(true);
-                node* in=p->getNodeIn();
-                node* out=p->getNodeOut();
-                if(in!=0)in->setConnectionNumber(in->getConnectionNumber()-1);
-                if(out!=0)out->setConnectionNumber(out->getConnectionNumber()-1);
                 --closedPoresNumber;
             }
         }
-
-        //Clean Network from isolated pores
-        clusterOilElements();
-
-        for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* e){
-            if(!e->getClosed() && !e->getClusterOil()->getSpanning()){
-                e->setClosed(true);
-                node* in=e->getNodeIn();
-                node* out=e->getNodeOut();
-                if(in!=0)in->setConnectionNumber(in->getConnectionNumber()-1);
-                if(out!=0)out->setConnectionNumber(out->getConnectionNumber()-1);
-            }
-        });
-
-        //Delete isolated nodes
-        for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* e){
-            if(e->getConnectionNumber()==0 || !e->getClusterOil()->getSpanning()){
-                e->setClosed(true);
-            }
-        });
     }
+}
+
+void network::cleanNetwork()
+{
+    //Clean Network from isolated pores
+    clusterOilElements();
+
+    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* e){
+        if(!e->getClosed() && !e->getClusterOil()->getSpanning()){
+            e->setClosed(true);
+        }
+    });
+
+    //Delete isolated nodes
+    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* e){
+        if(!e->getClusterOil()->getSpanning()){
+            e->setClosed(true);
+        }
+    });
 
     // delete closed pores from inlet/ outlet containers
     inletPores.erase(remove_if(inletPores.begin(), inletPores.end(), [this](pore* p)->bool{
@@ -249,38 +252,6 @@ void network::applyCoordinationNumber()
                              return e->getClosed();
                          }), neighboors.end());
     });
-
-    //Ranking for the solver
-    auto rank(0);
-    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this, &rank](node* e){
-        if(!e->getClosed()){
-            e->setRank(rank);
-            ++rank;
-        }
-    });
-
-    maxConnectionNumber=(Nz==1? 4: 6);
-}
-
-void network::defineAccessibleElements()
-{
-    totalOpenedElements=0;
-    totalOpenedPores=0;
-    totalOpenedNodes=0;
-
-    for(node* n:tableOfAllNodes){
-        if(!n->getClosed()){
-            totalOpenedElements++;
-            totalOpenedNodes++;
-        }
-    }
-
-    for(pore* p:tableOfAllPores){
-        if(!p->getClosed()){
-            totalOpenedElements++;
-            totalOpenedPores++;
-        }
-    }
 }
 
 void network::assignRadii()
@@ -371,20 +342,29 @@ void network::assignVolumes()
         e->setVolume(volume);
         e->setEffectiveVolume(volume);
     });
+}
 
-    totalNodesVolume=accumulate(networkRange<node*>(this).begin(), networkRange<node*>(this).end(), 0.0, [](double sum, const node* n){
-        return sum+n->getVolume();
+void network::calculateNetworkAttributes()
+{
+    totalOpenedPores=0;
+    totalOpenedNodes=0;
+    totalNodesVolume=0;
+    totalPoresVolume=0;
+    inletPoresVolume=0;
+
+    for_each(networkRange<node*>(this).begin() , networkRange<node*>(this).end(),[&, this](node* n){
+        totalOpenedNodes++;
+        totalNodesVolume+=n->getVolume();
     });
 
-    totalPoresVolume=accumulate(networkRange<pore*>(this).begin(), networkRange<pore*>(this).end(), 0.0, [](double sum, const pore* p){
-        return sum+p->getVolume();
+    for_each(networkRange<pore*>(this).begin() , networkRange<pore*>(this).end(),[&, this](pore* p){
+        totalOpenedPores++;
+        totalPoresVolume+=p->getVolume();
+        if(p->getInlet())
+             inletPoresVolume+=p->getVolume();
     });
 
-    inletPoresVolume=accumulate(inletPores.begin(), inletPores.end(), 0.0, [](double sum, const pore* p){
-        return sum+p->getVolume();
-    });
-
-    totalElementsVolume=totalNodesVolume+totalPoresVolume;
+    totalNetworkVolume=totalNodesVolume+totalPoresVolume;
 }
 
 }

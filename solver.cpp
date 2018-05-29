@@ -27,6 +27,10 @@ void network::solvePressures()
     VectorXd b=VectorXd::Zero(totalOpenedNodes);
     VectorXd pressures=VectorXd::Zero(totalOpenedNodes);
 
+    auto rank(0);
+    for(node* n : networkRange<node*>(this))
+        n->setRank(rank++);
+
     int row=0;
     for(node* n : networkRange<node*>(this))
     {
@@ -87,6 +91,10 @@ void network::solvePressuresWithCapillaryPressures()
     conductivityMatrix.reserve(VectorXi::Constant(totalOpenedNodes,maxConnectionNumber+3));
     VectorXd b=VectorXd::Zero(totalOpenedNodes);
     VectorXd pressures=VectorXd::Zero(totalOpenedNodes);
+
+    auto rank(0);
+    for(node* n : networkRange<node*>(this))
+        n->setRank(rank++);
 
     int row=0;
     for(node* n : networkRange<node*>(this))
@@ -204,7 +212,7 @@ void network::calculatePermeabilityAndPorosity()
     ofstream file("Results/Network_Description/AbsolutePerm_Porosity.txt");
     flow=getOutletFlow();
     absolutePermeability=(flow*xEdgeLength)/(yEdgeLength*zEdgeLength*(pressureIn-pressureOut));
-    porosity=totalElementsVolume/(xEdgeLength*yEdgeLength*zEdgeLength);
+    porosity=totalNetworkVolume/(xEdgeLength*yEdgeLength*zEdgeLength);
     file<<"Absolute permeability (mD):\t"<<absolutePermeability/0.987e-15<<endl<<"Porosity:\t"<<porosity<<endl;
 }
 

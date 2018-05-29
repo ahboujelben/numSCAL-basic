@@ -23,18 +23,16 @@ void network::setupExtractedModel()
     cout<<"Reading Extracted Network.."<<endl;
     loadExtractedNetwork();
     cout<<"Cleaning Network..."<<endl;
-    cleanExtractedNetwork();
-    cout<<"Defining accessible elements..."<<endl;
-    defineAccessibleElements();
-    cout<<"Assigning Volume..."<<endl;
-    calculateExtractedNetworkVolume();
+    cleanNetwork();
     cout<<"Assigning Conductivities..."<<endl;
     assignConductivities();
     cout<<"Setting Wettability..."<<endl;
     assignWettability();
+    cout<<"Calculating Network Attributes..."<<endl;
+    calculateNetworkAttributes();
 
     if(absolutePermeabilityCalculation){
-        cout<<"Absolute permeabilty calculation.."<<endl;
+        cout<<"Calculating Absolute permeabilty..."<<endl;
         solvePressures();
         updateFlows();
         calculatePermeabilityAndPorosity();
@@ -147,7 +145,6 @@ void network::loadExtractedNetwork()
     link1>>totalPores;
 
     totalOpenedPores=totalPores;
-    totalElements=totalNodes+totalPores;
 
     tableOfAllPores.resize(totalPores);
 
@@ -292,78 +289,6 @@ void network::loadExtractedNetwork()
             neighboors.push_back(p->getNodeOut());
         p->setNeighboors(neighboors);
     }
-}
-
-void network::cleanExtractedNetwork()
-{
-    //Clean Network from isolated pores
-    clusterOilElements();
-
-    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* e){
-        if(!e->getClosed() && !e->getClusterOil()->getSpanning()){
-            e->setClosed(true);
-            node* in=e->getNodeIn();
-            node* out=e->getNodeOut();
-            if(in!=0)in->setConnectionNumber(in->getConnectionNumber()-1);
-            if(out!=0)out->setConnectionNumber(out->getConnectionNumber()-1);
-        }
-    });
-
-    //Delete isolated nodes
-    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* e){
-        if(e->getConnectionNumber()==0 || !e->getClusterOil()->getSpanning()){
-            e->setClosed(true);
-        }
-    });
-
-    // delete closed pores from inlet/ outlet containers
-    inletPores.erase(remove_if(inletPores.begin(), inletPores.end(), [this](pore* p)->bool{
-                         return p->getClosed();
-                     }), inletPores.end());
-    outletPores.erase(remove_if(outletPores.begin(), outletPores.end(), [this](pore* p)->bool{
-                         return p->getClosed();
-                     }), outletPores.end());
-
-    // delete closed elements from neighboor containers
-    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* e){
-        vector<element*>& neighboors = e->getNeighboors();
-        neighboors.erase(remove_if(neighboors.begin(), neighboors.end(), [this](element* e)->bool{
-                             return e->getClosed();
-                         }), neighboors.end());
-    });
-
-    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* e){
-        vector<element*>& neighboors = e->getNeighboors();
-        neighboors.erase(remove_if(neighboors.begin(), neighboors.end(), [this](element* e)->bool{
-                             return e->getClosed();
-                         }), neighboors.end());
-    });
-
-    //Ranking for the solver
-    auto rank(0);
-    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this, &rank](node* e){
-        if(!e->getClosed()){
-            e->setRank(rank);
-            ++rank;
-        }
-    });
-}
-
-void network::calculateExtractedNetworkVolume()
-{
-    totalNodesVolume=accumulate(networkRange<node*>(this).begin(), networkRange<node*>(this).end(), 0.0, [](double sum, const node* n){
-        return sum+n->getVolume();
-    });
-
-    totalPoresVolume=accumulate(networkRange<pore*>(this).begin(), networkRange<pore*>(this).end(), 0.0, [](double sum, const pore* p){
-        return sum+p->getVolume();
-    });
-
-    inletPoresVolume=accumulate(inletPores.begin(), inletPores.end(), 0.0, [](double sum, const pore* p){
-        return sum+p->getVolume();
-    });
-
-    totalElementsVolume=totalNodesVolume+totalPoresVolume;
 }
 
 }

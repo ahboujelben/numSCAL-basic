@@ -122,7 +122,6 @@ void network::reset()
 
     totalPores=totalOpenedPores=0;
     totalNodes=totalOpenedNodes=0;
-    totalElements=totalOpenedElements=0;
 
     simulationNotification="";
 
