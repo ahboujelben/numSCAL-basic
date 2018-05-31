@@ -8,7 +8,7 @@ class randomGenerator
     using mt = boost::random::mt19937;
 
 public:
-    randomGenerator(int);
+    randomGenerator(int seed);
     mt getGen() const {return gen;}
     int uniform_int(int a=0, int b=1);
     double uniform_real(double a=0, double b=1);
@@ -19,7 +19,6 @@ public:
 
 private:
     mt gen;
-    int seed;
 };
 
 #endif // RANDOMGENERATOR_H

@@ -7,7 +7,7 @@
 #include <boost/random/uniform_real_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-randomGenerator::randomGenerator(int) : seed(seed)
+randomGenerator::randomGenerator(int seed)
 {
     gen.seed(seed);
 }
