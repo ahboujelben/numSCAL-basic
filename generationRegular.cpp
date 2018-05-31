@@ -154,6 +154,8 @@ void network::setNeighboors()
 
 void network::setBoundaryConditions()
 {
+    //Typical boundary conditions
+
     //Define inlet/outlet elements
     for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
         if(p->getNodeOut()==0){
@@ -192,6 +194,43 @@ void network::setBoundaryConditions()
     //Update the total of enabled Pores
     totalOpenedPores = totalPores - 2*Nx*Ny - 2*Nx*Nz;
 
+    // Injection in the center
+
+//    //Define inlet/outlet elements
+//    for_each(tableOfAllPores.begin(),tableOfAllPores.end(),[this](pore* p){
+//        if(p->getNodeOut()==0 || p->getNodeIn()==0){
+//            p->setOutlet(true);
+//            outletPores.push_back(p);
+//        }
+//    });
+
+//    for_each(tableOfAllNodes.begin(),tableOfAllNodes.end(),[this](node* n){
+//        if(n->getIndexX()==0 || n->getIndexY()==0 || n->getIndexZ()==0)n->setOutlet(true);
+//        if(n->getIndexX()==Nx-1 || n->getIndexY()==Ny-1 || n->getIndexZ()==Nz-1)n->setOutlet(true);
+//    });
+
+//    //Remove throats at both sides
+//    for (int i = 0; i < Nx; ++i)
+//        for (int j = 0; j < Ny; ++j)
+//        {
+//            if(i==Nx/2 && j==Ny/2){
+//                pore* inletP = getPoreZ(i,j,0);
+//                inletP->setInlet(true);
+//                inletP->setOutlet(false);
+//                inletPores.push_back(inletP);
+//                outletPores.erase(remove(outletPores.begin(), outletPores.end(), inletP), outletPores.end());
+//                pore* otherP = getPoreZ(i,j,Nz);
+//                otherP->setClosed(true);
+//            }
+//            else{
+//                pore* zIn=getPoreZ(i,j,0);
+//                pore* zOut=getPoreZ(i,j,Nz);
+//                zIn->setClosed(true);
+//                zOut->setClosed(true);
+//            }
+//        }
+
+//    totalOpenedPores = totalPores - 2*Nx*Ny + 1;
 }
 
 void network::applyCoordinationNumber()
@@ -207,7 +246,7 @@ void network::applyCoordinationNumber()
         {
             pore* p=shuffledPores.back();
             shuffledPores.pop_back();
-            if(!p->getClosed()){
+            if(!p->getClosed() && !p->getInlet() && ! p->getOutlet()){
                 p->setClosed(true);
                 --closedPoresNumber;
             }
