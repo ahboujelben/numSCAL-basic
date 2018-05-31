@@ -326,8 +326,6 @@ void network::updateCapillaryProperties(unordered_set<pore *> &poresToCheck, uno
                 //Update capilary pressures a nodes with an oil/water interfac
                 if(!p->getInlet() && !p->getOutlet() && nodeIn!=0 && nodeOut!=0)
                 {
-
-
                     if(nodeOut->getPhaseFlag()==phase::oil && nodeIn->getPhaseFlag()==phase::water){
                         //pore filling mechanism
                         int oilNeighboorsNumber(0);
