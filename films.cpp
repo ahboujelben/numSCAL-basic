@@ -115,13 +115,13 @@ void network::assignWettability()
     if(wettingTypeFlag==3){ //FW
 
         vector<node*> shuffledNodes;
-        shuffledNodes.reserve(totalOpenedNodes);
+        shuffledNodes.reserve(totaEnabledNodes);
         for(node* n : networkRange<node*>(this))
             shuffledNodes.push_back(n);
         shuffle(shuffledNodes.begin(), shuffledNodes.end(), gen.getGen());
 
         auto oilWetSoFar(0);
-        while((double(oilWetSoFar)/totalOpenedNodes)<oilWetFraction)
+        while((double(oilWetSoFar)/totaEnabledNodes)<oilWetFraction)
         {
             node* p=shuffledNodes.back();
             shuffledNodes.pop_back();
@@ -144,7 +144,7 @@ void network::assignWettability()
 
         auto oilWetSoFar(0);
 
-        while((double(oilWetSoFar)/totalOpenedNodes)<oilWetFraction){
+        while((double(oilWetSoFar)/totaEnabledNodes)<oilWetFraction){
             auto biggestElement=workingElements.back();
             biggestElement->setTheta(gen.uniform_real(minOilWetTheta,maxOilWetTheta));
             biggestElement->setWettabilityFlag(wettability::oilWet);
@@ -165,7 +165,7 @@ void network::assignWettability()
 
         auto oilWetSoFar(0);
 
-        while((double(oilWetSoFar)/totalOpenedNodes)<oilWetFraction){
+        while((double(oilWetSoFar)/totaEnabledNodes)<oilWetFraction){
             auto smallestElement=workingElements.back();
             smallestElement->setTheta(gen.uniform_real(minOilWetTheta,maxOilWetTheta));
             smallestElement->setWettabilityFlag(wettability::oilWet);

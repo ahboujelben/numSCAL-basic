@@ -268,8 +268,8 @@ void MainWindow::getNetworkResults()
 {
     ui->permeabilityLabel->setText(QString::number(net->getAbsolutePermeability()/0.987e-15,'f',2));
     ui->porosityLabel->setText(QString::number(net->getPorosity()*100,'f',2));
-    ui->totalPoresLabel->setText(QString::number(net->getTotalOpenedPores()));
-    ui->totalNodesLabel->setText(QString::number(net->getTotalOpenedNodes()));
+    ui->totalPoresLabel->setText(QString::number(net->getTotalEnabledPores()));
+    ui->totalNodesLabel->setText(QString::number(net->getTotalEnabledNodes()));
     ui->networkRunningLabel->setText("");
     ui->loadNetworkButton->setEnabled(true);
     ui->loadNetworkButton->setFocus();

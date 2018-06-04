@@ -8,9 +8,9 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
-
 #include "randomGenerator.h"
 #include "iterator.h"
+#include "tools.h"
 
 namespace PNM {
 
@@ -48,7 +48,7 @@ void network::fillWithPhase(PNM::phase phase, double saturation, int distributio
     if(distribution==1) //random
     {
         vector<node*> shuffledNodes;
-        shuffledNodes.reserve(totalOpenedNodes);
+        shuffledNodes.reserve(totaEnabledNodes);
         for(node* n : networkRange<node*>(this))
             shuffledNodes.push_back(n);
         shuffle(shuffledNodes.begin(), shuffledNodes.end(), gen.getGen());
@@ -142,14 +142,14 @@ void network::initialiseCapillaries()
         e->setConductivity(0);
         e->setFlow(0);
         e->setMassFlow(0);
-        if(e->getType()==capillaryType::throat){
-            pore* p=static_cast<pore*>(e);
-            p->setNodeInOil(p->getPhaseFlag()==phase::oil?true:false);
-            p->setNodeOutOil(p->getPhaseFlag()==phase::oil?true:false);
-            p->setNodeInWater(p->getPhaseFlag()==phase::water?true:false);
-            p->setNodeOutWater(p->getPhaseFlag()==phase::water?true:false);
-            p->setCapillaryPressure(0);
-        }
+    });
+
+    for_each(networkRange<pore*>(this).begin(),networkRange<pore*>(this).end(),[this](pore* p){
+        p->setNodeInOil(p->getPhaseFlag()==phase::oil?true:false);
+        p->setNodeOutOil(p->getPhaseFlag()==phase::oil?true:false);
+        p->setNodeInWater(p->getPhaseFlag()==phase::water?true:false);
+        p->setNodeOutWater(p->getPhaseFlag()==phase::water?true:false);
+        p->setCapillaryPressure(0);
     });
 }
 

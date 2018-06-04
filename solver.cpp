@@ -24,10 +24,10 @@ using namespace Eigen;
 
 void network::solvePressures()
 {
-    SparseMatrix<double> conductivityMatrix(totalOpenedNodes,totalOpenedNodes);
-    conductivityMatrix.reserve(VectorXi::Constant(totalOpenedNodes,maxConnectionNumber+3));
-    VectorXd b=VectorXd::Zero(totalOpenedNodes);
-    VectorXd pressures=VectorXd::Zero(totalOpenedNodes);
+    SparseMatrix<double> conductivityMatrix(totaEnabledNodes,totaEnabledNodes);
+    conductivityMatrix.reserve(VectorXi::Constant(totaEnabledNodes,maxConnectionNumber+3));
+    VectorXd b=VectorXd::Zero(totaEnabledNodes);
+    VectorXd pressures=VectorXd::Zero(totaEnabledNodes);
 
     auto rank(0);
     for(node* n : networkRange<node*>(this))
@@ -89,10 +89,10 @@ void network::solvePressures()
 
 void network::solvePressuresWithCapillaryPressures()
 {
-    SparseMatrix<double> conductivityMatrix(totalOpenedNodes,totalOpenedNodes);
-    conductivityMatrix.reserve(VectorXi::Constant(totalOpenedNodes,maxConnectionNumber+3));
-    VectorXd b=VectorXd::Zero(totalOpenedNodes);
-    VectorXd pressures=VectorXd::Zero(totalOpenedNodes);
+    SparseMatrix<double> conductivityMatrix(totaEnabledNodes,totaEnabledNodes);
+    conductivityMatrix.reserve(VectorXi::Constant(totaEnabledNodes,maxConnectionNumber+3));
+    VectorXd b=VectorXd::Zero(totaEnabledNodes);
+    VectorXd pressures=VectorXd::Zero(totaEnabledNodes);
 
     auto rank(0);
     for(node* n : networkRange<node*>(this))

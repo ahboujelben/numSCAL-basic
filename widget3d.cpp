@@ -8,6 +8,7 @@
 /////////////////////////////////////////////////////////////////////////////
 #include "widget3d.h"
 #include "iterator.h"
+#include "tools.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -106,7 +107,7 @@ unsigned widget3d::bufferCylinderData()
     if(net!=0)
         if(net->isLoaded())
         {
-            int NUMBER_CYLINDERS=net->getTotalOpenedPores();
+            int NUMBER_CYLINDERS=net->getTotalEnabledPores();
             GLfloat *h_data = new GLfloat[11 * NUMBER_CYLINDERS];
             for(pore* p : networkRange<pore*>(net))
             {
@@ -164,7 +165,7 @@ unsigned widget3d::bufferLinesData()
     if(net!=0)
         if(net->isLoaded())
         {
-            int NUMBER_CYLINDERS=net->getTotalOpenedPores();
+            int NUMBER_CYLINDERS=net->getTotalEnabledPores();
             GLfloat *h_data = new GLfloat[2 * 6 * NUMBER_CYLINDERS];
             for(pore* p : networkRange<pore*>(net))
             {
@@ -225,7 +226,7 @@ unsigned widget3d::bufferSphereData()
     if(net!=0)
         if(net->isLoaded())
         {
-            int NUMBER_SPHERES=net->getTotalOpenedNodes();
+            int NUMBER_SPHERES=net->getTotalEnabledNodes();
             GLfloat *h_data = new GLfloat[7 * NUMBER_SPHERES];
             for(node* p : networkRange<node*>(net))
             {

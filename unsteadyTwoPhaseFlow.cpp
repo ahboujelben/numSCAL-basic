@@ -45,7 +45,7 @@ void network::runUSSDrainageModel()
     unordered_set<pore*> poresToCheck;
     unordered_set<node*> nodesToCheck;
 
-    while(!interruptSimulation && timeSoFar<simulationTime)
+    while(!simulationInterrupted && timeSoFar<simulationTime)
     {
         //Update viscosities/conductivities/thetas and trapping conditions
         if(solvePressure)
@@ -109,7 +109,7 @@ void network::runUSSDrainageModel()
         emitPlotSignal();
 
         //Thread Management
-        if(interruptSimulation)break;
+        if(simulationInterrupted)break;
     }
 
     //post-processing
@@ -125,7 +125,7 @@ void network::runUSSDrainageModel()
 
 void network::initialiseUSSDrainageModel()
 {
-    interruptSimulation=false;
+    simulationInterrupted=false;
     if(waterDistribution!=4){ //not after primary drainage
         assignWWWettability();
         fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
@@ -393,7 +393,7 @@ void network::solvePressureWithoutCounterImbibition()
             }
         }
 
-        if(interruptSimulation)break;
+        if(simulationInterrupted)break;
     }
 
     for(node* n : networkRange<node*>(this))
@@ -464,7 +464,7 @@ void network::calculateTimeStepUSS(unordered_set<pore *> &poresToCheck, unordere
 
     if(timeStep==1e50)
     {
-        interruptSimulation=true;
+        simulationInterrupted=true;
         cout<<"ERROR in calculateTimeStepUSS: infinite time step "<<timeStep<<endl;
     }
 }
@@ -514,8 +514,8 @@ double network::updateElementaryFluidFractions(unordered_set<pore *> &poresToChe
             }
 
             //mass conservation check
-            if(p->getOilFraction()>1.0001 || p->getOilFraction()<-0.0001) {cout<<"Something wrong: oil fraction >1 or <0 "<<p->getOilFraction()<<endl;interruptSimulation=true;}
-            if(p->getWaterFraction()>1.0001 || p->getWaterFraction()<-0.0001) {cout<<"Something wrong: water fraction >1 or <0 "<<p->getWaterFraction()<<endl;interruptSimulation=true;}
+            if(p->getOilFraction()>1.0001 || p->getOilFraction()<-0.0001) {cout<<"Something wrong: oil fraction >1 or <0 "<<p->getOilFraction()<<endl;simulationInterrupted=true;}
+            if(p->getWaterFraction()>1.0001 || p->getWaterFraction()<-0.0001) {cout<<"Something wrong: water fraction >1 or <0 "<<p->getWaterFraction()<<endl;simulationInterrupted=true;}
         }
     }
 }

@@ -14,7 +14,6 @@
 #include "node.h"
 #include "pore.h"
 #include "cluster.h"
-#include "tools.h"
 
 #include <vector>
 #include <unordered_set>
@@ -23,6 +22,8 @@
 #include <QObject>
 
 namespace PNM {
+
+using namespace std;
 
 class network : public QObject
 {
@@ -166,8 +167,8 @@ public:
     node *getNode(int) const;
     int getTotalPores() const;
     int getTotalNodes() const;
-    int getTotalOpenedPores() const;
-    int getTotalOpenedNodes() const;
+    int getTotalEnabledPores() const;
+    int getTotalEnabledNodes() const;
 
 
     ///////////// Getters/Setters
@@ -215,15 +216,15 @@ private:
     int Nx;
     int Ny;
     int Nz;
-    vector<pore*> tableOfAllPores;
-    vector<node*> tableOfAllNodes;
+    vector<pore*> tableOfPores;
+    vector<node*> tableOfNodes;
     std::vector<pore*> inletPores;
     std::vector<pore*> outletPores;
 
     int totalPores;
-    int totalOpenedPores;
+    int totalEnabledPores;
     int totalNodes;
-    int totalOpenedNodes;
+    int totaEnabledNodes;
     double totalPoresVolume;
     double totalNodesVolume;
     double totalNetworkVolume;
@@ -365,7 +366,7 @@ private:
 
     ////////// Thread Management
     bool networkIsLoaded;
-    bool interruptSimulation;
+    bool simulationInterrupted;
     bool simulationRunning;
 };
 

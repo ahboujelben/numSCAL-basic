@@ -28,21 +28,21 @@ void network::runTwoPhaseSSModel()
 
     initialiseTwoPhaseSSModel();
 
-    if(primaryDrainageSimulation && !interruptSimulation)
+    if(primaryDrainageSimulation && !simulationInterrupted)
         primaryDrainage();
 
     restoreWettability();
 
-    if(spontaneousImbibitionSimulation && !interruptSimulation)
+    if(spontaneousImbibitionSimulation && !simulationInterrupted)
         spontaneousImbibition();
 
-    if(forcedWaterInjectionSimulation && !interruptSimulation)
+    if(forcedWaterInjectionSimulation && !simulationInterrupted)
         forcedWaterInjection();
 
-    if(spontaneousOilInvasionSimulation && !interruptSimulation)
+    if(spontaneousOilInvasionSimulation && !simulationInterrupted)
         spontaneousOilInvasion();
 
-    if(secondaryOilDrainageSimulation && !interruptSimulation)
+    if(secondaryOilDrainageSimulation && !simulationInterrupted)
         secondaryOilDrainage();
 
     //post-processing
@@ -55,7 +55,7 @@ void network::runTwoPhaseSSModel()
 
 void network::initialiseTwoPhaseSSModel()
 {
-    interruptSimulation=false;
+    simulationInterrupted=false;
     assignWWWettability();
     fillWithPhase(phase::water);
     initialiseCapillaries();
@@ -156,7 +156,7 @@ void network::primaryDrainage(double finalSaturation)
                 break;
 
             //Thread Management
-            if(interruptSimulation)break;
+            if(simulationInterrupted)break;
         }
 
         //Remove trapped water capillaries from the set potentially-invaded capillaries
@@ -185,7 +185,7 @@ void network::primaryDrainage(double finalSaturation)
                     e->setWaterFilmVolume(filmVolume);
                     e->setWaterFilmConductivity(filmConductance);//cout<<filmConductance<<endl;
                     e->setEffectiveVolume(e->getVolume()-e->getWaterFilmVolume());
-                    if(e->getWaterFilmVolume()>e->getVolume()){cout<<"FATAL EROOR in PD: water film > capillary volume."<<endl;interruptSimulation=true;}
+                    if(e->getWaterFilmVolume()>e->getVolume()){cout<<"FATAL EROOR in PD: water film > capillary volume."<<endl;simulationInterrupted=true;}
                     waterVolume+=e->getWaterFilmVolume();
                 }
             }
@@ -234,7 +234,7 @@ void network::primaryDrainage(double finalSaturation)
             break;
 
         //Thread Management
-        if(interruptSimulation)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after PD: "<<finalPcPD<<endl;
@@ -380,7 +380,7 @@ void network::spontaneousImbibition()
             emitPlotSignal();
 
             //Thread Management
-            if(interruptSimulation)break;
+            if(simulationInterrupted)break;
         }
 
         //Remove trapped oil capillaries from the set potentially-invaded capillaries
@@ -447,7 +447,7 @@ void network::spontaneousImbibition()
         finalSaturationPI=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(interruptSimulation)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after SI: "<<finalPcPI<<endl;
@@ -546,7 +546,7 @@ void network::forcedWaterInjection()
             emitPlotSignal();
 
             //Thread Management
-            if(interruptSimulation)break;
+            if(simulationInterrupted)break;
         }
 
         //Remove trapped oil capillaries from the set potentially-invaded capillaries
@@ -584,7 +584,7 @@ void network::forcedWaterInjection()
                     //if(effectiveOilFilmVolume==0) // oil layer collapse
                     //    e->setOilLayerActivated(false);
                     e->setEffectiveVolume(e->getVolume()-e->getOilFilmVolume()-e->getWaterFilmVolume());
-                    if(e->getEffectiveVolume()<0){interruptSimulation=true;cout<<"effective volume < 0"<<endl;}
+                    if(e->getEffectiveVolume()<0){simulationInterrupted=true;cout<<"effective volume < 0"<<endl;}
                 }
                 waterVolume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
             }
@@ -617,7 +617,7 @@ void network::forcedWaterInjection()
         finalSaturationSD=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(interruptSimulation)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after FWI: "<<finalPcSD<<endl;
@@ -761,7 +761,7 @@ void network::spontaneousOilInvasion()
             emitPlotSignal();
 
             //Thread Management
-            if(interruptSimulation)break;
+            if(simulationInterrupted)break;
         }
 
         //Remove trapped water capillaries from the set potentially-invaded capillaries
@@ -828,7 +828,7 @@ void network::spontaneousOilInvasion()
         finalSaturationSI=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(interruptSimulation)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after SOI: "<<finalPcSI<<endl;
@@ -924,7 +924,7 @@ void network::secondaryOilDrainage()
             }
 
             //Thread Management
-            if(interruptSimulation)break;
+            if(simulationInterrupted)break;
 
             //Update Graphics
             emitPlotSignal();
@@ -977,7 +977,7 @@ void network::secondaryOilDrainage()
         finalSaturationTD=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(interruptSimulation)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after SOD: "<<finalPcTD<<endl;

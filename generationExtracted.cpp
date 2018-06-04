@@ -60,9 +60,9 @@ void network::loadExtractedNetwork()
 
     node1>>totalNodes>>xEdgeLength>>yEdgeLength>>zEdgeLength;
 
-    totalOpenedNodes=totalNodes;
+    totaEnabledNodes=totalNodes;
 
-    tableOfAllNodes.resize(totalNodes);
+    tableOfNodes.resize(totalNodes);
 
     getline(node1,line);
 
@@ -79,8 +79,8 @@ void network::loadExtractedNetwork()
 
         if(numberOfNeighboors>maxConnectionNumber)maxConnectionNumber=numberOfNeighboors;
 
-        tableOfAllNodes[i]= new node(x,y,z);
-        node* n=tableOfAllNodes[i];
+        tableOfNodes[i]= new node(x,y,z);
+        node* n=tableOfNodes[i];
         n->setId(id);
         n->setAbsId(i);
         n->setConnectionNumber(numberOfNeighboors);
@@ -142,9 +142,9 @@ void network::loadExtractedNetwork()
 
     link1>>totalPores;
 
-    totalOpenedPores=totalPores;
+    totalEnabledPores=totalPores;
 
-    tableOfAllPores.resize(totalPores);
+    tableOfPores.resize(totalPores);
 
     getline(link1,line);
 
@@ -178,8 +178,8 @@ void network::loadExtractedNetwork()
             nodeIn=getNode(nodeIndex2-1);
         }
 
-        tableOfAllPores[i]=new pore(nodeIn,nodeOut);
-        pore* p=tableOfAllPores[i];
+        tableOfPores[i]=new pore(nodeIn,nodeOut);
+        pore* p=tableOfPores[i];
 
         if(p->getNodeOut()==0)
         {
@@ -278,7 +278,7 @@ void network::loadExtractedNetwork()
         n->setNeighboors(neighboors);
     }
 
-    for(pore* p : tableOfAllPores)
+    for(pore* p : tableOfPores)
     {
         vector<element*> neighboors;
         if(p->getNodeIn()!=0)
