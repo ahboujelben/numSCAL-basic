@@ -11,6 +11,7 @@
 #include "network.h"
 #include "iterator.h"
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -27,21 +28,21 @@ void network::runTwoPhaseSSModel()
 
     initialiseTwoPhaseSSModel();
 
-    if(primaryDrainageSimulation && !cancel)
+    if(primaryDrainageSimulation && !interruptSimulation)
         primaryDrainage();
 
     restoreWettability();
 
-    if(spontaneousImbibitionSimulation && !cancel)
+    if(spontaneousImbibitionSimulation && !interruptSimulation)
         spontaneousImbibition();
 
-    if(forcedWaterInjectionSimulation && !cancel)
+    if(forcedWaterInjectionSimulation && !interruptSimulation)
         forcedWaterInjection();
 
-    if(spontaneousOilInvasionSimulation && !cancel)
+    if(spontaneousOilInvasionSimulation && !interruptSimulation)
         spontaneousOilInvasion();
 
-    if(secondaryOilDrainageSimulation && !cancel)
+    if(secondaryOilDrainageSimulation && !interruptSimulation)
         secondaryOilDrainage();
 
     //post-processing
@@ -54,7 +55,7 @@ void network::runTwoPhaseSSModel()
 
 void network::initialiseTwoPhaseSSModel()
 {
-    cancel=false;
+    interruptSimulation=false;
     assignWWWettability();
     fillWithPhase(phase::water);
     initialiseCapillaries();
@@ -155,7 +156,7 @@ void network::primaryDrainage(double finalSaturation)
                 break;
 
             //Thread Management
-            if(cancel)break;
+            if(interruptSimulation)break;
         }
 
         //Remove trapped water capillaries from the set potentially-invaded capillaries
@@ -184,7 +185,7 @@ void network::primaryDrainage(double finalSaturation)
                     e->setWaterFilmVolume(filmVolume);
                     e->setWaterFilmConductivity(filmConductance);//cout<<filmConductance<<endl;
                     e->setEffectiveVolume(e->getVolume()-e->getWaterFilmVolume());
-                    if(e->getWaterFilmVolume()>e->getVolume()){cout<<"FATAL EROOR in PD: water film > capillary volume."<<endl;cancel=true;}
+                    if(e->getWaterFilmVolume()>e->getVolume()){cout<<"FATAL EROOR in PD: water film > capillary volume."<<endl;interruptSimulation=true;}
                     waterVolume+=e->getWaterFilmVolume();
                 }
             }
@@ -211,6 +212,7 @@ void network::primaryDrainage(double finalSaturation)
         ss << std::fixed << std::setprecision(2);
         ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         //Extract data at Breakthrough
         if(!spanningOil)
@@ -232,7 +234,7 @@ void network::primaryDrainage(double finalSaturation)
             break;
 
         //Thread Management
-        if(cancel)break;
+        if(interruptSimulation)break;
     }
 
     file3<<"Pc after PD: "<<finalPcPD<<endl;
@@ -378,7 +380,7 @@ void network::spontaneousImbibition()
             emitPlotSignal();
 
             //Thread Management
-            if(cancel)break;
+            if(interruptSimulation)break;
         }
 
         //Remove trapped oil capillaries from the set potentially-invaded capillaries
@@ -439,12 +441,13 @@ void network::spontaneousImbibition()
         ss << std::fixed << std::setprecision(2);
         ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         finalPcPI=currentPc;
         finalSaturationPI=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(cancel)break;
+        if(interruptSimulation)break;
     }
 
     file3<<"Pc after SI: "<<finalPcPI<<endl;
@@ -543,7 +546,7 @@ void network::forcedWaterInjection()
             emitPlotSignal();
 
             //Thread Management
-            if(cancel)break;
+            if(interruptSimulation)break;
         }
 
         //Remove trapped oil capillaries from the set potentially-invaded capillaries
@@ -581,7 +584,7 @@ void network::forcedWaterInjection()
                     //if(effectiveOilFilmVolume==0) // oil layer collapse
                     //    e->setOilLayerActivated(false);
                     e->setEffectiveVolume(e->getVolume()-e->getOilFilmVolume()-e->getWaterFilmVolume());
-                    if(e->getEffectiveVolume()<0){cancel=true;cout<<"effective volume < 0"<<endl;}
+                    if(e->getEffectiveVolume()<0){interruptSimulation=true;cout<<"effective volume < 0"<<endl;}
                 }
                 waterVolume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
             }
@@ -608,12 +611,13 @@ void network::forcedWaterInjection()
         ss << std::fixed << std::setprecision(2);
         ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         finalPcSD=currentPc;
         finalSaturationSD=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(cancel)break;
+        if(interruptSimulation)break;
     }
 
     file3<<"Pc after FWI: "<<finalPcSD<<endl;
@@ -757,7 +761,7 @@ void network::spontaneousOilInvasion()
             emitPlotSignal();
 
             //Thread Management
-            if(cancel)break;
+            if(interruptSimulation)break;
         }
 
         //Remove trapped water capillaries from the set potentially-invaded capillaries
@@ -818,12 +822,13 @@ void network::spontaneousOilInvasion()
         ss << std::fixed << std::setprecision(2);
         ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         finalPcSI=currentPc;
         finalSaturationSI=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(cancel)break;
+        if(interruptSimulation)break;
     }
 
     file3<<"Pc after SOI: "<<finalPcSI<<endl;
@@ -919,7 +924,7 @@ void network::secondaryOilDrainage()
             }
 
             //Thread Management
-            if(cancel)break;
+            if(interruptSimulation)break;
 
             //Update Graphics
             emitPlotSignal();
@@ -966,12 +971,13 @@ void network::secondaryOilDrainage()
         ss << std::fixed << std::setprecision(2);
         ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         finalPcTD=currentPc;
         finalSaturationTD=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(cancel)break;
+        if(interruptSimulation)break;
     }
 
     file3<<"Pc after SOD: "<<finalPcTD<<endl;

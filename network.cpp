@@ -123,15 +123,16 @@ void network::reset()
     totalPores=totalOpenedPores=0;
     totalNodes=totalOpenedNodes=0;
 
-    simulationNotification="";
-
     record=false;
-    ready=false;
-    cancel=false;
+    networkIsLoaded=false;
+    interruptSimulation=false;
     simulationRunning=false;
 
     twoPhaseSS=true;
     drainageUSS=false;
+    tracerFlow=false;
+
+    simulationNotification="";
 }
 
 void network::setupModel()
@@ -139,9 +140,9 @@ void network::setupModel()
     tools::createRequiredFolders();
     tools::cleanNetworkDescriptionFolder();
 
-    if(ready)
+    if(networkIsLoaded)
     {
-        ready=false;
+        networkIsLoaded=false;
         destroy();
     }
 
@@ -158,8 +159,13 @@ void network::setupModel()
         exit(0);
     }
 
-    ready=true;
+    networkIsLoaded=true;
+
+    //Update graphics
     emitPlotSignal();
+
+    //Inform main window
+    emitNetworkLoadedSignal();
 }
 
 void network::runSimulation()
@@ -167,17 +173,24 @@ void network::runSimulation()
     tools::createRequiredFolders();
     tools::cleanResultsFolder();
 
-    loadTwoPhaseData();
+    loadSimulationData();
 
+    //Start timer
     auto startTime=tools::getCPUTime();
 
     if(twoPhaseSS)
         runTwoPhaseSSModel();
+
     if(drainageUSS)
         runUSSDrainageModel();
+
     if(tracerFlow)
         runTracerModel();
 
+    //Inform main window
+    emitSimulationDoneSignal();
+
+    //Stop timer
     auto endTime=tools::getCPUTime();
     cout<<"Processing Runtime: "<<endTime-startTime<<" s."<<endl;
 }
@@ -331,14 +344,14 @@ double network::getPorosity() const
 }
 
 
-bool network::getReady() const
+bool network::isLoaded() const
 {
-    return ready;
+    return networkIsLoaded;
 }
 
 void network::setCancel(bool value)
 {
-    cancel = value;
+    interruptSimulation = value;
 }
 
 }

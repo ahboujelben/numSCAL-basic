@@ -12,6 +12,7 @@
 #include "network.h"
 #include "iterator.h"
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -38,11 +39,8 @@ void network::setupExtractedModel()
         calculatePermeabilityAndPorosity();
     }
 
-    //Display notification
-    std::ostringstream ss;
-    ss << std::fixed << std::setprecision(2);
-    ss << "Perm.(mD): " << absolutePermeability/0.987e-15<<" / Porosity(%): "<<porosity*100<<" / Dx(mm): "<< xEdgeLength*1e3 << " / Dy(mm): "  << yEdgeLength*1e3<<" / Dz(mm): "<<zEdgeLength*1e3;
-    simulationNotification = ss.str();
+    //Display network info on screen
+    displayNetworkInfo();
 }
 
 void network::loadExtractedNetwork()

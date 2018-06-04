@@ -42,14 +42,14 @@ void network::runTracerModel()
         calculateTracerTimeStep();
     }
     else{
-        cancel=true;
+        interruptSimulation=true;
         cout<<"ERROR: Tracer will only flow in the oil. Oil is not spanning in the current configuration."<<endl;
     }
 
     //Define working concentration vector to avoid frequent allocations
     vector<double> newConcentration(totalPores + totalNodes);
 
-    while(!cancel && timeSoFar<simulationTime)
+    while(!interruptSimulation && timeSoFar<simulationTime)
     {       
         updateConcentrationValues(newConcentration);
 
@@ -61,12 +61,13 @@ void network::runTracerModel()
         ss << std::fixed << std::setprecision(2);
         ss << "Injected PVs: " << injectedPVs;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         //Update graphics
         emitPlotSignal();
 
         //Thread Management
-        if(cancel)break;
+        if(interruptSimulation)break;
     }
 
     //Update graphics
@@ -85,7 +86,7 @@ void network::runTracerModel()
 
 void network::initialiseTracerModel()
 {
-    cancel=false;
+    interruptSimulation=false;
     if(waterDistribution!=4){ //not after primary drainage
         assignWWWettability();
         fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
@@ -339,7 +340,7 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
             e->setConcentration(newConcentration[e->getAbsId()]);
             if(e->getConcentration()<-0.00001 || e->getConcentration()>1.0001)
             {
-                cancel=true;
+                interruptSimulation=true;
                 cout<<"ERROR: Concentration out of range: "<< e->getConcentration()<<endl;
             }
         }

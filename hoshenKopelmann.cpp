@@ -11,6 +11,8 @@
 #include "network.h"
 #include "iterator.h"
 
+# include <set>
+
 namespace PNM {
 
 //clustering

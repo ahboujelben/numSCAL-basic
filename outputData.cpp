@@ -11,6 +11,8 @@
 #include "network.h"
 #include "iterator.h"
 
+#include <fstream>
+
 #include <boost/lexical_cast.hpp>
 
 namespace PNM {

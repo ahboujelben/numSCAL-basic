@@ -104,7 +104,7 @@ unsigned widget3d::bufferCylinderData()
     unsigned index(0);
     unsigned numberOfObjectsToDraw(0);
     if(net!=0)
-        if(net->getReady())
+        if(net->isLoaded())
         {
             int NUMBER_CYLINDERS=net->getTotalOpenedPores();
             GLfloat *h_data = new GLfloat[11 * NUMBER_CYLINDERS];
@@ -162,7 +162,7 @@ unsigned widget3d::bufferLinesData()
     unsigned index(0);
     unsigned numberOfObjectsToDraw(0);
     if(net!=0)
-        if(net->getReady())
+        if(net->isLoaded())
         {
             int NUMBER_CYLINDERS=net->getTotalOpenedPores();
             GLfloat *h_data = new GLfloat[2 * 6 * NUMBER_CYLINDERS];
@@ -223,7 +223,7 @@ unsigned widget3d::bufferSphereData()
     unsigned index(0);
     unsigned numberOfObjectsToDraw(0);
     if(net!=0)
-        if(net->getReady())
+        if(net->isLoaded())
         {
             int NUMBER_SPHERES=net->getTotalOpenedNodes();
             GLfloat *h_data = new GLfloat[7 * NUMBER_SPHERES];
@@ -532,7 +532,7 @@ void widget3d::timerUpdate()
     {
         updateGL();
         if(net!=0)
-            if(net->getReady())
+            if(net->isLoaded())
                 if(net->getRecord() && net->getVideoRecording())
                     emit plotted();
         update=false;

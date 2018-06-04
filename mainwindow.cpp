@@ -11,6 +11,7 @@
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
 #include <thread>
+#include <unistd.h>
 
 Qt::GlobalColor QtColours[]= { Qt::blue, Qt::red, Qt::green, Qt::gray, Qt::black, Qt::magenta, Qt::yellow, Qt::gray, Qt::darkBlue, Qt::darkRed, Qt::darkGreen, Qt::darkGray, Qt::darkMagenta, Qt::cyan};
 
@@ -24,7 +25,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Signals management
     connect(net,SIGNAL(plot()),ui->widget,SLOT(updateNetwork()));
-    connect(net,SIGNAL(plot()),this,SLOT(updateNotificationArea()));
+    connect(net,SIGNAL(updateNotification()),this,SLOT(updateNotificationArea()));
+    connect(net,SIGNAL(networkLoaded()),this,SLOT(getNetworkResults()));
+    connect(net,SIGNAL(simulationDone()),this,SLOT(getTwoPhaseSimulationResults()));
     connect(ui->widget,SIGNAL(plotted()),this,SLOT(saveImages()));
     connect(ui->widget,SIGNAL(rendered()),this,SLOT(renderFinished()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(plotCurvesRealTime()));
@@ -115,13 +118,12 @@ void MainWindow::on_loadNetworkButton_clicked()
         net->setupModel();
         cout<<"Model loaded."<<endl;
         net->setSimulationRunning(false);
-        getNetworkResults();
     }).detach();
 }
 
 void MainWindow::on_twoPhaseSimButton_clicked()
 {
-    if(!net->getReady() || net->getSimulationRunning())
+    if(!net->isLoaded() || net->getSimulationRunning())
         return;
 
     ui->twoPhaseRunningLabel->setText("running...");
@@ -138,7 +140,7 @@ void MainWindow::on_twoPhaseSimButton_clicked()
         net->runSimulation();
         cout<<"End of Simulation."<<endl;
         net->setSimulationRunning(false);
-        getTwoPhaseSimulationResults();
+        ;
     }).detach();
 }
 

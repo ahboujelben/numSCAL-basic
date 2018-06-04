@@ -11,6 +11,8 @@
 #include "network.h"
 #include "iterator.h"
 
+#include <fstream>
+
 //Eigen library
 #include <Eigen/Sparse>
 #include <Eigen/IterativeLinearSolvers>

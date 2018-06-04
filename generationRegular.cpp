@@ -58,11 +58,8 @@ void network::setupRegularModel()
         calculatePermeabilityAndPorosity();
     }
 
-    //Display notification
-    std::ostringstream ss;
-    ss << std::fixed << std::setprecision(2);
-    ss << "Perm.(mD): " << absolutePermeability/0.987e-15<<" / Porosity(%): "<<porosity*100<<" / Dx(mm): "<< xEdgeLength*1e3 << " / Dy(mm): "  << yEdgeLength*1e3<<" / Dz(mm): "<<zEdgeLength*1e3;
-    simulationNotification = ss.str();
+    //Display network info on screen
+    displayNetworkInfo();
 }
 
 void network::calculateRegularNetworkAttributes()
@@ -407,6 +404,15 @@ void network::calculateNetworkAttributes()
     });
 
     totalNetworkVolume=totalNodesVolume+totalPoresVolume;
+}
+
+void network::displayNetworkInfo()
+{
+    std::ostringstream ss;
+    ss << std::fixed << std::setprecision(2);
+    ss << "Perm.(mD): " << absolutePermeability/0.987e-15<<" / Porosity(%): "<<porosity*100<<" / Dx(mm): "<< xEdgeLength*1e3 << " / Dy(mm): "  << yEdgeLength*1e3<<" / Dz(mm): "<<zEdgeLength*1e3;
+    simulationNotification = ss.str();
+    emitUpdateNotificationSignal();
 }
 
 }

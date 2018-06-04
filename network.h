@@ -17,14 +17,8 @@
 #include "tools.h"
 
 #include <vector>
-#include <queue>
-#include <map>
 #include <unordered_set>
-#include <set>
 #include <string>
-#include <fstream>
-#include <unistd.h>
-#include <math.h>
 
 #include <QObject>
 
@@ -60,6 +54,7 @@ public:
     void assignConductivities();
     void assignWettability();
     void assignViscosities();
+    void displayNetworkInfo();
 
 
     ///////////// Methods for generating network models extracted from microCT images
@@ -108,12 +103,14 @@ public:
     void initializeTwoPhaseOutputs();
     void outputTwoPhaseData(double, int &, double);
 
+
     ///////////// Methods for Unsteady-steady state 2-Phase flow
     void runTracerModel();
     void initialiseTracerModel();
     void solvePressureFieldInOil();
     void calculateTracerTimeStep();
     void updateConcentrationValues(vector<double> & newConcentration);
+
 
     ///////////// Misc
 
@@ -154,7 +151,7 @@ public:
 
     ///////////// Methods for loading input data
     void loadNetworkData();
-    void loadTwoPhaseData();
+    void loadSimulationData();
 
 
     ///////////// Access to pores/nodes
@@ -181,7 +178,7 @@ public:
 
 
     ////////////// Thread Management
-    bool getReady() const;
+    bool isLoaded() const;
     void setCancel(bool value);
     int getNetworkSource() const;
     bool getRecord() const;
@@ -198,11 +195,17 @@ public:
     void setSimulationNotification(const string &value);
 
 
-    ///////////// Emitting updateGL signals
+    ///////////// Interacting with main window
     void emitPlotSignal();
+    void emitNetworkLoadedSignal();
+    void emitSimulationDoneSignal();
+    void emitUpdateNotificationSignal();
 
 signals:
     void plot();
+    void networkLoaded();
+    void simulationDone();
+    void updateNotification();
 
 private:
     ////////////// Network Attributes
@@ -361,8 +364,8 @@ private:
 
 
     ////////// Thread Management
-    bool cancel;
-    bool ready;
+    bool networkIsLoaded;
+    bool interruptSimulation;
     bool simulationRunning;
 };
 

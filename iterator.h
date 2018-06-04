@@ -2,7 +2,7 @@
 #define ITERATOR_H
 
 #include "network.h"
-#include <iostream>
+
 namespace PNM {
 
 enum class filter{all, closed};

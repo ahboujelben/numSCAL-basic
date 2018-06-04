@@ -207,4 +207,19 @@ void network::emitPlotSignal()
     emit plot();
 }
 
+void network::emitNetworkLoadedSignal()
+{
+    emit networkLoaded();
+}
+
+void network::emitSimulationDoneSignal()
+{
+    emit simulationDone();
+}
+
+void network::emitUpdateNotificationSignal()
+{
+    emit updateNotification();
+}
+
 }
