@@ -10,6 +10,9 @@
 
 #include "network.h"
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+
 namespace PNM {
 
 void network::loadNetworkData()
@@ -53,7 +56,7 @@ void network::loadNetworkData()
     shapeFactor=pt.get<double>("NetworkGeneration_Wettability.shapeFactor");
 }
 
-void network::loadTwoPhaseData()
+void network::loadSimulationData()
 {
     boost::property_tree::ptree pt;
     boost::property_tree::ini_parser::read_ini("Input Data/Parameters.txt", pt);

@@ -25,9 +25,8 @@ public:
     void setNodeIn(node *value) {nodeIn=value;}
     node *getNodeOut() const {return nodeOut;}
     void setNodeOut(node *value) {nodeOut=value;}
-
-    std::vector<pore *>& getConnectedPores() {return connectedPores;}
-    void setConnectedPores(const std::vector<pore *> &value) {connectedPores=value;}
+    node *getOtherNode(const node *other) const {return other==nodeIn ? nodeOut : nodeIn;}
+    bool hasNode(const node *other) const {return other==nodeIn || other==nodeOut ? true : false;}
 
     double getNodeInLength() const {return nodeInLength;}
     void setNodeInLength(double value) {nodeInLength=value;}
@@ -53,7 +52,13 @@ public:
     bool getNodeOutOil() const {return nodeOutOil;}
     void setNodeOutOil(bool value) {nodeOutOil=value;}
 
-    //defined methods
+    //implemented methods
+
+    double getXCoordinate() const;
+    double getYCoordinate() const;
+    double getZCoordinate() const;
+
+protected:
 
     double getMinXCoordinate() const;
     double getMaxXCoordinate() const;
@@ -64,22 +69,12 @@ public:
     double getMinZCoordinate() const;
     double getMaxZCoordinate() const;
 
-    double getXCoordinate() const;
-    double getYCoordinate() const;
-    double getZCoordinate() const;
-
-    void assignConductivity(); //calculate pore conductivity
-
-protected:
-
     node *nodeIn; // node pointer at the first end of the pore
     node *nodeOut; // node pointer at the second end of the pore
 
     double fullLength; // distance (SI) between both connecting nodes center: fullLength=length+nodeInLength+nodeOutLength
     double nodeInLength; //distance (SI) between nodeIn center and pore extremity at nodeIn
     double nodeOutLength; //distance (SI) between nodeOut center and pore extremity at nodeOut
-
-    std::vector<pore*> connectedPores; // table of connected pores pointers
 
     // simulation related attributes
 

@@ -9,6 +9,9 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
+
+# include <set>
 
 namespace PNM {
 
@@ -51,14 +54,14 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
         delete c;
     clustersList.clear();
 
-    for(element* e: tableOfElements)
+    for(element* e: networkRange<element*, filter::all>(this))
        if((e->*status)()==flag)
            e->setClusterTemp(0);
 
     vector<int> labels;
     labels.push_back(0);
 
-    for(element* e: tableOfElements){
+    for(element* e: networkRange<element*, filter::all>(this)){
         if((e->*status)()==flag){
             vector<int> neighboorsClusters;
             vector<element*>& neighboors=e->getNeighboors();
@@ -79,7 +82,7 @@ void network::clusterElements(cluster *(element::*getter)() const, void (element
 
     vector<int> new_labels(labels.size(),0);
 
-    for(element* e: tableOfElements){
+    for(element* e: networkRange<element*, filter::all>(this)){
         if((e->*status)()==flag)
         {
             int x=hkFind(e->getClusterTemp(),labels);
@@ -170,7 +173,7 @@ void network::clusterOilElements()
 
 void network::clusterOilFlowingElements()
 {
-    for_each(accessibleElements.begin(), accessibleElements.end(), [this] (element* e){
+    for_each(networkRange<element*>(this).begin(), networkRange<element*>(this).end(), [this] (element* e){
         if(e->getPhaseFlag()==phase::oil || e->getOilLayerActivated())
             e->setOilConductor(true);
         else
@@ -197,7 +200,7 @@ void network::clusterOilFlowingElements()
 
 void network::clusterWaterFlowingElements()
 {
-    for_each(accessibleElements.begin(), accessibleElements.end(), [this] (element* e){
+    for_each(networkRange<element*>(this).begin(), networkRange<element*>(this).end(), [this] (element* e){
         if(e->getPhaseFlag()==phase::water || e->getWaterCornerActivated())
             e->setWaterConductor(true);
         else

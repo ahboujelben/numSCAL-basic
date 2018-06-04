@@ -57,10 +57,4 @@ void element::setClosed(bool value)
     }
 }
 
-void element::assignViscosity(double oilViscosity, double waterViscosity)
-{
-    viscosity=oilViscosity*oilFraction+waterViscosity*waterFraction;
-}
-
-
 }

@@ -94,18 +94,4 @@ double pore::getZCoordinate() const
     return (getMaxZCoordinate()+getMinZCoordinate())/2;
 }
 
-void pore::assignConductivity()
-{
-    double throatConductivityInverse(0),nodeInConductivityInverse(0),nodeOutConductivityInverse(0);
-
-    throatConductivityInverse=1/(shapeFactorConstant*pow(radius,4)/(16*shapeFactor)/(viscosity*length));
-
-    if(nodeIn!=0)
-        nodeInConductivityInverse=1/(nodeIn->getShapeFactorConstant()*pow(nodeIn->getRadius(),4)/(16*nodeIn->getShapeFactor())/(nodeIn->getViscosity()*nodeInLength));
-    if(nodeOut!=0)
-        nodeOutConductivityInverse=1/(nodeOut->getShapeFactorConstant()*pow(nodeOut->getRadius(),4)/(16*nodeOut->getShapeFactor())/(nodeOut->getViscosity()*nodeOutLength));
-
-    conductivity=1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse);
-}
-
 }

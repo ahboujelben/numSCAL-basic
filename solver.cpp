@@ -9,6 +9,14 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
+
+#include <fstream>
+
+//Eigen library
+#include <Eigen/Sparse>
+#include <Eigen/IterativeLinearSolvers>
+#include <Eigen/SparseCholesky>
 
 namespace PNM {
 
@@ -16,46 +24,44 @@ using namespace Eigen;
 
 void network::solvePressures()
 {
-    SparseMatrix<double> conductivityMatrix(totalOpenedNodes,totalOpenedNodes);
-    conductivityMatrix.reserve(VectorXi::Constant(totalOpenedNodes,maxConnectionNumber+3));
-    VectorXd b=VectorXd::Zero(totalOpenedNodes);
-    VectorXd pressures=VectorXd::Zero(totalOpenedNodes);
+    SparseMatrix<double> conductivityMatrix(totaEnabledNodes,totaEnabledNodes);
+    conductivityMatrix.reserve(VectorXi::Constant(totaEnabledNodes,maxConnectionNumber+3));
+    VectorXd b=VectorXd::Zero(totaEnabledNodes);
+    VectorXd pressures=VectorXd::Zero(totaEnabledNodes);
+
+    auto rank(0);
+    for(node* n : networkRange<node*>(this))
+        n->setRank(rank++);
 
     int row=0;
-    for(int i=0;i<totalNodes;++i)
+    for(node* n : networkRange<node*>(this))
     {
-        node* n=getNode(i);
-        if(!n->getClosed())
+        double conductivity(1e-200);
+        for(element* e : n->getNeighboors())
         {
-            vector<int>& neighboors=n->getConnectedNodes();
-            vector<int>& connectedPores=n->getConnectedPores();
-            double conductivity(1e-200);
-            for(unsigned j=0;j<neighboors.size();++j)
+            pore* p = static_cast<pore*>(e);
+            if(p->getActive())
             {
-                pore* p=getPore(connectedPores[j]-1);
-                if(!p->getClosed() && p->getActive())
+                if(p->getInlet())
                 {
-                    if(p->getInlet())
-                    {
-                        b(row)=-pressureIn*p->getConductivity();
-                        conductivity-=p->getConductivity();
-                    }
-                    if(p->getOutlet())
-                    {
-                        b(row)=-pressureOut*p->getConductivity();
-                        conductivity-=p->getConductivity();
-                    }
-                    if(!p->getInlet() && !p->getOutlet())
-                    {
-                        node* neighboor=getNode(neighboors[j]-1);
-                        conductivityMatrix.insert(row,neighboor->getRank())=p->getConductivity();
-                        conductivity-=p->getConductivity();
-                    }
+                    b(row)=-pressureIn*p->getConductivity();
+                    conductivity-=p->getConductivity();
+                }
+                if(p->getOutlet())
+                {
+                    b(row)=-pressureOut*p->getConductivity();
+                    conductivity-=p->getConductivity();
+                }
+                if(!p->getInlet() && !p->getOutlet())
+                {
+                    node* neighboor=p->getOtherNode(n);
+                    conductivityMatrix.insert(row,neighboor->getRank())=p->getConductivity();
+                    conductivity-=p->getConductivity();
                 }
             }
-            conductivityMatrix.insert(row,n->getRank())=conductivity;
-            row++;
         }
+        conductivityMatrix.insert(row,n->getRank())=conductivity;
+        row++;
     }
     conductivityMatrix.makeCompressed();
 
@@ -76,61 +82,58 @@ void network::solvePressures()
         pressures=solver.solve(b);
     }
 
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-            n->setPressure(pressures[n->getRank()]);
-    }
+    for(node* n : networkRange<node*>(this))
+        n->setPressure(pressures[n->getRank()]);
+
 }
 
 void network::solvePressuresWithCapillaryPressures()
 {
-    SparseMatrix<double> conductivityMatrix(totalOpenedNodes,totalOpenedNodes);
-    conductivityMatrix.reserve(VectorXi::Constant(totalOpenedNodes,maxConnectionNumber+3));
-    VectorXd b=VectorXd::Zero(totalOpenedNodes);
-    VectorXd pressures=VectorXd::Zero(totalOpenedNodes);
+    SparseMatrix<double> conductivityMatrix(totaEnabledNodes,totaEnabledNodes);
+    conductivityMatrix.reserve(VectorXi::Constant(totaEnabledNodes,maxConnectionNumber+3));
+    VectorXd b=VectorXd::Zero(totaEnabledNodes);
+    VectorXd pressures=VectorXd::Zero(totaEnabledNodes);
+
+    auto rank(0);
+    for(node* n : networkRange<node*>(this))
+        n->setRank(rank++);
 
     int row=0;
-    for(int i=0;i<totalNodes;++i)
+    for(node* n : networkRange<node*>(this))
     {
-        node* n=getNode(i);
-        if(!n->getClosed())
+        double conductivity(1e-200);
+        for(element* e : n->getNeighboors())
         {
-            vector<int>& neighboors=n->getConnectedNodes();
-            vector<int>& connectedPores=n->getConnectedPores();
-            double conductivity(1e-200);
-            for(unsigned j=0;j<neighboors.size();++j)
+            pore* p = static_cast<pore*>(e);
+            if(p->getActive())
             {
-                pore* p=getPore(connectedPores[j]-1);
-                node* neighboor=getNode(neighboors[j]-1);
-                if(!p->getClosed() && p->getActive())
+                if(p->getInlet())
                 {
-                    if(p->getInlet())
-                    {
-                        b(row) -= p->getVolume()/inletPoresVolume * flowRate;
-                    }
-                    if(p->getOutlet())
-                    {
-                        conductivity-=p->getConductivity();
-                    }
-                    if(!p->getInlet() && !p->getOutlet())
-                    {
-                        conductivityMatrix.insert(row,neighboor->getRank())=p->getConductivity();
-                        conductivity-=p->getConductivity();
+                    b(row) -= p->getVolume()/inletPoresVolume * flowRate;
+                }
+                if(p->getOutlet())
+                {
+                    conductivity-=p->getConductivity();
+                }
+                if(!p->getInlet() && !p->getOutlet())
+                {
+                    node* neighboor=p->getOtherNode(n);
 
-                        //Capillary Pressure
-                        double capillaryPressure=p->getCapillaryPressure();
-                        if(neighboor==p->getNodeOut())
-                           b(row)+=capillaryPressure*p->getConductivity();
-                        if(neighboor==p->getNodeIn())
-                           b(row)-=capillaryPressure*p->getConductivity();
-                    }
+                    conductivityMatrix.insert(row,neighboor->getRank())=p->getConductivity();
+                    conductivity-=p->getConductivity();
+
+                    //Capillary Pressure
+                    double capillaryPressure=p->getCapillaryPressure();
+                    if(neighboor==p->getNodeOut())
+                       b(row)+=capillaryPressure*p->getConductivity();
+                    if(neighboor==p->getNodeIn())
+                       b(row)-=capillaryPressure*p->getConductivity();
                 }
             }
-            conductivityMatrix.insert(row,n->getRank())=conductivity;
-            row++;
         }
+        conductivityMatrix.insert(row,n->getRank())=conductivity;
+        row++;
+
     }
     conductivityMatrix.makeCompressed();
 
@@ -149,30 +152,29 @@ void network::solvePressuresWithCapillaryPressures()
         pressures=solver.solve(b);
     }
 
-    for(int i=0;i<totalNodes;++i)
-    {
-        node* n=getNode(i);
-        if(!n->getClosed())
-            n->setPressure(pressures[n->getRank()]);
-    }
+    for(node* n : networkRange<node*>(this))
+        n->setPressure(pressures[n->getRank()]);
+
 }
 
 double network::updateFlows()
 {
     double outletFlow(0);
-    for(pore* p : accessiblePores)
+    for(pore* p : networkRange<pore*>(this))
     {
         p->setFlow(0);
         if(p->getActive())
         {
             if(p->getOutlet())
             {
-                p->setFlow((p->getNodeOut()->getPressure()-pressureOut)*p->getConductivity());
+                node* activeNode = p->getNodeIn() == 0? p->getNodeOut() : p->getNodeIn();
+                p->setFlow((activeNode->getPressure()-pressureOut)*p->getConductivity());
                 outletFlow+=p->getFlow();
             }
             if(p->getInlet())
             {
-                p->setFlow((pressureIn-p->getNodeIn()->getPressure())*p->getConductivity());
+                node* activeNode = p->getNodeIn() == 0? p->getNodeOut() : p->getNodeIn();
+                p->setFlow((pressureIn-activeNode->getPressure())*p->getConductivity());
             }
             if(!p->getInlet() && !p->getOutlet())
             {
@@ -186,14 +188,15 @@ double network::updateFlows()
 double network::updateFlowsWithCapillaryPressure()
 {
     double outletFlow(0);
-    for(pore* p : accessiblePores)
+    for(pore* p : networkRange<pore*>(this))
     {
         p->setFlow(0);
         if(p->getActive())
         {
             if(p->getOutlet())
             {
-                p->setFlow((p->getNodeOut()->getPressure())*p->getConductivity());
+                node* activeNode = p->getNodeIn() == 0? p->getNodeOut() : p->getNodeIn();
+                p->setFlow((activeNode->getPressure())*p->getConductivity());
                 outletFlow+=p->getFlow();
             }
             if(p->getInlet())
@@ -214,15 +217,13 @@ void network::calculatePermeabilityAndPorosity()
     ofstream file("Results/Network_Description/AbsolutePerm_Porosity.txt");
     flow=getOutletFlow();
     absolutePermeability=(flow*xEdgeLength)/(yEdgeLength*zEdgeLength*(pressureIn-pressureOut));
-    porosity=totalElementsVolume/(xEdgeLength*yEdgeLength*zEdgeLength);
-    cout<<"Absolute permeability (mD): "<<absolutePermeability/0.987e-15<<endl;
-    cout<<"Porosity: "<<porosity<<endl;
+    porosity=totalNetworkVolume/(xEdgeLength*yEdgeLength*zEdgeLength);
     file<<"Absolute permeability (mD):\t"<<absolutePermeability/0.987e-15<<endl<<"Porosity:\t"<<porosity<<endl;
 }
 
 void network::assignConductivities()
 {
-    for_each(accessiblePores.begin(),accessiblePores.end(),[this](pore* p){
+    for_each(networkRange<pore*>(this).begin(),networkRange<pore*>(this).end(),[this](pore* p){
         node* nodeIn=p->getNodeIn();
         node* nodeOut=p->getNodeOut();
         auto throatConductivityInverse(0.0),nodeInConductivityInverse(0.0),nodeOutConductivityInverse(0.0);

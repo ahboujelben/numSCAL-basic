@@ -9,6 +9,9 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "tools.h"
+
+#include <iostream>
 
 namespace PNM{
 
@@ -21,10 +24,10 @@ network::network(QObject *parent):
 network::~network()
 {
     for (int i = 0; i < totalPores; ++i)
-        delete tableOfAllPores[i];
+        delete tableOfPores[i];
 
     for (int i = 0; i < totalNodes; ++i)
-        delete tableOfAllNodes[i];
+        delete tableOfNodes[i];
 
     if(!waterClusters.empty())
         for (unsigned i = 0; i < waterClusters.size(); ++i)
@@ -60,19 +63,15 @@ network::~network()
 void network::destroy()
 {
     for (int i = 0; i < totalPores; ++i)
-        delete tableOfAllPores[i];
+        delete tableOfPores[i];
 
     for (int i = 0; i < totalNodes; ++i)
-        delete tableOfAllNodes[i];
+        delete tableOfNodes[i];
 
     totalPores=0;
     totalNodes=0;
-    tableOfAllPores.clear();
-    tableOfAllNodes.clear();
-    tableOfElements.clear();
-    accessiblePores.clear();
-    accessibleNodes.clear();
-    accessibleElements.clear();
+    tableOfPores.clear();
+    tableOfNodes.clear();
     inletPores.clear();
     outletPores.clear();
 
@@ -122,19 +121,19 @@ void network::reset()
     pressureIn=1;
     pressureOut=0;
 
-    totalPores=totalOpenedPores=0;
-    totalNodes=totalOpenedNodes=0;
-    totalElements=totalOpenedElements=0;
-
-    simulationNotification="";
+    totalPores=totalEnabledPores=0;
+    totalNodes=totaEnabledNodes=0;
 
     record=false;
-    ready=false;
-    cancel=false;
+    networkIsLoaded=false;
+    simulationInterrupted=false;
     simulationRunning=false;
 
     twoPhaseSS=true;
     drainageUSS=false;
+    tracerFlow=false;
+
+    simulationNotification="";
 }
 
 void network::setupModel()
@@ -142,16 +141,14 @@ void network::setupModel()
     tools::createRequiredFolders();
     tools::cleanNetworkDescriptionFolder();
 
-    if(ready)
+    if(networkIsLoaded)
     {
-        ready=false;
+        networkIsLoaded=false;
         destroy();
     }
 
     reset();
     loadNetworkData();
-
-    gen.seed(seed);
 
     try{
         if(networkSource==2)
@@ -163,8 +160,13 @@ void network::setupModel()
         exit(0);
     }
 
-    ready=true;
+    networkIsLoaded=true;
+
+    //Update graphics
     emitPlotSignal();
+
+    //Inform main window
+    emitNetworkLoadedSignal();
 }
 
 void network::runSimulation()
@@ -172,17 +174,24 @@ void network::runSimulation()
     tools::createRequiredFolders();
     tools::cleanResultsFolder();
 
-    loadTwoPhaseData();
+    loadSimulationData();
 
+    //Start timer
     auto startTime=tools::getCPUTime();
 
     if(twoPhaseSS)
         runTwoPhaseSSModel();
+
     if(drainageUSS)
         runUSSDrainageModel();
+
     if(tracerFlow)
         runTracerModel();
 
+    //Inform main window
+    emitSimulationDoneSignal();
+
+    //Stop timer
     auto endTime=tools::getCPUTime();
     cout<<"Processing Runtime: "<<endTime-startTime<<" s."<<endl;
 }
@@ -192,70 +201,63 @@ pore *network::getPoreX(int i, int j, int k) const
 {
     if(i<0 || i>Nx || j<0 || j>Ny-1 || k<0 || k>Nz-1)
         return 0;
-    return tableOfAllPores[i*Ny*Nz+j*Nz+k];
+    return tableOfPores[i*Ny*Nz+j*Nz+k];
 }
 
 pore *network::getPoreY(int i, int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<0 || j>Ny || k<0 || k>Nz-1)
         return 0;
-    return tableOfAllPores[(Nx+1)*Ny*Nz+i*(Ny+1)*Nz+j*Nz+k];
+    return tableOfPores[(Nx+1)*Ny*Nz+i*(Ny+1)*Nz+j*Nz+k];
 }
 
 pore *network::getPoreZ(int i, int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<0 || j>Ny-1 || k<0 || k>Nz)
         return 0;
-    return tableOfAllPores[(Nx+1)*Ny*Nz+Nx*(Ny+1)*Nz+i*Ny*(Nz+1)+j*(Nz+1)+k];
+    return tableOfPores[(Nx+1)*Ny*Nz+Nx*(Ny+1)*Nz+i*Ny*(Nz+1)+j*(Nz+1)+k];
 }
 
 pore *network::getPoreXout(int i, int j, int k) const
 {
     if(i<-1 || i>Nx-1 || j<0 || j>Ny-1 || k<0 || k>Nz-1)
         return 0;
-    return tableOfAllPores[(i+1)*Ny*Nz+j*Nz+k];
+    return tableOfPores[(i+1)*Ny*Nz+j*Nz+k];
 }
 
 pore *network::getPoreYout(int i, int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<-1 || j>Ny-1 || k<0 || k>Nz-1)
         return 0;
-    return tableOfAllPores[(Nx+1)*Ny*Nz+i*(Ny+1)*Nz+(j+1)*Nz+k];
+    return tableOfPores[(Nx+1)*Ny*Nz+i*(Ny+1)*Nz+(j+1)*Nz+k];
 }
 
 pore *network::getPoreZout(int i, int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<0 || j>Ny-1 || k<-1 || k>Nz-1)
         return 0;
-    return tableOfAllPores[(Nx+1)*Ny*Nz+Nx*(Ny+1)*Nz+i*Ny*(Nz+1)+j*(Nz+1)+k+1];
+    return tableOfPores[(Nx+1)*Ny*Nz+Nx*(Ny+1)*Nz+i*Ny*(Nz+1)+j*(Nz+1)+k+1];
 }
 
 pore *network::getPore(int i) const
 {
     if(i<0 || i>totalPores-1)
         return 0;
-    return tableOfAllPores[i];
+    return tableOfPores[i];
 }
 
 node *network::getNode(int i,int j, int k) const
 {
     if(i<0 || i>Nx-1 || j<0 || j>Ny-1 || k<0 || k>Nz-1)
         return 0;
-    return tableOfAllNodes[i*Ny*Nz+j*Nz+k];
+    return tableOfNodes[i*Ny*Nz+j*Nz+k];
 }
 
 node *network::getNode(int i) const
 {
     if(i<0 || i>totalNodes-1)
         return 0;
-    return tableOfAllNodes[i];
-}
-
-element *network::getElement(int i) const
-{
-if(i<0 || i>totalElements-1)
-    return 0;
-return tableOfElements[i];
+    return tableOfNodes[i];
 }
 
 int network::getTotalPores() const
@@ -268,9 +270,9 @@ int network::getTotalNodes() const
     return totalNodes;
 }
 
-int network::getTotalOpenedPores() const
+int network::getTotalEnabledPores() const
 {
-    return totalOpenedPores;
+    return totalEnabledPores;
 }
 
 double network::getXEdgeLength() const
@@ -312,9 +314,9 @@ void network::setSimulationNotification(const std::string &value)
     simulationNotification = value;
 }
 
-int network::getTotalOpenedNodes() const
+int network::getTotalEnabledNodes() const
 {
-    return totalOpenedNodes;
+    return totaEnabledNodes;
 }
 
 bool network::getRecord() const
@@ -343,14 +345,14 @@ double network::getPorosity() const
 }
 
 
-bool network::getReady() const
+bool network::isLoaded() const
 {
-    return ready;
+    return networkIsLoaded;
 }
 
 void network::setCancel(bool value)
 {
-    cancel = value;
+    simulationInterrupted = value;
 }
 
 }

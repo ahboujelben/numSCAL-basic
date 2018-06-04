@@ -14,36 +14,16 @@
 #include "node.h"
 #include "pore.h"
 #include "cluster.h"
-#include "tools.h"
 
 #include <vector>
-#include <queue>
-#include <map>
 #include <unordered_set>
-#include <set>
 #include <string>
-#include <fstream>
-#include <unistd.h>
-#include <math.h>
-
-//Boost library
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/random.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-
-//Eigen library
-#include <Eigen/Sparse>
-#include <Eigen/IterativeLinearSolvers>
-#include <Eigen/SparseCholesky>
 
 #include <QObject>
 
 namespace PNM {
+
+using namespace std;
 
 class network : public QObject
 {
@@ -59,28 +39,28 @@ public:
 
     ///////////// Methods for generating regular networks models
     void setupRegularModel();
+    void calculateRegularNetworkAttributes();
     void createNodes();
     void createPores();
     void setNeighboors(); 
+    void setBoundaryConditions();
     void applyCoordinationNumber();
-    void defineAccessibleElements();
+    void cleanNetwork();
+    void calculateNetworkAttributes();
     void assignRadii();
     void assignLengths();
     void distortNetwork();
     void assignShapeFactors();
-    void assignShapeFactorConstants();
     void assignVolumes();
     void assignConductivities();
     void assignWettability();
     void assignViscosities();
+    void displayNetworkInfo();
 
 
     ///////////// Methods for generating network models extracted from microCT images
     void setupExtractedModel();
     void loadExtractedNetwork();
-    void setNeighboorsForExtractedModel();
-    void cleanExtractedNetwork();
-    void calculateExtractedNetworkVolume();
 
 
     ///////////// Methods for solvers and permeability calculations
@@ -115,6 +95,7 @@ public:
     void setInitialFlags();
     void setAdvancedTrapping();
     void updateCapillaryProperties(unordered_set<pore*>&, unordered_set<node*>&);
+    void updateConductivity(pore*);
     void solvePressureWithoutCounterImbibition();
     void calculateTimeStepUSS(unordered_set<pore *> &, unordered_set<node *> &, bool);
     double updateElementaryFluidFractions(unordered_set<pore*>&, unordered_set<node*>&, bool &);
@@ -123,12 +104,14 @@ public:
     void initializeTwoPhaseOutputs();
     void outputTwoPhaseData(double, int &, double);
 
+
     ///////////// Methods for Unsteady-steady state 2-Phase flow
     void runTracerModel();
     void initialiseTracerModel();
     void solvePressureFieldInOil();
     void calculateTracerTimeStep();
     void updateConcentrationValues(vector<double> & newConcentration);
+
 
     ///////////// Misc
 
@@ -147,14 +130,6 @@ public:
     double getOutletFlow();
     double getWaterSaturation();
     double getWaterSaturationWithFilms();
-
-    //Random generators
-    int uniform_int(int a=0, int b=1);
-    double uniform_real(double a=0, double b=1);
-    double rayleigh(double, double, double);
-    double triangular(double, double, double);
-    double normal(double,double,double,double);
-    double weibull(double,double,double,double);
 
     //Video Recording
     void extractVideo();
@@ -177,10 +152,10 @@ public:
 
     ///////////// Methods for loading input data
     void loadNetworkData();
-    void loadTwoPhaseData();
+    void loadSimulationData();
 
 
-    ///////////// Access to pores/nodes/elements
+    ///////////// Access to pores/nodes
     pore *getPoreX(int,int,int) const;
     pore *getPoreY(int,int,int) const;
     pore *getPoreZ(int,int,int) const;
@@ -190,11 +165,10 @@ public:
     pore *getPore(int) const;
     node *getNode(int,int,int) const;
     node *getNode(int) const;
-    element *getElement(int) const;
     int getTotalPores() const;
     int getTotalNodes() const;
-    int getTotalOpenedPores() const;
-    int getTotalOpenedNodes() const;
+    int getTotalEnabledPores() const;
+    int getTotalEnabledNodes() const;
 
 
     ///////////// Getters/Setters
@@ -205,7 +179,7 @@ public:
 
 
     ////////////// Thread Management
-    bool getReady() const;
+    bool isLoaded() const;
     void setCancel(bool value);
     int getNetworkSource() const;
     bool getRecord() const;
@@ -222,11 +196,17 @@ public:
     void setSimulationNotification(const string &value);
 
 
-    ///////////// Emitting updateGL signals
+    ///////////// Interacting with main window
     void emitPlotSignal();
+    void emitNetworkLoadedSignal();
+    void emitSimulationDoneSignal();
+    void emitUpdateNotificationSignal();
 
 signals:
     void plot();
+    void networkLoaded();
+    void simulationDone();
+    void updateNotification();
 
 private:
     ////////////// Network Attributes
@@ -236,30 +216,22 @@ private:
     int Nx;
     int Ny;
     int Nz;
-    vector<pore*> tableOfAllPores;
-    vector<node*> tableOfAllNodes;
-    vector<element*> tableOfElements;
-    vector<pore*> accessiblePores;
-    vector<node*> accessibleNodes;
-    vector<element*> accessibleElements;
+    vector<pore*> tableOfPores;
+    vector<node*> tableOfNodes;
     std::vector<pore*> inletPores;
     std::vector<pore*> outletPores;
 
     int totalPores;
-    int totalOpenedPores;
+    int totalEnabledPores;
     int totalNodes;
-    int totalOpenedNodes;
-    int totalElements;
-    int totalOpenedElements;
+    int totaEnabledNodes;
     double totalPoresVolume;
     double totalNodesVolume;
-    double totalElementsVolume;
+    double totalNetworkVolume;
     double inletPoresVolume;
     double coordinationNumber;
     double minRadius;
     double maxRadius;
-    double minNodeRadius;
-    double maxNodeRadius;
     int radiusDistribution;
     double length;
     double degreeOfDistortion;
@@ -393,13 +365,9 @@ private:
 
 
     ////////// Thread Management
-    bool cancel;
-    bool ready;
+    bool networkIsLoaded;
+    bool simulationInterrupted;
     bool simulationRunning;
-
-
-    ////////// Random generator
-    boost::random::mt19937 gen;
 };
 
 }

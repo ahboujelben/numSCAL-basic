@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
 
 namespace PNM {
 
@@ -29,7 +30,7 @@ void network::calculateRelativePermeabilities()
         assignViscosities();
         assignConductivities();
 
-        for (pore* p: accessiblePores)
+        for (pore* p: networkRange<pore*>(this))
         {
             p->setActive(true);
             if(p->getPhaseFlag()==phase::water)
@@ -61,7 +62,7 @@ void network::calculateRelativePermeabilities()
         assignViscosities();
         assignConductivities();
 
-        for (pore* p: accessiblePores)
+        for (pore* p: networkRange<pore*>(this))
         {
             p->setActive(true);
             if(p->getPhaseFlag()==phase::oil)

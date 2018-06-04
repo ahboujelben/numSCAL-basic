@@ -79,9 +79,6 @@ public:
     phase getPhaseFlag() const {return phaseFlag;}
     void setPhaseFlag(phase value) {phaseFlag=value;}
 
-    std::vector<element *>& getNeighboors() {return neighboors;}
-    void setNeighboors(const std::vector<element *> &value) {neighboors=value;}
-
     double getConcentration() const {return concentration;}
     void setConcentration(double value) {concentration=value;}
 
@@ -176,8 +173,8 @@ public:
     cluster *getClusterOilFilm() const {return clusterOilFilm;}
     void setClusterOilFilm(cluster *value) {clusterOilFilm=value;}
 
-    // defined methods
-    void assignViscosity(double oilViscosity, double waterViscosity);
+    std::vector<element *>& getNeighboors(){return neighboors;}
+    void setNeighboors(const std::vector<element *> & value){neighboors=value;}
 
 protected:
     capillaryType type; // type of the capillary element: pore (throat) or pore body (node)
@@ -202,7 +199,7 @@ protected:
     bool closed; // a flag whether the capillary is undefinetely closed (i.e. when assigning the coordination number)
     bool active; // a flag whether the capillary is momentarily closed (i.e. when closing the capillaries with counter imbibition flow)
 
-    std::vector<element*> neighboors; // a table to the adjacent capillaries
+    std::vector<element*> neighboors;
 
     //Simulation attributes
 

@@ -9,6 +9,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "iterator.h"
+
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 
 namespace PNM {
 
@@ -22,21 +28,21 @@ void network::runTwoPhaseSSModel()
 
     initialiseTwoPhaseSSModel();
 
-    if(primaryDrainageSimulation && !cancel)
+    if(primaryDrainageSimulation && !simulationInterrupted)
         primaryDrainage();
 
     restoreWettability();
 
-    if(spontaneousImbibitionSimulation && !cancel)
+    if(spontaneousImbibitionSimulation && !simulationInterrupted)
         spontaneousImbibition();
 
-    if(forcedWaterInjectionSimulation && !cancel)
+    if(forcedWaterInjectionSimulation && !simulationInterrupted)
         forcedWaterInjection();
 
-    if(spontaneousOilInvasionSimulation && !cancel)
+    if(spontaneousOilInvasionSimulation && !simulationInterrupted)
         spontaneousOilInvasion();
 
-    if(secondaryOilDrainageSimulation && !cancel)
+    if(secondaryOilDrainageSimulation && !simulationInterrupted)
         secondaryOilDrainage();
 
     //post-processing
@@ -49,7 +55,7 @@ void network::runTwoPhaseSSModel()
 
 void network::initialiseTwoPhaseSSModel()
 {
-    cancel=false;
+    simulationInterrupted=false;
     assignWWWettability();
     fillWithPhase(phase::water);
     initialiseCapillaries();
@@ -71,12 +77,12 @@ void network::primaryDrainage(double finalSaturation)
 
     //Initialise variables
     double outputWaterSaturation=1;//used to print Kr plots at regular intervals
-    double currentWaterVolume(totalElementsVolume);
+    double currentWaterVolume(totalNetworkVolume);
     bool spanningOil=false;//used to detect the onset of breakthrough
 
     //Calculate the incremental increase of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(pc<minPc)
@@ -100,7 +106,7 @@ void network::primaryDrainage(double finalSaturation)
     //Look for capillaries connected to water
     clusterWaterFlowingElements();
     unordered_set<element*> elementsToInvade;
-    for(pore* e:accessiblePores)
+    for(pore* e:networkRange<pore*>(this))
         if(e->getPhaseFlag()==phase::water && e->getInlet())
             elementsToInvade.insert(e);
 
@@ -137,7 +143,7 @@ void network::primaryDrainage(double finalSaturation)
                 elementsToInvade.erase(e);
 
                 for(element* n:e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::water && e->getClusterWaterFilm()->getOutlet())
+                    if(n->getPhaseFlag()==phase::water && e->getClusterWaterFilm()->getOutlet())
                         elementsToInvade.insert(n);
 
                 stillMore=true;
@@ -146,11 +152,11 @@ void network::primaryDrainage(double finalSaturation)
             //Update Graphics
             emitPlotSignal();
 
-            if(finalSaturation!=0 && currentWaterVolume/totalElementsVolume<finalSaturation)
+            if(finalSaturation!=0 && currentWaterVolume/totalNetworkVolume<finalSaturation)
                 break;
 
             //Thread Management
-            if(cancel)break;
+            if(simulationInterrupted)break;
         }
 
         //Remove trapped water capillaries from the set potentially-invaded capillaries
@@ -167,7 +173,7 @@ void network::primaryDrainage(double finalSaturation)
 
         //Update water film volume
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
             if(e->getPhaseFlag()==phase::oil)
@@ -179,7 +185,7 @@ void network::primaryDrainage(double finalSaturation)
                     e->setWaterFilmVolume(filmVolume);
                     e->setWaterFilmConductivity(filmConductance);//cout<<filmConductance<<endl;
                     e->setEffectiveVolume(e->getVolume()-e->getWaterFilmVolume());
-                    if(e->getWaterFilmVolume()>e->getVolume()){cout<<"FATAL EROOR in PD: water film > capillary volume."<<endl;cancel=true;}
+                    if(e->getWaterFilmVolume()>e->getVolume()){cout<<"FATAL EROOR in PD: water film > capillary volume."<<endl;simulationInterrupted=true;}
                     waterVolume+=e->getWaterFilmVolume();
                 }
             }
@@ -190,22 +196,23 @@ void network::primaryDrainage(double finalSaturation)
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume<outputWaterSaturation+1e-5)
+            if(currentWaterVolume/totalNetworkVolume<outputWaterSaturation+1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 outputWaterSaturation-=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         //Extract data at Breakthrough
         if(!spanningOil)
@@ -214,20 +221,20 @@ void network::primaryDrainage(double finalSaturation)
             {
                 spanningOil=true;
                 criticalPcPD=currentPc;
-                criticalSaturationPD=abs(currentWaterVolume/totalElementsVolume);
+                criticalSaturationPD=abs(currentWaterVolume/totalNetworkVolume);
                 file3<<"Pc at Breakthrough: "<<criticalPcPD<<endl;
                 file3<<"Sw at Breakthrough: "<<criticalSaturationPD<<endl;
             }
         }
 
         finalPcPD=currentPc;
-        finalSaturationPD=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationPD=abs(currentWaterVolume/totalNetworkVolume);
 
-        if(finalSaturation!=0 && currentWaterVolume/totalElementsVolume<finalSaturation)
+        if(finalSaturation!=0 && currentWaterVolume/totalNetworkVolume<finalSaturation)
             break;
 
         //Thread Management
-        if(cancel)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after PD: "<<finalPcPD<<endl;
@@ -249,11 +256,11 @@ void network::spontaneousImbibition()
 
     //Initialise variables
     double waterSaturation=getWaterSaturationWithFilms();
-    double currentWaterVolume(waterSaturation*totalElementsVolume);
+    double currentWaterVolume(waterSaturation*totalNetworkVolume);
 
     //Calculate the incremental reduction of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
@@ -278,7 +285,7 @@ void network::spontaneousImbibition()
 
     //Look for capillaries connected to water
     unordered_set<element*> elementsToInvade;
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
         if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::waterWet)
             elementsToInvade.insert(e);
 
@@ -327,7 +334,7 @@ void network::spontaneousImbibition()
             {
                 bool connectedToInletWaterCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
+                    if(n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
                     {connectedToInletWaterCluster=true;break;}
 
                 //throat
@@ -346,11 +353,9 @@ void network::spontaneousImbibition()
                     int totalNeighboorsNumber(0);
                     for(element* n : e->getNeighboors())
                     {
-                        if(!n->getClosed() && n->getPhaseFlag()==phase::oil)
+                        if(n->getPhaseFlag()==phase::oil)
                             oilNeighboorsNumber++;
-
-                        if(!n->getClosed())
-                            totalNeighboorsNumber++;
+                        totalNeighboorsNumber++;
                     }
 
                    double entryPressureBodyFilling=0;
@@ -375,7 +380,7 @@ void network::spontaneousImbibition()
             emitPlotSignal();
 
             //Thread Management
-            if(cancel)break;
+            if(simulationInterrupted)break;
         }
 
         //Remove trapped oil capillaries from the set potentially-invaded capillaries
@@ -393,7 +398,7 @@ void network::spontaneousImbibition()
         //Update water film volume
         clusterWaterFlowingElements();
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
             if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::waterWet)
@@ -420,28 +425,29 @@ void network::spontaneousImbibition()
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume>waterSaturation-1e-5)
+            if(currentWaterVolume/totalNetworkVolume>waterSaturation-1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 waterSaturation+=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         finalPcPI=currentPc;
-        finalSaturationPI=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationPI=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(cancel)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after SI: "<<finalPcPI<<endl;
@@ -462,11 +468,11 @@ void network::forcedWaterInjection()
 
     //Initialise variables
     double waterSaturation=getWaterSaturationWithFilms();
-    double currentWaterVolume=waterSaturation*totalElementsVolume;
+    double currentWaterVolume=waterSaturation*totalNetworkVolume;
 
     //Calculate the incremental reduction of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
@@ -486,7 +492,7 @@ void network::forcedWaterInjection()
 
     //Look for capillaries connected to water
     unordered_set<element*> elementsToInvade;
-    for(element* e: accessibleElements)
+    for(element* e: networkRange<element*>(this))
     {
         if(e->getPhaseFlag()==phase::oil)
             elementsToInvade.insert(e);
@@ -513,7 +519,7 @@ void network::forcedWaterInjection()
             {
                 bool connectedToInletWaterCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
+                    if(n->getPhaseFlag()==phase::water && n->getClusterWaterFilm()->getInlet())
                     {connectedToInletWaterCluster=true;break;}
 
                 if((e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletWaterCluster)) || (e->getType()==capillaryType::poreBody && connectedToInletWaterCluster))
@@ -540,7 +546,7 @@ void network::forcedWaterInjection()
             emitPlotSignal();
 
             //Thread Management
-            if(cancel)break;
+            if(simulationInterrupted)break;
         }
 
         //Remove trapped oil capillaries from the set potentially-invaded capillaries
@@ -558,7 +564,7 @@ void network::forcedWaterInjection()
         clusterWaterFlowingElements();
         clusterOilFlowingElements();
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
             if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::oilWet)
@@ -578,7 +584,7 @@ void network::forcedWaterInjection()
                     //if(effectiveOilFilmVolume==0) // oil layer collapse
                     //    e->setOilLayerActivated(false);
                     e->setEffectiveVolume(e->getVolume()-e->getOilFilmVolume()-e->getWaterFilmVolume());
-                    if(e->getEffectiveVolume()<0){cancel=true;cout<<"effective volume < 0"<<endl;}
+                    if(e->getEffectiveVolume()<0){simulationInterrupted=true;cout<<"effective volume < 0"<<endl;}
                 }
                 waterVolume+=e->getEffectiveVolume()+e->getWaterFilmVolume();
             }
@@ -589,28 +595,29 @@ void network::forcedWaterInjection()
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume>waterSaturation-1e-5)
+            if(currentWaterVolume/totalNetworkVolume>waterSaturation-1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 waterSaturation+=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         finalPcSD=currentPc;
-        finalSaturationSD=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationSD=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(cancel)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after FWI: "<<finalPcSD<<endl;
@@ -632,11 +639,11 @@ void network::spontaneousOilInvasion()
 
     //Initialise variables
     double waterSaturation=getWaterSaturationWithFilms();
-    double currentWaterVolume=waterSaturation*totalElementsVolume;
+    double currentWaterVolume=waterSaturation*totalNetworkVolume;
 
     //Calculate the incremental increase of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
@@ -659,7 +666,7 @@ void network::spontaneousOilInvasion()
     //Look for capillaries connected to oil
     clusterWaterFlowingElements();
     unordered_set<element*> elementsToInvade;
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
         if(e->getPhaseFlag()==phase::water && e->getWettabilityFlag()==wettability::oilWet)
             elementsToInvade.insert(e);
 
@@ -708,7 +715,7 @@ void network::spontaneousOilInvasion()
             {
                 bool connectedToInletOilCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
+                    if(n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
                     {connectedToInletOilCluster=true;break;}
 
                 //throat
@@ -727,11 +734,9 @@ void network::spontaneousOilInvasion()
                     int totalNeighboorsNumber(0);
                     for(element* n : e->getNeighboors())
                     {
-                        if(!n->getClosed() && n->getPhaseFlag()==phase::water)
+                        if(n->getPhaseFlag()==phase::water)
                             waterNeighboorsNumber++;
-
-                        if(!n->getClosed())
-                            totalNeighboorsNumber++;
+                        totalNeighboorsNumber++;
                     }
 
                    double entryPressureBodyFilling=0;
@@ -756,7 +761,7 @@ void network::spontaneousOilInvasion()
             emitPlotSignal();
 
             //Thread Management
-            if(cancel)break;
+            if(simulationInterrupted)break;
         }
 
         //Remove trapped water capillaries from the set potentially-invaded capillaries
@@ -774,7 +779,7 @@ void network::spontaneousOilInvasion()
         //Update oil film volume
         clusterOilFlowingElements();
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             double rSquared=pow(OWSurfaceTension/currentPc,2);
             if(e->getPhaseFlag()==phase::oil && e->getWettabilityFlag()==wettability::oilWet)
@@ -801,28 +806,29 @@ void network::spontaneousOilInvasion()
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume<waterSaturation+1e-5)
+            if(currentWaterVolume/totalNetworkVolume<waterSaturation+1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 waterSaturation-=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         finalPcSI=currentPc;
-        finalSaturationSI=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationSI=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(cancel)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after SOI: "<<finalPcSI<<endl;
@@ -843,11 +849,11 @@ void network::secondaryOilDrainage()
 
     //Initialise variables
     double waterSaturation=getWaterSaturationWithFilms();
-    double currentWaterVolume=waterSaturation*totalElementsVolume;
+    double currentWaterVolume=waterSaturation*totalNetworkVolume;
 
     //Calculate the incremental reduction of capillary pressure
     double minPc(1e20),maxPc(0);
-    for(element* e:accessibleElements)
+    for(element* e:networkRange<element*>(this))
     {
         double pc=e->getEntryPressureCoefficient()*OWSurfaceTension*cos(e->getTheta())/e->getRadius();
         if(abs(pc)<minPc)
@@ -867,7 +873,7 @@ void network::secondaryOilDrainage()
 
     //Look for capillaries connected to oil
     unordered_set<element*> elementsToInvade;
-    for(element* e: accessibleElements)
+    for(element* e: networkRange<element*>(this))
     {
         if(e->getPhaseFlag()==phase::water)
             elementsToInvade.insert(e);
@@ -894,7 +900,7 @@ void network::secondaryOilDrainage()
             {
                 bool connectedToInletOilCluster=false;
                 for(element* n : e->getNeighboors())
-                    if(!n->getClosed() && n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
+                    if(n->getPhaseFlag()==phase::oil && n->getClusterOilFilm()->getInlet())
                     {connectedToInletOilCluster=true;break;}
 
                 if((e->getType()==capillaryType::throat && (e->getInlet() || connectedToInletOilCluster)) || (e->getType()==capillaryType::poreBody && connectedToInletOilCluster))
@@ -918,7 +924,7 @@ void network::secondaryOilDrainage()
             }
 
             //Thread Management
-            if(cancel)break;
+            if(simulationInterrupted)break;
 
             //Update Graphics
             emitPlotSignal();
@@ -936,7 +942,7 @@ void network::secondaryOilDrainage()
         //Account for film volumes
         clusterOilFlowingElements();
         double waterVolume(0);
-        for(element* e: accessibleElements)
+        for(element* e: networkRange<element*>(this))
         {
             if(e->getPhaseFlag()==phase::oil)
                 waterVolume+=e->getWaterFilmVolume();
@@ -949,28 +955,29 @@ void network::secondaryOilDrainage()
 
         //Extract relative permeability results
         if(relativePermeabilitiesCalculation)
-            if(currentWaterVolume/totalElementsVolume<waterSaturation+1e-5)
+            if(currentWaterVolume/totalNetworkVolume<waterSaturation+1e-5)
             {
                 calculateRelativePermeabilities();
-                file2<<abs(currentWaterVolume/totalElementsVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
+                file2<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<waterRelativePermeability<<" "<<oilRelativePermeability<<endl;
                 waterSaturation-=0.01;
             }
 
         //Extract capillary pressure results
-        if(currentWaterVolume/totalElementsVolume>0.001)
-            file<<abs(currentWaterVolume/totalElementsVolume)<<" "<<PaToPsi(currentPc)<<endl;
+        if(currentWaterVolume/totalNetworkVolume>0.001)
+            file<<abs(currentWaterVolume/totalNetworkVolume)<<" "<<PaToPsi(currentPc)<<endl;
 
         //Display notification
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(2);
-        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalElementsVolume)*100;
+        ss << "PC(psi): " << PaToPsi(currentPc)<<" / Sw(%): "<<abs(currentWaterVolume/totalNetworkVolume)*100;
         simulationNotification = ss.str();
+        emitUpdateNotificationSignal();
 
         finalPcTD=currentPc;
-        finalSaturationTD=abs(currentWaterVolume/totalElementsVolume);
+        finalSaturationTD=abs(currentWaterVolume/totalNetworkVolume);
 
         //Thread Management
-        if(cancel)break;
+        if(simulationInterrupted)break;
     }
 
     file3<<"Pc after SOD: "<<finalPcTD<<endl;
