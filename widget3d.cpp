@@ -7,10 +7,13 @@
 /// Licence:     Attribution-NonCommercial 4.0 International
 /////////////////////////////////////////////////////////////////////////////
 #include "widget3d.h"
+#include "network.h"
 #include "iterator.h"
 #include "tools.h"
 
 #include <boost/lexical_cast.hpp>
+
+using namespace PNM;
 
 widget3d::widget3d(QWidget *parent)
     : QGLWidget (QGLFormat(QGL::SampleBuffers),parent)
@@ -532,11 +535,11 @@ void widget3d::timerUpdate()
     if(animation || update)
     {
         updateGL();
-        if(net!=0)
-            if(net->isLoaded())
-                if(net->getRecord() && net->getVideoRecording())
-                    emit plotted();
         update=false;
+
+        //If video recording is enabled
+        if(net!=0 && net->isLoaded() && net->getRecord())
+            emit plotted();
     }
 
     if(render)
@@ -651,11 +654,6 @@ void widget3d::timerUpdate()
         emit rendered();
         updateGL();
     }
-}
-
-void widget3d::updateNetwork()
-{
-    update=true;
 }
 
 PNM::network *widget3d::getNet() const
@@ -990,6 +988,17 @@ void widget3d::setLoad(bool value)
 {
     load = value;
 }
+
+bool widget3d::getUpdate() const
+{
+    return update;
+}
+
+void widget3d::setUpdate(bool value)
+{
+    update = value;
+}
+
 int widget3d::getTotalImages() const
 {
     return totalImages;

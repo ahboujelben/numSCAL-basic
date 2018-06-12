@@ -11,7 +11,6 @@
 #define WIDGET3D_H
 
 #include "shader.h"
-#include "network.h"
 #include <cmath>
 #include <iostream>
 #include <QGLWidget>
@@ -20,7 +19,9 @@
 #include <QOpenGLFramebufferObject>
 #include <QApplication>
 
-using namespace PNM;
+namespace PNM {
+    class network;
+}
 
 class widget3d : public QGLWidget
 {
@@ -124,14 +125,17 @@ public :
     bool getLoad() const;
     void setLoad(bool value);
 
+    bool getUpdate() const;
+    void setUpdate(bool value);
+
     int getTotalImages() const;
     void setTotalImages(int value);
 
     int getImageCount() const;
     void setImageCount(int value);
 
-    network *getNet() const;
-    void setNet(network *value);
+    PNM::network *getNet() const;
+    void setNet(PNM::network *value);
 
     glm::vec3 &getPhase1Color();
     void setPhase1Color(const glm::vec3 &value);
@@ -144,7 +148,6 @@ public :
 
 public slots:
     void timerUpdate();
-    void updateNetwork();
 
 signals:
     void plotted();
@@ -181,7 +184,7 @@ protected :
     std::string phasePoresPath, phaseNodesPath;
     glm::vec3 phase1Color, phase2Color, phase3Color;
     QPoint lastPos;
-    network* net;
+    PNM::network* net;
     QTimer timer;
     QOpenGLFramebufferObject *fbo;
 

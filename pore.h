@@ -11,11 +11,12 @@
 #ifndef PORE_H
 #define PORE_H
 
+#include "element.h"
 #include <vector>
-#include <cmath>
-#include "node.h"
 
 namespace PNM {
+
+class node;
 
 class pore : public element
 {

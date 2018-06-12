@@ -193,12 +193,8 @@ double network::getWaterSaturationWithFilms()
 // Postprocessing
 void network::extractVideo()
 {
-    if(videoRecording)
-    {
-        record=false;
-        tools::renderVideo();
-        tools::cleanVideosFolder();
-    }
+    tools::renderVideo();
+    tools::cleanVideosFolder();
 }
 
 //signals

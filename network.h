@@ -320,11 +320,11 @@ private:
     ////////////// Misc Attributes
     bool relativePermeabilitiesCalculation;
     double oilRelativePermeability;
-    double waterRelativePermeability;
-    bool videoRecording;
+    double waterRelativePermeability;  
     bool extractData;
     double extractionTimestep;
     int outputCount;
+    bool videoRecording;
     bool record;
     string simulationNotification;
 
