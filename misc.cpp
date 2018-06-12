@@ -8,8 +8,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
-#include "randomGenerator.h"
 #include "iterator.h"
+#include "randomGenerator.h"
 #include "tools.h"
 
 namespace PNM {
@@ -26,9 +26,11 @@ void network::assignViscosities()
     });
 }
 
-void network::fillWithPhase(PNM::phase phase, double saturation, int distribution, PNM::phase otherPhase)
+void network::fillWithPhase(PNM::phase phase, double saturation, int distribution)
 {
     randomGenerator gen(seed);
+
+    PNM::phase otherPhase = phase == PNM::phase::water ? PNM::phase::oil : PNM::phase::water;
 
     if(saturation==1){
         for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this,phase](element* e){

@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "cluster.h"
 #include "iterator.h"
 
 #include <iomanip>
@@ -89,7 +90,7 @@ void network::initialiseTracerModel()
     simulationInterrupted=false;
     if(waterDistribution!=4){ //not after primary drainage
         assignWWWettability();
-        fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
+        fillWithPhase(phase::water,initialWaterSaturation,waterDistribution);
     }
     else{ //after primary drainage
         initialiseTwoPhaseSSModel();

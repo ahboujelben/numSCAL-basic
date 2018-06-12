@@ -11,19 +11,20 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include "node.h"
-#include "pore.h"
-#include "cluster.h"
-
 #include <vector>
 #include <unordered_set>
 #include <string>
-
 #include <QObject>
 
 namespace PNM {
 
 using namespace std;
+
+class element;
+class pore;
+class node;
+class cluster;
+enum class phase;
 
 class network : public QObject
 {
@@ -124,7 +125,7 @@ public:
     void initialiseCapillaries();
 
     //Filling Network with fluids
-    void fillWithPhase(PNM::phase phase, double saturation=1, int distribution=1, PNM::phase otherPhase=phase::oil);
+    void fillWithPhase(PNM::phase phase, double saturation=1, int distribution=1);
 
     //Getting flow properties
     double getOutletFlow();

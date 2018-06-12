@@ -10,6 +10,9 @@
 
 #include "network.h"
 #include "tools.h"
+#include "node.h"
+#include "pore.h"
+#include "cluster.h"
 
 #include <iostream>
 
