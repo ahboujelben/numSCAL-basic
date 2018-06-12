@@ -160,8 +160,8 @@ void MainWindow::exportNetworkDataFromGUI()
 
     settings.beginGroup("NetworkGeneration_Source");
     int source;
-    if(ui->calibratedRadioButton->isChecked())source=2;
-    if(ui->extractedRadioButton->isChecked())source=3;
+    if(ui->calibratedRadioButton->isChecked())source=1;
+    if(ui->extractedRadioButton->isChecked())source=2;
     settings.setValue("source",source );
     settings.setValue("extractedNetworkPath", ui->pathToExtractedLineEdit->text());
     settings.setValue("rockPrefix", ui->rockList->currentText());

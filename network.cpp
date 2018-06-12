@@ -156,9 +156,9 @@ void network::setupModel()
     loadNetworkData();
 
     try{
-        if(networkSource==2)
+        if(networkSource==1)
             setupRegularModel();
-        if(networkSource==3)
+        if(networkSource==2)
             setupExtractedModel();
     }catch(std::bad_alloc e){
         cout<<"Not enough RAM to load the network. Aborting."<<endl;

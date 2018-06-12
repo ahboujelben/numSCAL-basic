@@ -12,7 +12,6 @@
 #define PORE_H
 
 #include "element.h"
-#include <vector>
 
 namespace PNM {
 

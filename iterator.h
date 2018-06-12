@@ -2,7 +2,6 @@
 #define ITERATOR_H
 
 #include "network.h"
-#include "element.h"
 #include "node.h"
 #include "pore.h"
 
