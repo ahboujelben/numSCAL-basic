@@ -19,6 +19,8 @@
 
 namespace PNM {
 
+using namespace std;
+
 void network::setupExtractedModel()
 {
     cout<<"Reading Extracted Network.."<<endl;

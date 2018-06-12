@@ -16,6 +16,7 @@
 
 namespace PNM {
 
+using namespace std;
 //clustering
 
 int network::hkFind(int x, vector<int>& labels)

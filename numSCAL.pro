@@ -54,7 +54,8 @@ SOURCES += main.cpp \
     steadyTwoPhaseFlow.cpp \
     unsteadyTwoPhaseFlow.cpp \
     unsteadyTracerFlow.cpp \
-    randomGenerator.cpp
+    randomGenerator.cpp \
+    tools.cpp
 
 HEADERS += \
     pore.h \

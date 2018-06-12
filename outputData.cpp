@@ -17,6 +17,8 @@
 
 namespace PNM {
 
+using namespace std;
+
 void network::initializeTwoPhaseOutputs()
 {
     string pathCap="Results/Capillary.txt";

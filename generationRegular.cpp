@@ -19,6 +19,8 @@
 
 namespace PNM {
 
+using namespace std;
+
 void network::setupRegularModel()
 {
     cout<<"Loading Global Attributes..."<<endl;

@@ -15,6 +15,8 @@
 
 namespace PNM {
 
+using namespace std;
+
 void network::assignHalfAngles()
 {
     for (element* p : networkRange<element*>(this))

@@ -14,6 +14,8 @@
 
 namespace PNM {
 
+using namespace std;
+
 void network::calculateRelativePermeabilities()
 {
     waterRelativePermeability=0;

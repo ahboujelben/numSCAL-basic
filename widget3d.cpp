@@ -14,6 +14,7 @@
 #include <boost/lexical_cast.hpp>
 
 using namespace PNM;
+using namespace std;
 
 widget3d::widget3d(QWidget *parent)
     : QGLWidget (QGLFormat(QGL::SampleBuffers),parent)
@@ -601,8 +602,8 @@ void widget3d::timerUpdate()
         if(imageCount>=totalImages)
         {
             render=false;
-            tools::renderVideo();
-            tools::cleanVideosFolder();
+            renderVideo();
+            cleanVideosFolder();
             emit rendered();
         }
 

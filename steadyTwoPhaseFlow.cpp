@@ -19,6 +19,8 @@
 
 namespace PNM {
 
+using namespace std;
+
 void network::runTwoPhaseSSModel()
 {
     cout<<"Starting Two-Phase SS Simulation... "<<endl;

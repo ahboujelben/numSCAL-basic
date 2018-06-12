@@ -14,6 +14,8 @@
 
 namespace PNM {
 
+using namespace std;
+
 void network::assignViscosities()
 {
     for_each(networkRange<element*>(this).begin(),networkRange<element*>(this).end(),[this](element* e){
@@ -195,8 +197,8 @@ double network::getWaterSaturationWithFilms()
 // Postprocessing
 void network::extractVideo()
 {
-    tools::renderVideo();
-    tools::cleanVideosFolder();
+    renderVideo();
+    cleanVideosFolder();
 }
 
 //signals

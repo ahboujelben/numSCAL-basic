@@ -11,12 +11,15 @@
 #include "network.h"
 #include "cluster.h"
 #include "iterator.h"
+#include "tools.h"
 
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
 namespace PNM {
+
+using namespace std;
 
 void network::runUSSDrainageModel()
 {
@@ -43,8 +46,8 @@ void network::runUSSDrainageModel()
     bool waterSpanning=isWaterSpanning;
     deltaP=1;
 
-    unordered_set<pore*> poresToCheck;
-    unordered_set<node*> nodesToCheck;
+    unordered_set<pore*, pointerHash<pore>> poresToCheck;
+    unordered_set<node*, pointerHash<node>> nodesToCheck;
 
     while(!simulationInterrupted && timeSoFar<simulationTime)
     {
@@ -274,7 +277,7 @@ void network::setAdvancedTrapping()
     clusterOilElements();
 }
 
-void network::updateCapillaryProperties(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
+void network::updateCapillaryProperties(unordered_set<pore *, pointerHash<pore> > &poresToCheck, unordered_set<node *, pointerHash<node> > &nodesToCheck)
 {
     for(node* p : networkRange<node*>(this)){
         p->setActive(true);
@@ -417,7 +420,7 @@ void network::solvePressureWithoutCounterImbibition()
     }
 }
 
-void network::calculateTimeStepUSS(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool includeWater)
+void network::calculateTimeStepUSS(unordered_set<pore *, pointerHash<pore> > &poresToCheck, unordered_set<node *, pointerHash<node> > &nodesToCheck, bool includeWater)
 {
     timeStep=1e50;
     for(pore* p : poresToCheck)
@@ -470,7 +473,7 @@ void network::calculateTimeStepUSS(unordered_set<pore *> &poresToCheck, unordere
     }
 }
 
-double network::updateElementaryFluidFractions(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool &solvePressure)
+double network::updateElementaryFluidFractions(unordered_set<pore *, pointerHash<pore> > &poresToCheck, unordered_set<node *, pointerHash<node> > &nodesToCheck, bool &solvePressure)
 {
     for(pore* p : poresToCheck)
     {
@@ -537,7 +540,7 @@ void network::updateConductivity(pore * p)
     p->setConductivity(1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse));
 }
 
-void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
+void network::updateElementaryFluidFlags(unordered_set<pore *, pointerHash<pore> > &poresToCheck, unordered_set<node *, pointerHash<node> > &nodesToCheck)
 {
     for(pore* p: poresToCheck)
     {
