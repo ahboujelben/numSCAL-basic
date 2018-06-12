@@ -104,8 +104,8 @@ public:
     double updateElementaryFluidFractions(std::unordered_set<pore*, pointerHash<pore>>&, std::unordered_set<node*,pointerHash<node>>&, bool &);
     void updateElementaryFluidFlags(std::unordered_set<pore*, pointerHash<pore>>&, std::unordered_set<node*,pointerHash<node>>&);
     //Output data
-    void initializeTwoPhaseOutputs();
-    void outputTwoPhaseData(double, int &, double);
+    void initialiseUSSOutputs();
+    void outputUSSData(double, int &, double);
 
 
     ///////////// Methods for Unsteady-steady state 2-Phase flow
