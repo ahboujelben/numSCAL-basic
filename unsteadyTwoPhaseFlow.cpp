@@ -30,7 +30,7 @@ void network::runUSSDrainageModel()
         record=true;
 
     initialiseUSSDrainageModel();
-    initializeTwoPhaseOutputs();
+    initialiseUSSOutputs();
     setInitialFlags();
 
     assignViscosities();
@@ -87,7 +87,7 @@ void network::runUSSDrainageModel()
         if(outputPVs>injectThreshold)
         {
             double waterSat=getWaterSaturation();
-            outputTwoPhaseData(injectedPVs,outputCount, waterSat);
+            outputUSSData(injectedPVs,outputCount, waterSat);
             outputPVs=0;
 
             //Display notification
