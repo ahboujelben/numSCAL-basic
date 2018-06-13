@@ -9,9 +9,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "cluster.h"
 #include "iterator.h"
 
 namespace PNM {
+
+using namespace std;
 
 void network::calculateRelativePermeabilities()
 {

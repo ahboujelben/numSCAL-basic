@@ -11,19 +11,22 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include "node.h"
-#include "pore.h"
-#include "cluster.h"
-
 #include <vector>
-#include <unordered_set>
 #include <string>
-
+#include <unordered_set>
+#include <unordered_map>
 #include <QObject>
 
 namespace PNM {
 
-using namespace std;
+class element;
+class pore;
+class node;
+class cluster;
+enum class phase;
+
+template<typename T>
+struct pointerHash;
 
 class network : public QObject
 {
@@ -94,15 +97,15 @@ public:
     void addWaterChannel();
     void setInitialFlags();
     void setAdvancedTrapping();
-    void updateCapillaryProperties(unordered_set<pore*>&, unordered_set<node*>&);
+    void updateCapillaryProperties(std::unordered_set<pore*, pointerHash<pore>>&, std::unordered_set<node*,pointerHash<node>>&);
     void updateConductivity(pore*);
     void solvePressureWithoutCounterImbibition();
-    void calculateTimeStepUSS(unordered_set<pore *> &, unordered_set<node *> &, bool);
-    double updateElementaryFluidFractions(unordered_set<pore*>&, unordered_set<node*>&, bool &);
-    void updateElementaryFluidFlags(unordered_set<pore*>&, unordered_set<node *> &nodesToCheck);
+    void calculateTimeStepUSS(std::unordered_set<pore*, pointerHash<pore>>&, std::unordered_set<node*,pointerHash<node>>&, bool);
+    double updateElementaryFluidFractions(std::unordered_set<pore*, pointerHash<pore>>&, std::unordered_set<node*,pointerHash<node>>&, bool &);
+    void updateElementaryFluidFlags(std::unordered_set<pore*, pointerHash<pore>>&, std::unordered_set<node*,pointerHash<node>>&);
     //Output data
-    void initializeTwoPhaseOutputs();
-    void outputTwoPhaseData(double, int &, double);
+    void initialiseUSSOutputs();
+    void outputUSSData(double, int &, double);
 
 
     ///////////// Methods for Unsteady-steady state 2-Phase flow
@@ -110,7 +113,7 @@ public:
     void initialiseTracerModel();
     void solvePressureFieldInOil();
     void calculateTracerTimeStep();
-    void updateConcentrationValues(vector<double> & newConcentration);
+    void updateConcentrationValues(std::unordered_map<element *, double, pointerHash<element> > &newConcentration);
 
 
     ///////////// Misc
@@ -124,7 +127,7 @@ public:
     void initialiseCapillaries();
 
     //Filling Network with fluids
-    void fillWithPhase(PNM::phase phase, double saturation=1, int distribution=1, PNM::phase otherPhase=phase::oil);
+    void fillWithPhase(PNM::phase phase, double saturation=1, int distribution=1);
 
     //Getting flow properties
     double getOutletFlow();
@@ -135,11 +138,11 @@ public:
     void extractVideo();
 
     ///////////// Methods for clustering
-    int hkFind(int, vector<int>&);
-    int hkUnion(vector<int>&,vector<int>&);
-    int hkMakeSet(vector<int>&);
+    int hkFind(int, std::vector<int>&);
+    int hkUnion(std::vector<int>&,std::vector<int>&);
+    int hkMakeSet(std::vector<int>&);
     template<typename T>
-    void clusterElements(cluster*(element::*)(void) const,void(element::*)(cluster*),T(element::*)(void) const,T,vector<cluster *> &);
+    void clusterElements(cluster*(element::*)(void) const,void(element::*)(cluster*),T(element::*)(void) const,T,std::vector<cluster *> &);
     void clusterWaterWetElements();
     void clusterOilWetElements();
     void clusterWaterElements();
@@ -192,8 +195,8 @@ public:
 
 
     ////////////// Display runtime notifications
-    string getSimulationNotification() const;
-    void setSimulationNotification(const string &value);
+    std::string getSimulationNotification() const;
+    void setSimulationNotification(const std::string &value);
 
 
     ///////////// Interacting with main window
@@ -216,8 +219,8 @@ private:
     int Nx;
     int Ny;
     int Nz;
-    vector<pore*> tableOfPores;
-    vector<node*> tableOfNodes;
+    std::vector<pore*> tableOfPores;
+    std::vector<node*> tableOfNodes;
     std::vector<pore*> inletPores;
     std::vector<pore*> outletPores;
 
@@ -253,8 +256,8 @@ private:
     double yEdgeLength;
     double zEdgeLength;
     int maxConnectionNumber;
-    string extractedNetworkFolderPath;
-    string rockPrefix;
+    std::string extractedNetworkFolderPath;
+    std::string rockPrefix;
 
 
     //Attributes for pressure solving
@@ -320,13 +323,13 @@ private:
     ////////////// Misc Attributes
     bool relativePermeabilitiesCalculation;
     double oilRelativePermeability;
-    double waterRelativePermeability;
-    bool videoRecording;
+    double waterRelativePermeability;  
     bool extractData;
     double extractionTimestep;
     int outputCount;
+    bool videoRecording;
     bool record;
-    string simulationNotification;
+    std::string simulationNotification;
 
 
     ////////////// fluids properties
@@ -348,15 +351,15 @@ private:
 
 
     ////////////// Clustering Attributes
-    vector<cluster*> waterClusters;
-    vector<cluster*> oilClusters;
-    vector<cluster*> waterWetClusters;
-    vector<cluster*> oilWetClusters;
-    vector<cluster*> oilFilmClusters;
-    vector<cluster*> waterFilmClusters;
-    vector<cluster*> oilLayerClusters;
-    vector<cluster*> waterLayerClusters;
-    vector<cluster*> activeClusters;
+    std::vector<cluster*> waterClusters;
+    std::vector<cluster*> oilClusters;
+    std::vector<cluster*> waterWetClusters;
+    std::vector<cluster*> oilWetClusters;
+    std::vector<cluster*> oilFilmClusters;
+    std::vector<cluster*> waterFilmClusters;
+    std::vector<cluster*> oilLayerClusters;
+    std::vector<cluster*> waterLayerClusters;
+    std::vector<cluster*> activeClusters;
     bool isOilSpanning;
     bool isWaterSpanning;
     bool isGasSpanning;

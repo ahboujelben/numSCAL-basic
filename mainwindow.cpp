@@ -10,8 +10,13 @@
 
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
+#include "network.h"
+#include "qcustomplot.h"
+#include <QTimer>
 #include <thread>
 #include <unistd.h>
+
+using namespace std;
 
 Qt::GlobalColor QtColours[]= { Qt::blue, Qt::red, Qt::green, Qt::gray, Qt::black, Qt::magenta, Qt::yellow, Qt::gray, Qt::darkBlue, Qt::darkRed, Qt::darkGreen, Qt::darkGray, Qt::darkMagenta, Qt::cyan};
 
@@ -20,17 +25,21 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     net = new PNM::network;
     ui->widget->setNet(net);
 
+    timer = new QTimer();
+
     //Signals management
-    connect(net,SIGNAL(plot()),ui->widget,SLOT(updateNetwork()));
+    connect(net,SIGNAL(plot()),this,SLOT(update3DWidget()));
     connect(net,SIGNAL(updateNotification()),this,SLOT(updateNotificationArea()));
     connect(net,SIGNAL(networkLoaded()),this,SLOT(getNetworkResults()));
     connect(net,SIGNAL(simulationDone()),this,SLOT(getTwoPhaseSimulationResults()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(plotCurvesRealTime()));
     connect(ui->widget,SIGNAL(plotted()),this,SLOT(saveImages()));
     connect(ui->widget,SIGNAL(rendered()),this,SLOT(renderFinished()));
-    connect(&timer, SIGNAL(timeout()), this, SLOT(plotCurvesRealTime()));
+
 
     //Curves
     plotTitle=new QCPPlotTitle(ui->plotWidget, "title");
@@ -47,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
     imageIndex=0;
     totalCurves=0;
 
-    timer.start(500);
+    timer->start(500);
 }
 
 MainWindow::~MainWindow()
@@ -55,6 +64,7 @@ MainWindow::~MainWindow()
     delete ui;
     delete net;
     delete plotTitle;
+    delete timer;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -150,8 +160,8 @@ void MainWindow::exportNetworkDataFromGUI()
 
     settings.beginGroup("NetworkGeneration_Source");
     int source;
-    if(ui->calibratedRadioButton->isChecked())source=2;
-    if(ui->extractedRadioButton->isChecked())source=3;
+    if(ui->calibratedRadioButton->isChecked())source=1;
+    if(ui->extractedRadioButton->isChecked())source=2;
     settings.setValue("source",source );
     settings.setValue("extractedNetworkPath", ui->pathToExtractedLineEdit->text());
     settings.setValue("rockPrefix", ui->rockList->currentText());
@@ -285,12 +295,9 @@ void MainWindow::getTwoPhaseSimulationResults()
 
 void MainWindow::saveImages()
 {
-    if(net->getRecord() && net->getVideoRecording())
-    {
-        ++imageIndex;
-        QImage image = ui->widget->grabFrameBuffer();
-        image.save( "Videos/IMG"+QString::number(1000000000+imageIndex)+".png" );
-    }
+    ++imageIndex;
+    QImage image = ui->widget->grabFrameBuffer();
+    image.save( "Videos/IMG"+QString::number(1000000000+imageIndex)+".png" );
 }
 
 void MainWindow::renderFinished()
@@ -304,6 +311,11 @@ void MainWindow::renderFinished()
 void MainWindow::updateNotificationArea()
 {
     ui->SimNotif->setText(QString::fromStdString(net->getSimulationNotification()));
+}
+
+void MainWindow::update3DWidget()
+{
+    ui->widget->setUpdate(true);
 }
 
 void MainWindow::on_calibratedRadioButton_clicked()

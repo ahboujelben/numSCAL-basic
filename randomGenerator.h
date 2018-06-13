@@ -9,7 +9,7 @@ class randomGenerator
 
 public:
     randomGenerator(int seed);
-    mt getGen() const {return gen;}
+    mt getGen() const;
     int uniform_int(int a=0, int b=1);
     double uniform_real(double a=0, double b=1);
     double rayleigh(double, double, double);

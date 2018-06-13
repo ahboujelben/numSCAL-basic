@@ -19,6 +19,8 @@
 
 namespace PNM {
 
+using namespace std;
+
 void network::setupExtractedModel()
 {
     cout<<"Reading Extracted Network.."<<endl;
@@ -45,7 +47,6 @@ void network::setupExtractedModel()
 
 void network::loadExtractedNetwork()
 {
-    string line;
     maxConnectionNumber=0;
     xEdgeLength=0;
     yEdgeLength=0;
@@ -64,6 +65,7 @@ void network::loadExtractedNetwork()
 
     tableOfNodes.resize(totalNodes);
 
+    string line;
     getline(node1,line);
 
     double averageConnectionNumber(0);

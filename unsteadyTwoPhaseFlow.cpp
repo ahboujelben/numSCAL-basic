@@ -9,13 +9,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "cluster.h"
 #include "iterator.h"
+#include "tools.h"
 
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
 namespace PNM {
+
+using namespace std;
 
 void network::runUSSDrainageModel()
 {
@@ -26,7 +30,7 @@ void network::runUSSDrainageModel()
         record=true;
 
     initialiseUSSDrainageModel();
-    initializeTwoPhaseOutputs();
+    initialiseUSSOutputs();
     setInitialFlags();
 
     assignViscosities();
@@ -42,8 +46,8 @@ void network::runUSSDrainageModel()
     bool waterSpanning=isWaterSpanning;
     deltaP=1;
 
-    unordered_set<pore*> poresToCheck;
-    unordered_set<node*> nodesToCheck;
+    unordered_set<pore*, pointerHash<pore>> poresToCheck;
+    unordered_set<node*, pointerHash<node>> nodesToCheck;
 
     while(!simulationInterrupted && timeSoFar<simulationTime)
     {
@@ -83,7 +87,7 @@ void network::runUSSDrainageModel()
         if(outputPVs>injectThreshold)
         {
             double waterSat=getWaterSaturation();
-            outputTwoPhaseData(injectedPVs,outputCount, waterSat);
+            outputUSSData(injectedPVs,outputCount, waterSat);
             outputPVs=0;
 
             //Display notification
@@ -128,7 +132,7 @@ void network::initialiseUSSDrainageModel()
     simulationInterrupted=false;
     if(waterDistribution!=4){ //not after primary drainage
         assignWWWettability();
-        fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
+        fillWithPhase(phase::water,initialWaterSaturation,waterDistribution);
     }
     else{ //after primary drainage
         initialiseTwoPhaseSSModel();
@@ -273,7 +277,7 @@ void network::setAdvancedTrapping()
     clusterOilElements();
 }
 
-void network::updateCapillaryProperties(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
+void network::updateCapillaryProperties(unordered_set<pore *, pointerHash<pore> > &poresToCheck, unordered_set<node *, pointerHash<node> > &nodesToCheck)
 {
     for(node* p : networkRange<node*>(this)){
         p->setActive(true);
@@ -416,7 +420,7 @@ void network::solvePressureWithoutCounterImbibition()
     }
 }
 
-void network::calculateTimeStepUSS(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool includeWater)
+void network::calculateTimeStepUSS(unordered_set<pore *, pointerHash<pore> > &poresToCheck, unordered_set<node *, pointerHash<node> > &nodesToCheck, bool includeWater)
 {
     timeStep=1e50;
     for(pore* p : poresToCheck)
@@ -469,7 +473,7 @@ void network::calculateTimeStepUSS(unordered_set<pore *> &poresToCheck, unordere
     }
 }
 
-double network::updateElementaryFluidFractions(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck, bool &solvePressure)
+double network::updateElementaryFluidFractions(unordered_set<pore *, pointerHash<pore> > &poresToCheck, unordered_set<node *, pointerHash<node> > &nodesToCheck, bool &solvePressure)
 {
     for(pore* p : poresToCheck)
     {
@@ -536,7 +540,7 @@ void network::updateConductivity(pore * p)
     p->setConductivity(1./(throatConductivityInverse+nodeInConductivityInverse+nodeOutConductivityInverse));
 }
 
-void network::updateElementaryFluidFlags(unordered_set<pore *> &poresToCheck, unordered_set<node *> &nodesToCheck)
+void network::updateElementaryFluidFlags(unordered_set<pore *, pointerHash<pore> > &poresToCheck, unordered_set<node *, pointerHash<node> > &nodesToCheck)
 {
     for(pore* p: poresToCheck)
     {

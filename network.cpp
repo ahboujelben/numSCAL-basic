@@ -10,10 +10,15 @@
 
 #include "network.h"
 #include "tools.h"
+#include "node.h"
+#include "pore.h"
+#include "cluster.h"
 
 #include <iostream>
 
 namespace PNM{
+
+using namespace std;
 
 network::network(QObject *parent):
     QObject(parent)
@@ -57,7 +62,7 @@ network::~network()
         for (unsigned i = 0; i < activeClusters.size(); ++i)
             delete activeClusters[i];
 
-    tools::cleanVideosFolder();
+    cleanVideosFolder();
 }
 
 void network::destroy()
@@ -113,7 +118,7 @@ void network::destroy()
     oilLayerClusters.clear();
     activeClusters.clear();
 
-    tools::cleanVideosFolder();
+    cleanVideosFolder();
 }
 
 void network::reset()
@@ -138,8 +143,8 @@ void network::reset()
 
 void network::setupModel()
 {
-    tools::createRequiredFolders();
-    tools::cleanNetworkDescriptionFolder();
+    createRequiredFolders();
+    cleanNetworkDescriptionFolder();
 
     if(networkIsLoaded)
     {
@@ -151,9 +156,9 @@ void network::setupModel()
     loadNetworkData();
 
     try{
-        if(networkSource==2)
+        if(networkSource==1)
             setupRegularModel();
-        if(networkSource==3)
+        if(networkSource==2)
             setupExtractedModel();
     }catch(std::bad_alloc e){
         cout<<"Not enough RAM to load the network. Aborting."<<endl;
@@ -171,13 +176,13 @@ void network::setupModel()
 
 void network::runSimulation()
 {
-    tools::createRequiredFolders();
-    tools::cleanResultsFolder();
+    createRequiredFolders();
+    cleanResultsFolder();
 
     loadSimulationData();
 
     //Start timer
-    auto startTime=tools::getCPUTime();
+    auto startTime=getCPUTime();
 
     if(twoPhaseSS)
         runTwoPhaseSSModel();
@@ -192,7 +197,7 @@ void network::runSimulation()
     emitSimulationDoneSignal();
 
     //Stop timer
-    auto endTime=tools::getCPUTime();
+    auto endTime=getCPUTime();
     cout<<"Processing Runtime: "<<endTime-startTime<<" s."<<endl;
 }
 

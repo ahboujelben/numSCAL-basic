@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "cluster.h"
 #include "iterator.h"
 
 #include <fstream>
@@ -17,6 +18,8 @@
 #include <sstream>
 
 namespace PNM {
+
+using namespace std;
 
 void network::runTwoPhaseSSModel()
 {

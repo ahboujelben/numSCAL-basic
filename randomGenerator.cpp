@@ -1,15 +1,17 @@
 #include "randomGenerator.h"
 
 #include <math.h>
-
 #include <boost/random.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-randomGenerator::randomGenerator(int seed)
-{
+randomGenerator::randomGenerator(int seed){
     gen.seed(seed);
+}
+
+randomGenerator::mt randomGenerator::getGen() const {
+    return gen;
 }
 
 int randomGenerator::uniform_int(int a, int b) {

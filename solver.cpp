@@ -21,6 +21,7 @@
 namespace PNM {
 
 using namespace Eigen;
+using namespace std;
 
 void network::solvePressures()
 {

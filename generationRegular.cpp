@@ -9,14 +9,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
-#include "randomGenerator.h"
+#include "cluster.h"
 #include "iterator.h"
+#include "randomGenerator.h"
 
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
 namespace PNM {
+
+using namespace std;
 
 void network::setupRegularModel()
 {

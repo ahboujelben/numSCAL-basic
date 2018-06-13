@@ -11,13 +11,17 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "network.h"
-#include "qcustomplot.h"
 #include <QMainWindow>
 
 namespace Ui {
 class MainWindow;
 }
+
+namespace PNM {
+class network;
+}
+
+class QCPPlotTitle;
 
 class MainWindow : public QMainWindow
 {
@@ -35,7 +39,7 @@ private:
     Ui::MainWindow *ui;
     PNM::network* net;
     QCPPlotTitle* plotTitle;
-    QTimer timer;
+    QTimer* timer;
     int imageIndex;
     int totalCurves;
 
@@ -48,6 +52,7 @@ private slots:
     void saveImages();
     void renderFinished();
     void updateNotificationArea();
+    void update3DWidget();
     void on_loadNetworkButton_clicked();
     void on_calibratedRadioButton_clicked();
     void on_extractedRadioButton_clicked();

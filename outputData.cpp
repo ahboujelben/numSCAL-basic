@@ -17,7 +17,9 @@
 
 namespace PNM {
 
-void network::initializeTwoPhaseOutputs()
+using namespace std;
+
+void network::initialiseUSSOutputs()
 {
     string pathCap="Results/Capillary.txt";
     string pathSat="Results/Saturation.txt";
@@ -55,7 +57,7 @@ void network::initializeTwoPhaseOutputs()
     outfilePress.close();
 }
 
-void network::outputTwoPhaseData(double injectedPVs, int& outputCount, double waterSat)
+void network::outputUSSData(double injectedPVs, int& outputCount, double waterSat)
 {
     string pathSat="Results/Saturation.txt";
     string pathPress="Results/Pressure.txt";

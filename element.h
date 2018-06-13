@@ -11,7 +11,6 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
-#include"cluster.h"
 #include <vector>
 
 namespace PNM {
@@ -19,6 +18,8 @@ namespace PNM {
 enum class phase {oil, water, temp, invalid};
 enum class wettability {oilWet, waterWet, invalid};
 enum class capillaryType {throat, poreBody};
+
+class cluster;
 
 class element
 {

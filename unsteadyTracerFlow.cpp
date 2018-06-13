@@ -9,13 +9,18 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "network.h"
+#include "cluster.h"
 #include "iterator.h"
+#include "tools.h"
 
+#include <unordered_map>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
 namespace PNM {
+
+using namespace std;
 
 void network::runTracerModel()
 {
@@ -47,7 +52,7 @@ void network::runTracerModel()
     }
 
     //Define working concentration vector to avoid frequent allocations
-    vector<double> newConcentration(totalPores + totalNodes);
+    unordered_map<element*,double, pointerHash<element>> newConcentration;
 
     while(!simulationInterrupted && timeSoFar<simulationTime)
     {       
@@ -89,7 +94,7 @@ void network::initialiseTracerModel()
     simulationInterrupted=false;
     if(waterDistribution!=4){ //not after primary drainage
         assignWWWettability();
-        fillWithPhase(phase::water,initialWaterSaturation,waterDistribution,phase::oil);
+        fillWithPhase(phase::water,initialWaterSaturation,waterDistribution);
     }
     else{ //after primary drainage
         initialiseTwoPhaseSSModel();
@@ -232,7 +237,7 @@ void network::calculateTracerTimeStep()
     }
 }
 
-void network::updateConcentrationValues(vector<double> &newConcentration)
+void network::updateConcentrationValues(unordered_map<element*,double, pointerHash<element>> &newConcentration)
 {
     for(node* n: networkRange<node*>(this))
     {
@@ -267,7 +272,7 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
             }
 
             //Load new concentration in a temporary vector
-            newConcentration[n->getAbsId()]=(n->getConcentration()+(massIn-abs(n->getFlow())*n->getConcentration())*timeStep/n->getVolume()+sumDiffusionIn*timeStep-sumDiffusionOut*timeStep);
+            newConcentration[n]=(n->getConcentration()+(massIn-abs(n->getFlow())*n->getConcentration())*timeStep/n->getVolume()+sumDiffusionIn*timeStep-sumDiffusionOut*timeStep);
         }
     }
 
@@ -328,7 +333,7 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
             }
 
             //Load new concentration in a temporary vector
-            newConcentration[p->getAbsId()]=(p->getConcentration()+(abs(p->getFlow())/flowIn*massIn-abs(p->getFlow())*p->getConcentration())*timeStep/p->getVolume()+sumDiffusionIn*timeStep-sumDiffusionOut*timeStep);
+            newConcentration[p]=(p->getConcentration()+(abs(p->getFlow())/flowIn*massIn-abs(p->getFlow())*p->getConcentration())*timeStep/p->getVolume()+sumDiffusionIn*timeStep-sumDiffusionOut*timeStep);
         }
     }
 
@@ -337,7 +342,7 @@ void network::updateConcentrationValues(vector<double> &newConcentration)
     {
         if(e->getPhaseFlag()==phase::oil && e->getClusterOil()->getSpanning())
         {
-            e->setConcentration(newConcentration[e->getAbsId()]);
+            e->setConcentration(newConcentration[e]);
             if(e->getConcentration()<-0.00001 || e->getConcentration()>1.0001)
             {
                 simulationInterrupted=true;
