@@ -1,0 +1,15 @@
+Sand Pack F42B
+
+x: 300
+y: 300
+z: 300
+
+Resolution (µm) : 10.002
+
+Porosity(%)	33.3
+
+Avg. K (mD) 	52,300
+Network K (mD) 	48,000
+	
+Avg. FF		5.7
+Network FF	3.9

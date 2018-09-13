@@ -1,0 +1,26 @@
+Sandstone S6
+
+x: 300
+y: 300
+z: 300
+
+Resolution (µm) : 5.1
+
+Porosity(%)	24
+Kx (mD) 	11289
+Ky (mD)		10683
+Kz (mD)		10951
+Avg. K (mD) 	10974
+Network K (mD) 	11282
+	
+FFx		10.26
+FFy		11.17
+FFz		12.92
+Avg. FF		11.35
+Network FF	6.68
+
+
+
+
+
+

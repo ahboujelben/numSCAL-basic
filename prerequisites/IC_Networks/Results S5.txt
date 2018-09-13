@@ -1,0 +1,25 @@
+Sandstone S5
+
+x: 300
+y: 300
+z: 300
+
+Resolution (µm) : 3.997
+
+Porosity(%)	21.1
+Kx (mD) 	4638
+Ky (mD)		4874
+Kz (mD)		4440
+Avg. K (mD) 	4651
+Network K (mD) 	5369
+	
+FFx		14.08
+FFy		14.59
+FFz		15.9
+Avg. FF		14.82
+Network FF	8.04
+
+
+
+
+

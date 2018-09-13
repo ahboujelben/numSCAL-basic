@@ -1,0 +1,15 @@
+Sand Pack LV60A
+
+x: 300
+y: 300
+z: 300
+
+Resolution (µm) : 10.002
+
+Porosity(%)	37.7
+
+Avg. K (mD) 	35,300
+Network K (mD) 	27,200
+	
+Avg. FF		4.9
+Network FF	3.8

@@ -1,0 +1,27 @@
+Sandstone Berea
+
+x: 400
+y: 400
+z: 400
+
+Resolution (µm) : 5.345
+
+Porosity(%)	19.6
+Kx (mD) 	1360
+Ky (mD)		1304
+Kz (mD)		1193
+Avg. K (mD) 	1286
+Network K (mD) 	1111
+	
+FFx		23.12
+FFy		23.99
+FFz		25.22
+Avg. FF		24.08
+Network FF	14.86
+
+
+
+
+
+
+

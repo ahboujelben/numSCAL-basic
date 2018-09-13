@@ -1,0 +1,24 @@
+Sandstone S4
+
+x: 300
+y: 300
+z: 300
+
+Resolution (µm) : 8.96
+
+Porosity(%)	17.1
+Kx (mD) 	273
+Ky (mD)		289
+Kz (mD)		215
+Avg. K (mD) 	259
+Network K (mD) 	169
+	
+FFx		74.5
+FFy		71.01
+FFz		114.44
+Avg. FF		82.77
+Network FF	59.40
+
+
+
+
