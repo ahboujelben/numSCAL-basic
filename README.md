@@ -4,7 +4,7 @@
 
 _numSCAL_ is a cross-platform pore-scale numerical simulator developed at Heriot-Watt University. The software has been implemented using C++ and Qt technologies with the idea of providing a solid platform to investigate multi-phase flow in porous media. A Graphical User Interface (GUI) has been also implemented to allow fast access to the underlying modules and to provide a real-time visualisation of the simulated flow processes (although a console version can be readily generated if the simulations are intended to run on a Linux supercomputer).
 
-![numSCAL Screenshot](https://image.ibb.co/j0Tc3R/screenshot.png)
+![numSCAL Screenshot](https://image.ibb.co/iPodqU/screenshot.png)
 
 ## Supported Networks
 
