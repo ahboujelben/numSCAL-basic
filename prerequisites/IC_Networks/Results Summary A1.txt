@@ -1,0 +1,24 @@
+Silica pack A1
+
+x: 300
+y: 300
+z: 300
+
+Resolution (µm) : 3.85
+
+Porosity(%)	42.9
+Kx (mD) 	8272
+Ky (mD)		7977
+Kz (mD)		5412
+Avg. K (mD) 	7220
+Network K (mD) 	8076
+	
+FFx		4.47
+FFy		4.57
+FFz		5.73
+Avg. FF		4.86
+Network FF	2.36
+
+
+
+

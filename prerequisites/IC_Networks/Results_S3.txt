@@ -1,0 +1,26 @@
+Sandstone S3
+
+x: 300
+y: 300
+z: 300
+
+Resolution (µm) : 9.1
+
+Porosity(%)	16.9
+
+Kx (mD) 	143
+Ky (mD)		420
+Kz (mD)		109
+Avg. K (mD) 	224
+Network K (mD) 	281
+	
+FFx		52.16
+FFy		41.89
+FFz		70.32
+Avg. FF		52.39
+Network FF	37.4
+
+
+
+
+
