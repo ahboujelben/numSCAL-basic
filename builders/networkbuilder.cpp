@@ -22,10 +22,14 @@ std::shared_ptr<networkBuilder> networkBuilder::createBuilder()
 {
     if (userInput::get().networkRegular)
         return std::make_shared<regularNetworkBuilder>();
+
     if (userInput::get().networkStatoil)
         return std::make_shared<statoilNetworkBuilder>();
+
     if (userInput::get().networkNumscal)
         return std::make_shared<numscalNetworkBuilder>();
+
+    throw std::invalid_argument("Invalid network type.\n");
 }
 
 std::shared_ptr<networkModel> networkBuilder::build()

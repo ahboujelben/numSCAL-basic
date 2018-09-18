@@ -9,6 +9,8 @@
 
 #include <QDir>
 
+#include <cstdlib>
+
 namespace tools
 {
 

@@ -38,6 +38,8 @@ std::shared_ptr<simulation> simulation::createSimulation()
 
     if (userInput::get().templateFlow)
         return std::make_shared<templateFlowSimulation>();
+
+    throw std::invalid_argument("Invalid simulation type.\n");
 }
 
 std::shared_ptr<simulation> simulation::createRenderer()
