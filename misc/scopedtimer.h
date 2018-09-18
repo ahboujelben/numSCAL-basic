@@ -42,7 +42,7 @@ public:
     profile[function_].second++;
   }
 
-  static printProfileData()
+  static void printProfileData()
   {
     std::ofstream profileData("Results/profileData.txt");
     profileData << "Function\tCalls\tT (ms)\tAvg. T per Call (ms)" << std::endl;

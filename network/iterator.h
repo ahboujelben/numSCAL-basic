@@ -21,7 +21,7 @@ template <typename T>
 class pnmIterator
 {
   public:
-    explicit pnmIterator(networkPtr net, size_t current) : net(net), current(current) {}
+    explicit pnmIterator(networkPtr net, int current) : net(net), current(current) {}
 
     bool operator==(const pnmIterator &it) const
     {
@@ -47,18 +47,19 @@ class pnmIterator
         { //pore
             return net->getPore(current - net->totalNodes);
         }
+        throw std::out_of_range("pnmIterator out of range.\n");
     }
 
   protected:
     networkPtr net;
-    size_t current;
+    int current;
 };
 
 template <>
 class pnmIterator<pore>
 {
   public:
-    explicit pnmIterator(networkPtr net, size_t current) : net(net), current(current) {}
+    explicit pnmIterator(networkPtr net, int current) : net(net), current(current) {}
 
     bool operator==(const pnmIterator &it) const
     {
@@ -81,14 +82,14 @@ class pnmIterator<pore>
 
   protected:
     networkPtr net;
-    size_t current;
+    int current;
 };
 
 template <>
 class pnmIterator<node>
 {
   public:
-    explicit pnmIterator(networkPtr net, size_t current) : net(net), current(current) {}
+    explicit pnmIterator(networkPtr net, int current) : net(net), current(current) {}
 
     bool operator==(const pnmIterator &it) const
     {
@@ -111,7 +112,7 @@ class pnmIterator<node>
 
   protected:
     networkPtr net;
-    size_t current;
+    int current;
 };
 
 template <typename T>

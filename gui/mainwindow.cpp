@@ -759,21 +759,21 @@ void MainWindow::on_plot_clicked()
         std::vector<QString> dataHeaders;
         data.resize(vstrings.size());
 
-        for (int i = 0; i < vstrings.size(); ++i)
-            dataHeaders.push_back(QString::fromStdString((vstrings[i])));
+        for (auto& header : vstrings)
+            dataHeaders.push_back(QString::fromStdString((header)));
 
         double value;
         while (file >> value)
         {
             data[0].push_back(value);
-            for (int i = 1; i < vstrings.size(); ++i)
+            for (unsigned i = 1; i < vstrings.size(); ++i)
             {
                 file >> value;
                 data[i].push_back(value);
             }
         }
 
-        for (int i = 1; i < vstrings.size(); ++i)
+        for (unsigned i = 1; i < vstrings.size(); ++i)
         {
             QPen pen(QtColours[totalCurves]);
             pen.setWidth(2);

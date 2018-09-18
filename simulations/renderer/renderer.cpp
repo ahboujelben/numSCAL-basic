@@ -61,7 +61,6 @@ void renderer::loadStateFiles()
         for (element *e : pnmRange<element>(network))
         {
             if (in.read_row(phaseFlag, concentration))
-                ;
             {
                 e->setPhaseFlag(static_cast<phase>(phaseFlag));
                 e->setConcentration(concentration);

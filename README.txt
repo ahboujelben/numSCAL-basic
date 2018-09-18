@@ -4,6 +4,7 @@ Author: Ahmed Hamdi Boujelben (ahmed.hamdi.boujelben@gmail.com)
 Developed at: Heriot-Watt University
 
 Build instructions:
+Make sure you have already insalled Qt (mingw32 version) with a C++ compiler that supports C++14.
 1- Extract libs.zip in this folder
 2- Copy the contents of "prerequisites" to the chosen build folder.
 3- build using Qt Creator or by running:
