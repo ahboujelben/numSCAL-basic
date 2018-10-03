@@ -41,6 +41,7 @@ class pnmOperation
     void fillWithWater();
     double getSw();
     double getFlow(phase);
+    double getInletPoresVolume();
     void exportToNumcalFormat();
     void generateNetworkState(int frame, std::string folderPath = "");
 

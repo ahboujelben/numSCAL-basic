@@ -114,6 +114,8 @@ double pnmSolver::solvePressuresConstantFlowRate()
     for (node *n : pnmRange<node>(network))
         n->setRank(rank++);
 
+    double inletPoresVolume = pnmOperation::get(network).getInletPoresVolume();
+
     int row = 0;
     for (node *n : pnmRange<node>(network))
     {
@@ -125,7 +127,7 @@ double pnmSolver::solvePressuresConstantFlowRate()
             {
                 if (p->getInlet())
                 {
-                    b(row) -= p->getVolume() / network->inletPoresVolume * userInput::get().flowRate;
+                    b(row) -= p->getVolume() / inletPoresVolume * userInput::get().flowRate;
                 }
                 if (p->getOutlet())
                 {
@@ -202,6 +204,7 @@ double pnmSolver::updateFlowsConstantGradient(double pressureIn, double pressure
 
 double pnmSolver::updateFlowsConstantFlowRate()
 {
+    double inletPoresVolume = pnmOperation::get(network).getInletPoresVolume();
     double outletFlow(0);
     for (pore *p : pnmRange<pore>(network))
     {
@@ -216,7 +219,7 @@ double pnmSolver::updateFlowsConstantFlowRate()
             }
             if (p->getInlet())
             {
-                p->setFlow(p->getVolume() / network->inletPoresVolume * userInput::get().flowRate);
+                p->setFlow(p->getVolume() / inletPoresVolume * userInput::get().flowRate);
             }
             if (!p->getInlet() && !p->getOutlet())
             {

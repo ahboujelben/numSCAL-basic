@@ -38,7 +38,6 @@ struct networkModel
     double totalPoresVolume;
     double totalNodesVolume;
     double totalNetworkVolume;
-    double inletPoresVolume;
     double inletPoresArea;
     double absolutePermeability;
     double porosity;

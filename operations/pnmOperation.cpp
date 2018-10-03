@@ -180,7 +180,6 @@ void pnmOperation::calculateNetworkVolume()
 {
     network->totalNodesVolume = 0;
     network->totalPoresVolume = 0;
-    network->inletPoresVolume = 0;
     network->inletPoresArea = 0;
 
     for (node *n : pnmRange<node>(network))
@@ -192,10 +191,7 @@ void pnmOperation::calculateNetworkVolume()
     {
         network->totalPoresVolume += p->getVolume();
         if (p->getInlet())
-        {
-            network->inletPoresVolume += p->getVolume();
             network->inletPoresArea += p->getVolume() / p->getLength();
-        }
     }
 
     network->totalNetworkVolume = network->totalNodesVolume + network->totalPoresVolume;
@@ -688,6 +684,16 @@ double pnmOperation::getFlow(phase phaseFlag)
         if (p->getActive() && p->getPhaseFlag() == phaseFlag)
             outletFlow += p->getFlow();
     return outletFlow;
+}
+
+double pnmOperation::getInletPoresVolume()
+{
+    double inletPoresVolume(0.0);
+    for (pore *p : pnmInlet(network))
+        if(p->getActive())
+            inletPoresVolume += p->getVolume();
+
+    return inletPoresVolume;
 }
 
 void pnmOperation::exportToNumcalFormat()
