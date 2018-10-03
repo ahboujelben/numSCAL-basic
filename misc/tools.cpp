@@ -17,7 +17,7 @@ namespace tools
 void createRequiredFolders()
 {
     createFolder("Input_Data");
-    createFolder("Results");
+    createFolder("Results/Profiling");
     createFolder("Videos");
     createFolder("Network_State");
     createFolder("numSCAL_Networks");

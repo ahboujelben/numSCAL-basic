@@ -260,15 +260,21 @@ double pnmSolver::getDeltaP()
 
     for (pore *p : pnmInlet(network))
     {
-        pInlet += p->getNodeIn()->getPressure();
-        inletSize++;
+        if (p->getActive())
+        {
+            pInlet += p->getNodeIn()->getPressure();
+            inletSize++;
+        }
     }
     pInlet /= inletSize;
 
     for (pore *p : pnmOutlet(network))
     {
-        pOutlet += p->getNodeOut()->getPressure();
-        outletSize++;
+        if (p->getActive())
+        {
+            pOutlet += p->getNodeOut()->getPressure();
+            outletSize++;
+        }
     }
     pOutlet /= outletSize;
 

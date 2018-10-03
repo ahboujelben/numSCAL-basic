@@ -44,7 +44,7 @@ public:
 
   static void printProfileData()
   {
-    std::ofstream profileData("Results/profileData.txt");
+    std::ofstream profileData("Results/Profiling/profileData.txt");
     profileData << "Function\tCalls\tT (ms)\tAvg. T per Call (ms)" << std::endl;
     for(auto it : ScopedTimer::profile)
     {
