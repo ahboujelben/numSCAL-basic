@@ -119,24 +119,37 @@ public:
   double getCutZValue() const;
   void setCutZValue(double value);
 
-  glm::vec3 &getPhase1Color();
-  void setPhase1Color(const glm::vec3 &value);
+  glm::vec3 &getOilColor();
+  void setOilColor(const glm::vec3 &value);
 
-  glm::vec3 &getPhase2Color();
-  void setPhase2Color(const glm::vec3 &value);
+  glm::vec3 &getWaterColor();
+  void setWaterColor(const glm::vec3 &value);
 
-  glm::vec3 &getPhase3Color();
-  void setPhase3Color(const glm::vec3 &value);
+  glm::vec3 &getTracerColor();
+  void setTracerColor(const glm::vec3 &value);
+
+  void setSimulationRunnning(bool value);
 
 public slots:
   void timerUpdate();
 
 protected:
-  void uploadDataToGPU(GLuint buffer, float *h_data, const unsigned count, GLenum target, GLenum access);
-  unsigned bufferCylinderData();
-  unsigned bufferLinesData();
-  unsigned bufferSphereData();
-  unsigned bufferAxesData();
+  template <typename T>
+  void allocateBufferOnGPU(GLuint buffer, const unsigned count, GLenum target, GLenum access);
+  template <typename T>
+  void uploadDataToGPU(GLuint buffer, std::vector<T> h_data, const unsigned count, GLenum target);
+  void initialiseDataBuffers();
+  void bufferCylinderDynamicData();
+  void bufferCylinderStaticData();
+  void bufferCylinderIndicesData();
+  void bufferLineDynamicData();
+  void bufferLineStaticData();
+  void bufferLinesIndicesData();
+  void bufferSphereStaticData();
+  void bufferSphereDynamicData();
+  void bufferSphereIndicesData();
+
+  void bufferAxesData();
   void loadShaderUniforms(Shader *shader);
   void loadShaderUniformsAxes(Shader *shader);
   void drawSpheres();
@@ -150,16 +163,43 @@ protected:
   void resizeGL(int w, int h);
   void paintGL();
 
-  double xRot, yRot, zRot, xTran, yTran, scale, xInitRot, yInitRot, xInitTran, yInitTran, zInitTran, aspect, cutXValue, cutYValue, cutZValue;
-  bool axes, animation, update, networkBuilt, render, load, poreBodies, nodeBodies, poreLines, oilVisible, waterVisible, waterWetVisible, oilWetVisible, cutX, cutY, cutZ;
-  glm::vec3 phase1Color, phase2Color, phase3Color;
+  double xRot, yRot, zRot,
+      xTran, yTran, scale,
+      xInitRot, yInitRot,
+      xInitTran, yInitTran, zInitTran,
+      aspect,
+      cutXValue, cutYValue, cutZValue;
+  int sphereCount, cylinderCount, lineCount;
+  bool networkBuilt, simulationRunnning, buffersAllocated, refreshRequested,
+      axes, animation,
+      poreBodies, nodeBodies, poreLines,
+      oilVisible, waterVisible, waterWetVisible, oilWetVisible,
+      cutX, cutY, cutZ;
+
+  glm::vec4 backgroundColor;
+  glm::vec3 oilColor, waterColor, tracerColor;
   QPoint lastPos;
-  std::shared_ptr<QTimer> timer;
+  //data buffers
+  std::vector<GLfloat> dynamicSphereBuffer, staticSphereBuffer,
+      dynamicCylinderBuffer, staticCylinderBuffer,
+      dynamicLineBuffer, staticLineBuffer;
+
+  std::vector<GLint> sphereIndicesBuffer,
+      cylinderIndicesBuffer,
+      lineIndicesBuffer;
   //shader attributes
-  unsigned int sphereVBO, sphereVAO, cylinderVBO, cylinderVAO, lineVBO, lineVAO;
+  unsigned int dynamicSphereVBO, staticSphereVBO, sphereIndicesVBO, sphereVAO,
+      dynamicCylinderVBO, staticCylinderVBO, cylinderIndicesVBO, cylinderVAO,
+      dynamicLineVBO, staticLineVBO, lineIndicesVBO, lineVAO,
+      axesVBO, axesVAO;
+  // matrices
+  glm::mat4 view, viewInv, projection;
+  //shaders
   std::shared_ptr<Shader> sphereShader, cylinderShader, lineShader;
   //network model
   std::shared_ptr<PNM::networkModel> network;
+  //timer
+  std::shared_ptr<QTimer> timer;
 };
 
 #endif // WIDGET3D_H

@@ -26,6 +26,9 @@ widget3d::widget3d(QWidget *parent)
     axes = true;
     animation = false;
     networkBuilt = false;
+    simulationRunnning = false;
+    refreshRequested = false;
+    buffersAllocated = false;
     poreBodies = true;
     poreLines = true;
     nodeBodies = true;
@@ -39,9 +42,12 @@ widget3d::widget3d(QWidget *parent)
     cutXValue = 0.5;
     cutYValue = 0.5;
     cutZValue = 0.5;
-    phase1Color = glm::vec3(0.9f, 0.35f, 0.2f);
-    phase2Color = glm::vec3(0.3f, 0.65f, 0.9f);
-    phase3Color = glm::vec3(0.65f, 0.95f, 0.15f);
+    backgroundColor = glm::vec4(16.f / 255.f, 26.f / 255.f, 32.f / 255.f, 0.0f);
+    oilColor = glm::vec3(0.9f, 0.35f, 0.2f);
+    waterColor = glm::vec3(0.3f, 0.65f, 0.9f);
+    tracerColor = glm::vec3(0.65f, 0.95f, 0.15f);
+
+    sphereCount = cylinderCount = lineCount = 0;
 
     timer = std::make_shared<QTimer>();
     connect(timer.get(), SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -88,305 +94,363 @@ void widget3d::setAspectRatio()
     }
 }
 
-void widget3d::uploadDataToGPU(GLuint buffer, float *h_data, const unsigned count, GLenum target, GLenum access)
+template <typename T>
+void widget3d::allocateBufferOnGPU(GLuint buffer, const unsigned count, GLenum target, GLenum access)
 {
     glBindBuffer(target, buffer);
-    glBufferData(target, count * sizeof(GLfloat), NULL, access);
-    void *d_data = (void *)glMapBuffer(target, GL_READ_WRITE);
-    if (d_data == NULL)
-    {
-        fprintf(stderr, "Could not map gpu buffer.\n");
-        exit(1);
-    }
-    memcpy(d_data, (const void *)h_data, count * sizeof(GLfloat));
-    if (!glUnmapBuffer(target))
-    {
-        fprintf(stderr, "Unmap buffer failed.\n");
-        exit(1);
-    }
-    d_data = NULL;
+    glBufferData(target, count * sizeof(T), NULL, access);
     glBindBuffer(target, 0);
 }
 
-unsigned widget3d::bufferCylinderData()
+template <typename T>
+void widget3d::uploadDataToGPU(GLuint buffer, std::vector<T> h_data, const unsigned count, GLenum target)
 {
-    unsigned index(0);
-    unsigned numberOfObjectsToDraw(0);
-    if (networkBuilt)
-    {
-        int NUMBER_CYLINDERS = network->totalPores;
-        GLfloat *h_data = new GLfloat[11 * NUMBER_CYLINDERS];
-        for (pore *p : pnmRange<pore>(network))
-        {
-            if (p->getInlet() || p->getOutlet())
-                continue;
-            if (p->getPhaseFlag() == phase::invalid)
-                continue;
-            if (p->getPhaseFlag() == phase::oil && !oilVisible)
-                continue;
-            if (p->getPhaseFlag() == phase::temp && !oilVisible)
-                continue;
-            if (p->getPhaseFlag() == phase::water && !waterVisible)
-                continue;
-            if (p->getWettabilityFlag() == wettability::waterWet && !waterWetVisible)
-                continue;
-            if (p->getWettabilityFlag() == wettability::oilWet && !oilWetVisible)
-                continue;
-            if (cutX && p->getXCoordinate() > cutXValue * network->xEdgeLength)
-                continue;
-            if (cutY && p->getYCoordinate() > cutYValue * network->yEdgeLength)
-                continue;
-            if (cutZ && p->getZCoordinate() > cutZValue * network->zEdgeLength)
-                continue;
-
-            // center
-            h_data[index] = (p->getNodeIn()->getXCoordinate() + p->getNodeOut()->getXCoordinate()) / 2 / aspect; // vertex.x
-            h_data[index + 1] = (p->getNodeIn()->getYCoordinate() + p->getNodeOut()->getYCoordinate()) / 2 / aspect;
-            ; // vertex.y
-            h_data[index + 2] = (p->getNodeIn()->getZCoordinate() + p->getNodeOut()->getZCoordinate()) / 2 / aspect;
-            ; // vertex.z
-
-            // height
-            h_data[index + 3] = p->getFullLength() / 2 / aspect;
-
-            // direction
-            glm::vec3 dir = glm::vec3(float((p->getNodeIn()->getXCoordinate() - p->getNodeOut()->getXCoordinate()) / aspect), float((p->getNodeIn()->getYCoordinate() - p->getNodeOut()->getYCoordinate()) / aspect), float((p->getNodeIn()->getZCoordinate() - p->getNodeOut()->getZCoordinate()) / aspect));
-            h_data[index + 4] = dir[0]; // vertex.x
-            h_data[index + 5] = dir[1]; // vertex.y
-            h_data[index + 6] = dir[2]; // vertex.z
-
-            // color data
-            glm::vec3 color = p->getPhaseFlag() == phase::oil || p->getPhaseFlag() == phase::temp ? phase1Color : phase2Color;
-            color = color + float(p->getConcentration()) * (phase3Color - color);
-            h_data[index + 7] = color.x;
-            h_data[index + 8] = color.y;
-            h_data[index + 9] = color.z;
-            // radius
-            h_data[index + 10] = p->getRadius() / aspect;
-
-            index += 11;
-            numberOfObjectsToDraw++;
-        }
-        if (numberOfObjectsToDraw != 0)
-            uploadDataToGPU(cylinderVBO, h_data, 11 * NUMBER_CYLINDERS, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-
-        delete[] h_data;
-    }
-
-    return numberOfObjectsToDraw;
+    glBindBuffer(target, buffer);
+    glBufferSubData(target, 0, count * sizeof(T), (const void *)&h_data[0]);
+    glBindBuffer(target, 0);
 }
 
-unsigned widget3d::bufferLinesData()
+void widget3d::initialiseDataBuffers()
 {
-    unsigned index(0);
-    unsigned numberOfObjectsToDraw(0);
-    if (networkBuilt)
-    {
-        int NUMBER_CYLINDERS = network->totalPores;
-        GLfloat *h_data = new GLfloat[2 * 6 * NUMBER_CYLINDERS];
-        for (pore *p : pnmRange<pore>(network))
-        {
-            if (p->getInlet() || p->getOutlet())
-                continue;
-            if (p->getPhaseFlag() == phase::invalid)
-                continue;
-            if (p->getPhaseFlag() == phase::oil && !oilVisible)
-                continue;
-            if (p->getPhaseFlag() == phase::temp && !oilVisible)
-                continue;
-            if (p->getPhaseFlag() == phase::water && !waterVisible)
-                continue;
-            if (p->getWettabilityFlag() == wettability::waterWet && !waterWetVisible)
-                continue;
-            if (p->getWettabilityFlag() == wettability::oilWet && !oilWetVisible)
-                continue;
-            if (cutX && p->getXCoordinate() > cutXValue * network->xEdgeLength)
-                continue;
-            if (cutY && p->getYCoordinate() > cutYValue * network->yEdgeLength)
-                continue;
-            if (cutZ && p->getZCoordinate() > cutZValue * network->zEdgeLength)
-                continue;
+    //spheres
 
-            // node1
-            h_data[index] = (p->getNodeIn()->getXCoordinate()) / aspect; // vertex.x
-            h_data[index + 1] = (p->getNodeIn()->getYCoordinate()) / aspect;
-            ; // vertex.y
-            h_data[index + 2] = (p->getNodeIn()->getZCoordinate()) / aspect;
-            ; // vertex.z
+    int sphereCount = network->totalNodes;
+    staticSphereBuffer.clear();
+    staticSphereBuffer.resize(4 * sphereCount);
+    dynamicSphereBuffer.clear();
+    dynamicSphereBuffer.resize(2 * sphereCount);
+    sphereIndicesBuffer.clear();
+    sphereIndicesBuffer.resize(sphereCount);
 
-            // color data
-            glm::vec3 color = p->getPhaseFlag() == phase::oil || p->getPhaseFlag() == phase::temp ? phase1Color : phase2Color;
-            color = color + float(p->getConcentration()) * (phase3Color - color);
-            h_data[index + 3] = color.x;
-            h_data[index + 4] = color.y;
-            h_data[index + 5] = color.z;
+    allocateBufferOnGPU<GLfloat>(staticSphereVBO, 4 * sphereCount, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    allocateBufferOnGPU<GLfloat>(dynamicSphereVBO, 2 * sphereCount, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    allocateBufferOnGPU<GLint>(sphereIndicesVBO, sphereCount, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
-            index += 6;
-            numberOfObjectsToDraw++;
+    //cylinders
 
-            // node2
-            h_data[index] = (p->getNodeOut()->getXCoordinate()) / aspect; // vertex.x
-            h_data[index + 1] = (p->getNodeOut()->getYCoordinate()) / aspect;
-            ; // vertex.y
-            h_data[index + 2] = (p->getNodeOut()->getZCoordinate()) / aspect;
-            ; // vertex.z
+    int cylinderCount = network->totalPores;
+    staticCylinderBuffer.clear();
+    staticCylinderBuffer.resize(8 * cylinderCount);
+    dynamicCylinderBuffer.clear();
+    dynamicCylinderBuffer.resize(3 * cylinderCount);
+    cylinderIndicesBuffer.clear();
+    cylinderIndicesBuffer.resize(cylinderCount);
 
-            // color data
-            color = p->getPhaseFlag() == phase::oil || p->getPhaseFlag() == phase::temp ? phase1Color : phase2Color;
-            color = color + float(p->getConcentration()) * (phase3Color - color);
-            h_data[index + 3] = color.x;
-            h_data[index + 4] = color.y;
-            h_data[index + 5] = color.z;
+    allocateBufferOnGPU<GLfloat>(staticCylinderVBO, 8 * cylinderCount, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    allocateBufferOnGPU<GLfloat>(dynamicCylinderVBO, 2 * cylinderCount, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    allocateBufferOnGPU<GLint>(cylinderIndicesVBO, cylinderCount, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
-            index += 6;
-            numberOfObjectsToDraw++;
-        }
-        if (numberOfObjectsToDraw != 0)
-            uploadDataToGPU(lineVBO, h_data, 2 * 6 * NUMBER_CYLINDERS, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    //lines
 
-        delete[] h_data;
-    }
+    int lineCount = network->totalPores;
+    staticLineBuffer.clear();
+    staticLineBuffer.resize(2 * 3 * lineCount);
+    dynamicLineBuffer.clear();
+    dynamicLineBuffer.resize(2 * 2 * lineCount);
+    lineIndicesBuffer.clear();
+    lineIndicesBuffer.resize(2 * lineCount);
 
-    return numberOfObjectsToDraw;
+    allocateBufferOnGPU<GLfloat>(staticLineVBO, 2 * 3 * lineCount, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    allocateBufferOnGPU<GLfloat>(dynamicLineVBO, 2 * 2 * lineCount, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+    allocateBufferOnGPU<GLint>(lineIndicesVBO, 2 * lineCount, GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+
+    // initialise buffers
+
+    bufferSphereStaticData();
+    bufferSphereDynamicData();
+
+    bufferCylinderStaticData();
+    bufferCylinderDynamicData();
+
+    bufferLineStaticData();
+    bufferLineDynamicData();
+
+    buffersAllocated = true;
 }
 
-unsigned widget3d::bufferSphereData()
+void widget3d::bufferSphereStaticData()
 {
-    unsigned index(0);
-    unsigned numberOfObjectsToDraw(0);
-    if (networkBuilt)
+    unsigned indexStatic(0);
+
+    for (node *p : pnmRange<node>(network))
     {
-        int NUMBER_SPHERES = network->totalNodes;
-        GLfloat *h_data = new GLfloat[7 * NUMBER_SPHERES];
-        for (node *p : pnmRange<node>(network))
-        {
-            if (p->getPhaseFlag() == phase::invalid)
-                continue;
-            if (p->getPhaseFlag() == phase::oil && !oilVisible)
-                continue;
-            if (p->getPhaseFlag() == phase::temp && !oilVisible)
-                continue;
-            if (p->getPhaseFlag() == phase::water && !waterVisible)
-                continue;
-            if (p->getWettabilityFlag() == wettability::waterWet && !waterWetVisible)
-                continue;
-            if (p->getWettabilityFlag() == wettability::oilWet && !oilWetVisible)
-                continue;
-            if (cutX && p->getXCoordinate() > cutXValue * network->xEdgeLength)
-                continue;
-            if (cutY && p->getYCoordinate() > cutYValue * network->yEdgeLength)
-                continue;
-            if (cutZ && p->getZCoordinate() > cutZValue * network->zEdgeLength)
-                continue;
+        // center and radius
+        staticSphereBuffer[indexStatic] = p->getXCoordinate() / aspect;     // vertex.x
+        staticSphereBuffer[indexStatic + 1] = p->getYCoordinate() / aspect; // vertex.y
+        staticSphereBuffer[indexStatic + 2] = p->getZCoordinate() / aspect; // vertex.z
+        staticSphereBuffer[indexStatic + 3] = p->getRadius() / aspect;
 
-            // center
-            h_data[index] = p->getXCoordinate() / aspect;     // vertex.x
-            h_data[index + 1] = p->getYCoordinate() / aspect; // vertex.y
-            h_data[index + 2] = p->getZCoordinate() / aspect; // vertex.z
-
-            // radius
-            h_data[index + 3] = p->getRadius() / aspect;
-
-            // color data
-            glm::vec3 color = p->getPhaseFlag() == phase::oil || p->getPhaseFlag() == phase::temp ? phase1Color : phase2Color;
-            color = color + float(p->getConcentration()) * (phase3Color - color);
-            h_data[index + 4] = color.x;
-            h_data[index + 5] = color.y;
-            h_data[index + 6] = color.z;
-
-            index += 7;
-            numberOfObjectsToDraw++;
-        }
-
-        if (numberOfObjectsToDraw != 0)
-            uploadDataToGPU(sphereVBO, h_data, 7 * NUMBER_SPHERES, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-
-        delete[] h_data;
+        // update indices
+        indexStatic += 4;
     }
 
-    return numberOfObjectsToDraw;
+    uploadDataToGPU(staticSphereVBO, staticSphereBuffer, 4 * network->totalNodes, GL_ARRAY_BUFFER);
 }
 
-unsigned widget3d::bufferAxesData()
+void widget3d::bufferSphereDynamicData()
+{
+    unsigned indexDynamic(0);
+
+    for (node *p : pnmRange<node>(network))
+    {
+        // color data
+        float colorKey = p->getPhaseFlag() == phase::oil || p->getPhaseFlag() == phase::temp ? 0 : 1;
+        dynamicSphereBuffer[indexDynamic] = colorKey;
+        dynamicSphereBuffer[indexDynamic + 1] = float(p->getConcentration());
+
+        // update indices
+        indexDynamic += 2;
+    }
+
+    uploadDataToGPU(dynamicSphereVBO, dynamicSphereBuffer, 2 * network->totalNodes, GL_ARRAY_BUFFER);
+}
+
+void widget3d::bufferSphereIndicesData()
 {
     unsigned index(0);
-    unsigned numberOfObjectsToDraw(3);
 
-    int NUMBER_CYLINDERS = 3;
-    GLfloat *h_data = new GLfloat[11 * NUMBER_CYLINDERS];
+    for (node *p : pnmRange<node>(network))
+    {
+        if ((p->getPhaseFlag() == phase::invalid) || (p->getPhaseFlag() == phase::oil && !oilVisible) || (p->getPhaseFlag() == phase::temp && !oilVisible) || (p->getPhaseFlag() == phase::water && !waterVisible) || (p->getWettabilityFlag() == wettability::waterWet && !waterWetVisible) || (p->getWettabilityFlag() == wettability::oilWet && !oilWetVisible) || (cutX && p->getXCoordinate() > cutXValue * network->xEdgeLength) || (cutY && p->getYCoordinate() > cutYValue * network->yEdgeLength) || (cutZ && p->getZCoordinate() > cutZValue * network->zEdgeLength))
+            continue;
+
+        sphereIndicesBuffer[index++] = p->getId() - 1;
+    }
+
+    if (index != 0)
+    {
+        sphereCount = index;
+        uploadDataToGPU(sphereIndicesVBO, sphereIndicesBuffer, index, GL_ELEMENT_ARRAY_BUFFER);
+    }
+}
+
+void widget3d::bufferCylinderStaticData()
+{
+    unsigned indexStatic(0);
+
+    for (pore *p : pnmRange<pore>(network))
+    {
+        if (p->getInlet() || p->getOutlet())
+        {
+            indexStatic += 8;
+            continue;
+        }
+
+        // center
+        staticCylinderBuffer[indexStatic] = (p->getNodeIn()->getXCoordinate() + p->getNodeOut()->getXCoordinate()) / 2 / aspect;     // vertex.x
+        staticCylinderBuffer[indexStatic + 1] = (p->getNodeIn()->getYCoordinate() + p->getNodeOut()->getYCoordinate()) / 2 / aspect; // vertex.y
+        staticCylinderBuffer[indexStatic + 2] = (p->getNodeIn()->getZCoordinate() + p->getNodeOut()->getZCoordinate()) / 2 / aspect; // vertex.z
+
+        // height
+        staticCylinderBuffer[indexStatic + 3] = p->getFullLength() / 2 / aspect;
+
+        // direction
+        glm::vec3 dir = glm::vec3(float((p->getNodeIn()->getXCoordinate() - p->getNodeOut()->getXCoordinate()) / aspect),
+                                  float((p->getNodeIn()->getYCoordinate() - p->getNodeOut()->getYCoordinate()) / aspect),
+                                  float((p->getNodeIn()->getZCoordinate() - p->getNodeOut()->getZCoordinate()) / aspect));
+        staticCylinderBuffer[indexStatic + 4] = dir[0]; // vertex.x
+        staticCylinderBuffer[indexStatic + 5] = dir[1]; // vertex.y
+        staticCylinderBuffer[indexStatic + 6] = dir[2]; // vertex.z
+
+        // radius
+        staticCylinderBuffer[indexStatic + 7] = p->getRadius() / aspect;
+
+        indexStatic += 8;
+    }
+
+    uploadDataToGPU(staticCylinderVBO, staticCylinderBuffer, 8 * network->totalPores, GL_ARRAY_BUFFER);
+}
+
+void widget3d::bufferCylinderDynamicData()
+{
+    unsigned indexDynamic(0);
+
+    for (pore *p : pnmRange<pore>(network))
+    {
+        if (p->getInlet() || p->getOutlet())
+        {
+            indexDynamic += 2;
+            continue;
+        }
+
+        // color data
+        float colorKey = p->getPhaseFlag() == phase::oil || p->getPhaseFlag() == phase::temp ? 0 : 1;
+        dynamicCylinderBuffer[indexDynamic] = colorKey;
+        dynamicCylinderBuffer[indexDynamic + 1] = p->getConcentration();
+
+        indexDynamic += 2;
+    }
+
+    uploadDataToGPU(dynamicCylinderVBO, dynamicCylinderBuffer, 2 * network->totalPores, GL_ARRAY_BUFFER);
+}
+
+void widget3d::bufferCylinderIndicesData()
+{
+    unsigned index(0);
+
+    for (pore *p : pnmRange<pore>(network))
+    {
+        if ((p->getInlet() || p->getOutlet()) || (p->getPhaseFlag() == phase::invalid) || (p->getPhaseFlag() == phase::oil && !oilVisible) || (p->getPhaseFlag() == phase::temp && !oilVisible) || (p->getPhaseFlag() == phase::water && !waterVisible) || (p->getWettabilityFlag() == wettability::waterWet && !waterWetVisible) || (p->getWettabilityFlag() == wettability::oilWet && !oilWetVisible) || (cutX && p->getNodeIn()->getXCoordinate() > cutXValue * network->xEdgeLength) || (cutY && p->getNodeIn()->getYCoordinate() > cutYValue * network->yEdgeLength) || (cutZ && p->getNodeIn()->getZCoordinate() > cutZValue * network->zEdgeLength))
+            continue;
+
+        cylinderIndicesBuffer[index] = p->getId() - 1;
+        index++;
+    }
+
+    if (index != 0)
+    {
+        cylinderCount = index;
+        uploadDataToGPU(cylinderIndicesVBO, cylinderIndicesBuffer, index, GL_ELEMENT_ARRAY_BUFFER);
+    }
+}
+
+void widget3d::bufferLineStaticData()
+{
+    unsigned indexStatic(0);
+
+    for (pore *p : pnmRange<pore>(network))
+    {
+        if (p->getInlet() || p->getOutlet())
+        {
+            indexStatic += 6;
+            continue;
+        }
+
+        // node1
+        staticLineBuffer[indexStatic] = (p->getNodeIn()->getXCoordinate()) / aspect;     // vertex.x
+        staticLineBuffer[indexStatic + 1] = (p->getNodeIn()->getYCoordinate()) / aspect; // vertex.y
+        staticLineBuffer[indexStatic + 2] = (p->getNodeIn()->getZCoordinate()) / aspect; // vertex.z
+
+        // node2
+        staticLineBuffer[indexStatic + 3] = (p->getNodeOut()->getXCoordinate()) / aspect; // vertex.x
+        staticLineBuffer[indexStatic + 4] = (p->getNodeOut()->getYCoordinate()) / aspect; // vertex.y
+        staticLineBuffer[indexStatic + 5] = (p->getNodeOut()->getZCoordinate()) / aspect; // vertex.z
+
+        indexStatic += 6;
+    }
+
+    uploadDataToGPU(staticLineVBO, staticLineBuffer, 2 * 3 * network->totalPores, GL_ARRAY_BUFFER);
+}
+
+void widget3d::bufferLineDynamicData()
+{
+    unsigned indexDynamic(0);
+
+    for (pore *p : pnmRange<pore>(network))
+    {
+        if (p->getInlet() || p->getOutlet())
+        {
+            indexDynamic += 4;
+            continue;
+        }
+
+        // color data
+        float colorKey = p->getPhaseFlag() == phase::oil || p->getPhaseFlag() == phase::temp ? 0 : 1;
+
+        // node1
+        dynamicLineBuffer[indexDynamic] = colorKey;
+        dynamicLineBuffer[indexDynamic + 1] = p->getConcentration();
+
+        // node2
+        dynamicLineBuffer[indexDynamic + 2] = colorKey;
+        dynamicLineBuffer[indexDynamic + 3] = p->getConcentration();
+
+        indexDynamic += 4;
+    }
+
+    uploadDataToGPU(dynamicLineVBO, dynamicLineBuffer, 2 * 2 * network->totalPores, GL_ARRAY_BUFFER);
+}
+
+void widget3d::bufferLinesIndicesData()
+{
+    unsigned index(0);
+
+    for (pore *p : pnmRange<pore>(network))
+    {
+        if ((p->getInlet() || p->getOutlet()) || (p->getPhaseFlag() == phase::invalid) || (p->getPhaseFlag() == phase::oil && !oilVisible) || (p->getPhaseFlag() == phase::temp && !oilVisible) || (p->getPhaseFlag() == phase::water && !waterVisible) || (p->getWettabilityFlag() == wettability::waterWet && !waterWetVisible) || (p->getWettabilityFlag() == wettability::oilWet && !oilWetVisible) || (cutX && p->getXCoordinate() > cutXValue * network->xEdgeLength) || (cutY && p->getYCoordinate() > cutYValue * network->yEdgeLength) || (cutZ && p->getZCoordinate() > cutZValue * network->zEdgeLength))
+            continue;
+
+        lineIndicesBuffer[index] = 2 * (p->getId() - 1);
+        lineIndicesBuffer[index + 1] = 2 * (p->getId() - 1) + 1;
+        index += 2;
+    }
+
+    if (index != 0)
+    {
+        lineCount = index;
+        uploadDataToGPU(lineIndicesVBO, lineIndicesBuffer, index, GL_ELEMENT_ARRAY_BUFFER);
+    }
+}
+
+void widget3d::bufferAxesData()
+{
+    std::vector<GLfloat> axesBuffer;
+    axesBuffer.resize(11 * 3);
+    unsigned index(0);
 
     //X arrow
     // center
-    h_data[index] = 0.1;   // vertex.x
-    h_data[index + 1] = 0; // vertex.y
-    h_data[index + 2] = 0; // vertex.z
+    axesBuffer[index] = 0.1;   // vertex.x
+    axesBuffer[index + 1] = 0; // vertex.y
+    axesBuffer[index + 2] = 0; // vertex.z
     // height
-    h_data[index + 3] = 0.1;
+    axesBuffer[index + 3] = 0.1;
     // direction
-    h_data[index + 4] = 1; // vertex.x
-    h_data[index + 5] = 0; // vertex.y
-    h_data[index + 6] = 0; // vertex.z
-    // color data
-    h_data[index + 7] = 1;   // R
-    h_data[index + 8] = 0.0; // G
-    h_data[index + 9] = 0.0; // B
+    axesBuffer[index + 4] = 1; // vertex.x
+    axesBuffer[index + 5] = 0; // vertex.y
+    axesBuffer[index + 6] = 0; // vertex.z
     // radius
-    h_data[index + 10] = 0.01;
-    index += 11;
+    axesBuffer[index + 7] = 0.01;
+    // color data
+    axesBuffer[index + 8] = 2;
+    axesBuffer[index + 9] = 0.0;
+
+    index += 10;
 
     //Y arrow
     // center
-    h_data[index] = 0;       // vertex.x
-    h_data[index + 1] = 0.1; // vertex.y
-    h_data[index + 2] = 0;   // vertex.z
+    axesBuffer[index] = 0;       // vertex.x
+    axesBuffer[index + 1] = 0.1; // vertex.y
+    axesBuffer[index + 2] = 0;   // vertex.z
     // height
-    h_data[index + 3] = 0.1;
+    axesBuffer[index + 3] = 0.1;
     // direction
-    h_data[index + 4] = 0; // vertex.x
-    h_data[index + 5] = 1; // vertex.y
-    h_data[index + 6] = 0; // vertex.z
-    // color data
-    h_data[index + 7] = 0;   // R
-    h_data[index + 8] = 1;   // G
-    h_data[index + 9] = 0.0; // B
+    axesBuffer[index + 4] = 0; // vertex.x
+    axesBuffer[index + 5] = 1; // vertex.y
+    axesBuffer[index + 6] = 0; // vertex.z
     // radius
-    h_data[index + 10] = 0.01;
-    index += 11;
+    axesBuffer[index + 7] = 0.01;
+    // color data
+    axesBuffer[index + 8] = 3; // R
+    axesBuffer[index + 9] = 0; // G
+
+    index += 10;
 
     //Z arrow
     // center
-    h_data[index] = 0;       // vertex.x
-    h_data[index + 1] = 0;   // vertex.y
-    h_data[index + 2] = 0.1; // vertex.z
+    axesBuffer[index] = 0;       // vertex.x
+    axesBuffer[index + 1] = 0;   // vertex.y
+    axesBuffer[index + 2] = 0.1; // vertex.z
     // height
-    h_data[index + 3] = 0.1;
+    axesBuffer[index + 3] = 0.1;
     // direction
-    h_data[index + 4] = 0; // vertex.x
-    h_data[index + 5] = 0; // vertex.y
-    h_data[index + 6] = 1; // vertex.z
-    // color data
-    h_data[index + 7] = 0.0; // R
-    h_data[index + 8] = 0.0; // G
-    h_data[index + 9] = 1.0; // B
+    axesBuffer[index + 4] = 0; // vertex.x
+    axesBuffer[index + 5] = 0; // vertex.y
+    axesBuffer[index + 6] = 1; // vertex.z
     // radius
-    h_data[index + 10] = 0.01;
-    index += 11;
+    axesBuffer[index + 7] = 0.01;
+    // color data
+    axesBuffer[index + 8] = 4;
+    axesBuffer[index + 9] = 0;
 
-    uploadDataToGPU(cylinderVBO, h_data, 11 * NUMBER_CYLINDERS, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-
-    delete[] h_data;
-
-    return numberOfObjectsToDraw;
+    allocateBufferOnGPU<GLfloat>(axesVBO, 10 * 3, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    uploadDataToGPU(axesVBO, axesBuffer, 10 * 3, GL_ARRAY_BUFFER);
 }
 
 void widget3d::loadShaderUniforms(Shader *shader)
 {
-    // create transformations
-    glm::mat4 view;
-    glm::mat4 projection;
-
-    projection = glm::perspective(glm::radians(45.0f), (float)width() / (float)height(), 0.1f, 100.0f);
-
+    // set view transformation
+    view = glm::mat4();
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, float(scale)));
     view = glm::translate(view, glm::vec3(0.0f + xTran, 0.0f + yTran, -2.5f));
     view = glm::rotate(view, float(xInitRot + xRot), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -403,25 +467,20 @@ void widget3d::loadShaderUniforms(Shader *shader)
     shader->setVec3("lightPos", 1.0f, 0.0f, 2.0f);
 
     //Normal
-    shader->setVec4("eyePoint", inverse(view) * glm::vec4(0.0, 0.0, 0.0, 1.0));
-    shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(view))));
+    viewInv = inverse(view);
+    shader->setVec4("eyePoint", viewInv * glm::vec4(0.0, 0.0, 0.0, 1.0));
+    shader->setMat3("normalMatrix", glm::mat3(transpose(viewInv)));
 
     //Phase Colors
-    shader->setVec3("phase1Color", 0.9f, 0.35f, 0.2f);
-    shader->setVec3("phase2Color", 0.3f, 0.65f, 0.9f);
-    shader->setVec3("phase3Color", 0.65f, 0.95f, 0.15f);
-    shader->setVec3("phase4Color", 0.65f, 0.95f, 0.15f);
-    shader->setVec3("phase5Color", 0.1f, 0.15f, 0.9f);
+    shader->setVec3("oilColor", oilColor.x, oilColor.y, oilColor.z);
+    shader->setVec3("waterColor", waterColor.x, waterColor.y, waterColor.z);
+    shader->setVec3("tracerColor", tracerColor.x, tracerColor.y, tracerColor.z);
 }
 
 void widget3d::loadShaderUniformsAxes(Shader *shader)
 {
-    // create transformations
-    glm::mat4 view;
-    glm::mat4 projection;
-
-    projection = glm::perspective(glm::radians(45.0f), (float)width() / (float)height(), 0.1f, 100.0f);
-
+    // set view transformation
+    view = glm::mat4();
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.5f));
     view = glm::translate(view, glm::vec3(1.0f, -1.0f, -0.5f));
     view = glm::rotate(view, float(xInitRot + xRot), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -437,24 +496,20 @@ void widget3d::loadShaderUniformsAxes(Shader *shader)
     shader->setVec3("lightPos", 1.0f, 0.0f, 2.0f);
 
     //Normal
-    shader->setVec4("eyePoint", inverse(view) * glm::vec4(0.0, 0.0, 0.0, 1.0));
-    shader->setMat3("normalMatrix", transpose(inverse(glm::mat3(view))));
-
-    //Phase Colors
-    shader->setVec3("phase1Color", 0.9f, 0.2f, 0.2f);
-    shader->setVec3("phase2Color", 0.2f, 0.9f, 0.4f);
-    shader->setVec3("phase3Color", 0.2f, 0.2f, 0.9f);
-    shader->setVec3("phase4Color", 0.7f, 1.0f, 0.15f);
+    viewInv = inverse(view);
+    shader->setVec4("eyePoint", viewInv * glm::vec4(0.0, 0.0, 0.0, 1.0));
+    shader->setMat3("normalMatrix", glm::mat3(transpose(viewInv)));
 }
 
 void widget3d::drawSpheres()
 {
     sphereShader->use();
     loadShaderUniforms(sphereShader.get());
-    unsigned numberOfObjectsToDraw = bufferSphereData();
+    if (simulationRunnning || refreshRequested)
+        bufferSphereDynamicData();
+    bufferSphereIndicesData();
     glBindVertexArray(sphereVAO);
-    if (numberOfObjectsToDraw != 0)
-        glDrawArrays(GL_POINTS, 0, numberOfObjectsToDraw);
+    glDrawElements(GL_POINTS, sphereCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
@@ -462,28 +517,32 @@ void widget3d::drawCylinders()
 {
     cylinderShader->use();
     loadShaderUniforms(cylinderShader.get());
-    unsigned numberOfObjectsToDraw = bufferCylinderData();
+    if (simulationRunnning || refreshRequested)
+        bufferCylinderDynamicData();
+    bufferCylinderIndicesData();
     glBindVertexArray(cylinderVAO);
-    glDrawArrays(GL_POINTS, 0, numberOfObjectsToDraw);
+    glDrawElements(GL_POINTS, cylinderCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 void widget3d::drawLines()
 {
     lineShader->use();
     loadShaderUniforms(lineShader.get());
-    unsigned numberOfObjectsToDraw = bufferLinesData();
+    if (simulationRunnning || refreshRequested)
+        bufferLineDynamicData();
+    bufferLinesIndicesData();
     glBindVertexArray(lineVAO);
-    glDrawArrays(GL_LINES, 0, numberOfObjectsToDraw);
+    glDrawElements(GL_LINES, lineCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 void widget3d::drawAxes()
 {
     cylinderShader->use();
     loadShaderUniformsAxes(cylinderShader.get());
-    unsigned numberOfObjectsToDraw = bufferAxesData();
-    glBindVertexArray(cylinderVAO);
-    if (numberOfObjectsToDraw != 0)
-        glDrawArrays(GL_POINTS, 0, numberOfObjectsToDraw);
+    glBindVertexArray(axesVAO);
+    glDrawArrays(GL_POINTS, 0, 3);
     glBindVertexArray(0);
 }
 
@@ -496,6 +555,7 @@ void widget3d::mouseMoveEvent(QMouseEvent *event)
 {
     int dx = event->x() - lastPos.x();
     int dy = event->y() - lastPos.y();
+
     if (event->buttons() & Qt::LeftButton)
     {
         if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier)) //
@@ -516,6 +576,7 @@ void widget3d::mouseMoveEvent(QMouseEvent *event)
         zRot += 0.005 * dx;
         updateGL();
     }
+
     lastPos = event->pos();
 }
 
@@ -527,80 +588,146 @@ void widget3d::wheelEvent(QWheelEvent *event)
 
 void widget3d::initializeGL()
 {
+    glewInit();
+
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_MULTISAMPLE);
 
-    glewInit();
     cylinderShader->create(":/shaders/cylinder.vert", ":/shaders/cylinder.frag", ":/shaders/cylinder.geom");
     sphereShader->create(":/shaders/sphere.vert", ":/shaders/sphere.frag", ":/shaders/sphere.geom");
     lineShader->create(":/shaders/line.vert", ":/shaders/line.frag");
 
+    // Generate and bind Sphere VAO and VBOs
     glGenVertexArrays(1, &sphereVAO);
-    glGenBuffers(1, &sphereVBO);
+    glGenBuffers(1, &staticSphereVBO);
+    glGenBuffers(1, &dynamicSphereVBO);
+    glGenBuffers(1, &sphereIndicesVBO);
+
     glBindVertexArray(sphereVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, staticSphereVBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * 4, 0);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * 4, (GLvoid *)12);
     glEnableVertexAttribArray(0); //pos
     glEnableVertexAttribArray(1); //radius
+
+    glBindBuffer(GL_ARRAY_BUFFER, dynamicSphereVBO);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * 4, 0);
     glEnableVertexAttribArray(2); //color
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * 4, 0);
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 7 * 4, (GLvoid *)12);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 7 * 4, (GLvoid *)16);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereIndicesVBO);
+
     glBindVertexArray(0);
 
+    // Generate and bind Cylinder VAO and VBOs
     glGenVertexArrays(1, &cylinderVAO);
-    glGenBuffers(1, &cylinderVBO);
+    glGenBuffers(1, &staticCylinderVBO);
+    glGenBuffers(1, &dynamicCylinderVBO);
+    glGenBuffers(1, &cylinderIndicesVBO);
+
     glBindVertexArray(cylinderVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cylinderVBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, staticCylinderVBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * 4, 0);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 8 * 4, (GLvoid *)12);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * 4, (GLvoid *)16);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 8 * 4, (GLvoid *)28);
     glEnableVertexAttribArray(0); // pos
     glEnableVertexAttribArray(1); // height
     glEnableVertexAttribArray(2); // direction
-    glEnableVertexAttribArray(3); // color
-    glEnableVertexAttribArray(4); // radius
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * 4, 0);
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 11 * 4, (GLvoid *)12);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 11 * 4, (GLvoid *)16);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 11 * 4, (GLvoid *)28);
-    glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, 11 * 4, (GLvoid *)40);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glEnableVertexAttribArray(3); // radius
+
+    glBindBuffer(GL_ARRAY_BUFFER, dynamicCylinderVBO);
+    glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 2 * 4, (GLvoid *)0);
+    glEnableVertexAttribArray(4); // color
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cylinderIndicesVBO);
+
     glBindVertexArray(0);
 
+    // Generate and bind Line VAO and VBOs
     glGenVertexArrays(1, &lineVAO);
-    glGenBuffers(1, &lineVBO);
+    glGenBuffers(1, &staticLineVBO);
+    glGenBuffers(1, &dynamicLineVBO);
+    glGenBuffers(1, &lineIndicesVBO);
+
     glBindVertexArray(lineVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, staticLineVBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * 4, 0);
     glEnableVertexAttribArray(0); // pos
+
+    glBindBuffer(GL_ARRAY_BUFFER, dynamicLineVBO);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * 4, 0);
     glEnableVertexAttribArray(1); // color
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * 4, 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * 4, (GLvoid *)12);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineIndicesVBO);
+
     glBindVertexArray(0);
+
+    //Generate and bind Axes VAO and VBOs
+    glGenVertexArrays(1, &axesVAO);
+    glGenBuffers(1, &axesVBO);
+
+    glBindVertexArray(axesVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, axesVBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * 4, 0);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 10 * 4, (GLvoid *)12);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 10 * 4, (GLvoid *)16);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 10 * 4, (GLvoid *)28);
+    glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 10 * 4, (GLvoid *)32);
+    glEnableVertexAttribArray(0); // pos
+    glEnableVertexAttribArray(1); // height
+    glEnableVertexAttribArray(2); // direction
+    glEnableVertexAttribArray(3); // radius
+    glEnableVertexAttribArray(4); // color
+
+    glBindVertexArray(0);
+
+    // Buffer axes data
+    bufferAxesData();
 }
 
 void widget3d::resizeGL(int w, int h)
 {
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+    projection = glm::perspective(glm::radians(45.0f), (float)w / (float)h, 0.1f, 100.0f);
 }
 
 void widget3d::paintGL()
 {
-    glClearColor(16.f / 255.f, 26.f / 255.f, 32.f / 255.f, 0.0f);
+    glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, backgroundColor.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (poreBodies)
-        drawCylinders();
-    else if (poreLines)
-        drawLines();
+    if (networkBuilt)
+    {
+        if (!buffersAllocated)
+            initialiseDataBuffers();
 
-    if (nodeBodies)
-        drawSpheres();
+        // draw nodes
+        if (nodeBodies)
+            drawSpheres();
+
+        // draw throats
+        if (poreBodies)
+            drawCylinders();
+        else if (poreLines)
+            drawLines();
+
+        refreshRequested = false;
+    }
 
     if (axes)
         drawAxes();
 
     if (animation)
         yRot += 0.005;
+}
+
+void widget3d::timerUpdate()
+{
+    updateGL();
 }
 
 bool widget3d::getNetworkBuilt() const
@@ -611,41 +738,47 @@ bool widget3d::getNetworkBuilt() const
 void widget3d::setNetworkBuilt(bool value)
 {
     networkBuilt = value;
+
+    if (value)
+    {
+        buffersAllocated = false;
+        sphereCount = cylinderCount = lineCount = 0;
+    }
 }
 
-void widget3d::timerUpdate()
+void widget3d::setSimulationRunnning(bool value)
 {
-    updateGL();
+    simulationRunnning = value;
 }
 
-glm::vec3 &widget3d::getPhase1Color()
+glm::vec3 &widget3d::getOilColor()
 {
-    return phase1Color;
+    return oilColor;
 }
 
-void widget3d::setPhase1Color(const glm::vec3 &value)
+void widget3d::setOilColor(const glm::vec3 &value)
 {
-    phase1Color = value;
+    oilColor = value;
 }
 
-glm::vec3 &widget3d::getPhase2Color()
+glm::vec3 &widget3d::getWaterColor()
 {
-    return phase2Color;
+    return waterColor;
 }
 
-void widget3d::setPhase2Color(const glm::vec3 &value)
+void widget3d::setWaterColor(const glm::vec3 &value)
 {
-    phase2Color = value;
+    waterColor = value;
 }
 
-glm::vec3 &widget3d::getPhase3Color()
+glm::vec3 &widget3d::getTracerColor()
 {
-    return phase3Color;
+    return tracerColor;
 }
 
-void widget3d::setPhase3Color(const glm::vec3 &value)
+void widget3d::setTracerColor(const glm::vec3 &value)
 {
-    phase3Color = value;
+    tracerColor = value;
 }
 
 bool widget3d::getPoreLines() const
@@ -655,6 +788,7 @@ bool widget3d::getPoreLines() const
 
 void widget3d::setPoreLines(bool value)
 {
+    refreshRequested = true;
     poreLines = value;
 }
 
@@ -674,6 +808,7 @@ bool widget3d::getPoreBodies() const
 
 void widget3d::setPoreBodies(bool value)
 {
+    refreshRequested = true;
     poreBodies = value;
 }
 bool widget3d::getNodeBodies() const
@@ -683,6 +818,7 @@ bool widget3d::getNodeBodies() const
 
 void widget3d::setNodeBodies(bool value)
 {
+    refreshRequested = true;
     nodeBodies = value;
 }
 bool widget3d::getOilVisible() const
@@ -692,6 +828,7 @@ bool widget3d::getOilVisible() const
 
 void widget3d::setOilVisible(bool value)
 {
+    refreshRequested = true;
     oilVisible = value;
 }
 bool widget3d::getWaterVisible() const
@@ -701,6 +838,7 @@ bool widget3d::getWaterVisible() const
 
 void widget3d::setWaterVisible(bool value)
 {
+    refreshRequested = true;
     waterVisible = value;
 }
 
@@ -711,6 +849,7 @@ bool widget3d::getWaterWetVisible() const
 
 void widget3d::setWaterWetVisible(bool value)
 {
+    refreshRequested = true;
     waterWetVisible = value;
 }
 bool widget3d::getOilWetVisible() const
@@ -720,6 +859,7 @@ bool widget3d::getOilWetVisible() const
 
 void widget3d::setOilWetVisible(bool value)
 {
+    refreshRequested = true;
     oilWetVisible = value;
 }
 double widget3d::getXRot() const
@@ -847,6 +987,7 @@ bool widget3d::getCutX() const
 
 void widget3d::setCutX(bool value)
 {
+    refreshRequested = true;
     cutX = value;
 }
 bool widget3d::getCutY() const
@@ -856,6 +997,7 @@ bool widget3d::getCutY() const
 
 void widget3d::setCutY(bool value)
 {
+    refreshRequested = true;
     cutY = value;
 }
 bool widget3d::getCutZ() const
@@ -865,6 +1007,7 @@ bool widget3d::getCutZ() const
 
 void widget3d::setCutZ(bool value)
 {
+    refreshRequested = true;
     cutZ = value;
 }
 double widget3d::getCutXValue() const
@@ -874,6 +1017,7 @@ double widget3d::getCutXValue() const
 
 void widget3d::setCutXValue(double value)
 {
+    refreshRequested = true;
     cutXValue = value;
 }
 double widget3d::getCutYValue() const
@@ -883,6 +1027,7 @@ double widget3d::getCutYValue() const
 
 void widget3d::setCutYValue(double value)
 {
+    refreshRequested = true;
     cutYValue = value;
 }
 double widget3d::getCutZValue() const
@@ -892,5 +1037,6 @@ double widget3d::getCutZValue() const
 
 void widget3d::setCutZValue(double value)
 {
+    refreshRequested = true;
     cutZValue = value;
 }

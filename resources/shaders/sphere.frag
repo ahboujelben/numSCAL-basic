@@ -8,7 +8,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #version 330 core
-out vec4 FragColor;
 
 in FragData
 {
@@ -22,6 +21,8 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 lightColor;
 uniform mat4 projection;
+
+out vec4 FragColor;
 
 void Impostor(out vec3 cameraPos, out vec3 cameraNormal)
 {

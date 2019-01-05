@@ -45,15 +45,15 @@ out vec3 packed_data_5 ;
 
 void main()
 {
-  vec3 center = gl_in[0].gl_Position.xyz;   
+  vec3 center = gl_in[0].gl_Position.xyz;
   vec3  dir = cylinder_direction_in[0];
   float ext = cylinder_ext_in[0];
   vec3 ldir;
-  
-  cylinder_color  = cylinder_color_in[0];  
+
+  cylinder_color  = cylinder_color_in[0];
   cylinder_radius = cylinder_radius_in[0];
   lightDir = normalize(lightPos);
-  
+
   vec3 cam_dir = normalize(eyePoint.xyz - center);
   float b = dot(cam_dir, dir);
   if(b<0.0) // direction vector looks away, so flip
@@ -70,28 +70,28 @@ void main()
   axis =  normalize(normalMatrix * ldir);
   U = normalize(normalMatrix * up);
   V = normalize(normalMatrix * left);
-  
+
   vec4 base4 = view * vec4(center-ldir, 1.0);
   base = base4.xyz / base4.w;
 
   vec4 top_position = view*(vec4(center+ldir,1.0));
   vec4 end4 = top_position;
   end = end4.xyz / end4.w;
-  
+
   vec4 xf0 = view*vec4(center-ldir+left-up,1.0);
   vec4 xf2 = view*vec4(center-ldir-left-up,1.0);
   vec4 xc0 = view*vec4(center+ldir+left-up,1.0);
   vec4 xc1 = view*vec4(center+ldir+left+up,1.0);
   vec4 xc2 = view*vec4(center+ldir-left-up,1.0);
   vec4 xc3 = view*vec4(center+ldir-left+up,1.0);
-  
+
   vec4 w0 = xf0;
   vec4 w1 = xf2;
   vec4 w2 = xc0;
   vec4 w3 = xc2;
   vec4 w4 = xc1;
   vec4 w5 = xc3;
-  
+
   // Vertex 1
   point = w0.xyz / w0.w;
   gl_Position = projection  * w0;
@@ -111,7 +111,7 @@ void main()
   point = w3.xyz / w3.w;
   gl_Position = projection  * w3;
   EmitVertex();
-  
+
   // Vertex 5
   point = w4.xyz / w4.w;
   gl_Position = projection  * w4;
@@ -120,7 +120,7 @@ void main()
   // Vertex 6
   point = w5.xyz / w5.w;
   gl_Position = projection  * w5;
-  EmitVertex();  
+  EmitVertex();
 
   EndPrimitive();
 }

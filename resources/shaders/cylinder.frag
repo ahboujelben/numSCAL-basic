@@ -10,10 +10,6 @@
 
 #version 330 core
 
-uniform mat4 projection;
-uniform mat4 view;
-uniform vec3 lightColor;
-
 flat in vec3 cylinder_color;
 flat in vec3 lightDir;
 
@@ -32,6 +28,10 @@ in vec3 packed_data_5 ;
 #define U ( packed_data_4 )
 #define V ( packed_data_5 )
 #define radius ( packed_data_3.w )
+
+uniform mat4 projection;
+uniform mat4 view;
+uniform vec3 lightColor;
 
 out vec4 out_Color;
 
@@ -56,7 +56,7 @@ vec4 ComputeColorForLight(vec3 N, vec3 L, vec4 ambient, vec4 diffuse, vec4 color
 }
 
 void main()
-{   
+{
     vec3 objectColor=cylinder_color;
 
     const float ortho=0;

@@ -8,12 +8,16 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #version 330 core
+
+uniform vec3 oilColor;
+uniform vec3 waterColor;
+uniform vec3 tracerColor;
+
 out vec4 FragColor;
 
 flat in vec3 o_color;
 
 void main()
 {
-    vec3 objectColor=o_color;
-    FragColor = vec4(objectColor, 1.0);
+    FragColor = vec4(o_color, 1.0);
 }

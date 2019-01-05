@@ -61,13 +61,6 @@ void hkClustering::clusterOilElements()
 
 void hkClustering::clusterOilConductorElements()
 {
-    //    for_each(networkRange<element *>(this).begin(), networkRange<element *>(this).end(), [this](element *e) {
-    //        if (e->getPhaseFlag() == phase::oil || e->getOilLayerActivated())
-    //            e->setOilConductor(true);
-    //        else
-    //            e->setOilConductor(false);
-    //    });
-
     cluster *(element::*getter)() const = &element::getClusterOilConductor;
     void (element::*setter)(cluster *) = &element::setClusterOilFilm;
     bool (element::*status)(void) const = &element::getOilConductor;
@@ -78,13 +71,6 @@ void hkClustering::clusterOilConductorElements()
 
 void hkClustering::clusterWaterConductorElements()
 {
-    //    for_each(networkRange<element *>(this).begin(), networkRange<element *>(this).end(), [this](element *e) {
-    //        if (e->getPhaseFlag() == phase::water || e->getWaterCornerActivated())
-    //            e->setWaterConductor(true);
-    //        else
-    //            e->setWaterConductor(false);
-    //    });
-
     cluster *(element::*getter)() const = &element::getClusterWaterConductor;
     void (element::*setter)(cluster *) = &element::setClusterWaterFilm;
     bool (element::*status)(void) const = &element::getWaterConductor;

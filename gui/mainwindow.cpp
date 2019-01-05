@@ -329,6 +329,8 @@ void MainWindow::updateGUIBeforeSimulation()
 {
     currentlyBusy = true;
 
+    ui->widget->setSimulationRunnning(true);
+
     ui->simulationProgressBar->setVisible(true);
     ui->simulationProgressBar->setValue(0);
 
@@ -338,6 +340,8 @@ void MainWindow::updateGUIBeforeSimulation()
 
 void MainWindow::updateGUIAfterSimulation()
 {
+    ui->widget->setSimulationRunnning(false);
+
     ui->simulationProgressBar->setVisible(false);
 
     ui->twoPhaseSimButton->setEnabled(true);
@@ -356,6 +360,8 @@ void MainWindow::updateGUIBeforeRendering()
 {
     currentlyBusy = true;
 
+    ui->widget->setSimulationRunnning(true);
+
     imageIndex = 0;
 
     ui->renderingProgressBar->setVisible(true);
@@ -367,6 +373,8 @@ void MainWindow::updateGUIBeforeRendering()
 
 void MainWindow::updateGUIAfterRendering()
 {
+    ui->widget->setSimulationRunnning(false);
+
     ui->renderingProgressBar->setVisible(false);
     ui->renderNetworkButton->setEnabled(true);
     ui->renderStopButton->setEnabled(false);
@@ -504,35 +512,35 @@ void MainWindow::on_TDCheckBox_clicked()
 
 void MainWindow::on_oilColor_clicked()
 {
-    ui->Rcolor->setValue(ui->widget->getPhase1Color().x * 255.);
-    ui->Gcolor->setValue(ui->widget->getPhase1Color().y * 255.);
-    ui->Bcolor->setValue(ui->widget->getPhase1Color().z * 255.);
+    ui->Rcolor->setValue(ui->widget->getOilColor().x * 255.);
+    ui->Gcolor->setValue(ui->widget->getOilColor().y * 255.);
+    ui->Bcolor->setValue(ui->widget->getOilColor().z * 255.);
 }
 
 void MainWindow::on_waterColor_clicked()
 {
-    ui->Rcolor->setValue(ui->widget->getPhase2Color().x * 255.);
-    ui->Gcolor->setValue(ui->widget->getPhase2Color().y * 255.);
-    ui->Bcolor->setValue(ui->widget->getPhase2Color().z * 255.);
+    ui->Rcolor->setValue(ui->widget->getWaterColor().x * 255.);
+    ui->Gcolor->setValue(ui->widget->getWaterColor().y * 255.);
+    ui->Bcolor->setValue(ui->widget->getWaterColor().z * 255.);
 }
 
 void MainWindow::on_tracerColor_clicked()
 {
-    ui->Rcolor->setValue(ui->widget->getPhase3Color().x * 255.);
-    ui->Gcolor->setValue(ui->widget->getPhase3Color().y * 255.);
-    ui->Bcolor->setValue(ui->widget->getPhase3Color().z * 255.);
+    ui->Rcolor->setValue(ui->widget->getTracerColor().x * 255.);
+    ui->Gcolor->setValue(ui->widget->getTracerColor().y * 255.);
+    ui->Bcolor->setValue(ui->widget->getTracerColor().z * 255.);
 }
 
 void MainWindow::on_Rcolor_valueChanged(int value)
 {
     if (ui->oilColor->isChecked())
-        ui->widget->getPhase1Color().x = value / 255.;
+        ui->widget->getOilColor().x = value / 255.;
 
     if (ui->waterColor->isChecked())
-        ui->widget->getPhase2Color().x = value / 255.;
+        ui->widget->getWaterColor().x = value / 255.;
 
     if (ui->tracerColor->isChecked())
-        ui->widget->getPhase3Color().x = value / 255.;
+        ui->widget->getTracerColor().x = value / 255.;
 
     ui->widget->updateGL();
 }
@@ -540,13 +548,13 @@ void MainWindow::on_Rcolor_valueChanged(int value)
 void MainWindow::on_Gcolor_valueChanged(int value)
 {
     if (ui->oilColor->isChecked())
-        ui->widget->getPhase1Color().y = value / 255.;
+        ui->widget->getOilColor().y = value / 255.;
 
     if (ui->waterColor->isChecked())
-        ui->widget->getPhase2Color().y = value / 255.;
+        ui->widget->getWaterColor().y = value / 255.;
 
     if (ui->tracerColor->isChecked())
-        ui->widget->getPhase3Color().y = value / 255.;
+        ui->widget->getTracerColor().y = value / 255.;
 
     ui->widget->updateGL();
 }
@@ -554,22 +562,22 @@ void MainWindow::on_Gcolor_valueChanged(int value)
 void MainWindow::on_Bcolor_valueChanged(int value)
 {
     if (ui->oilColor->isChecked())
-        ui->widget->getPhase1Color().z = value / 255.;
+        ui->widget->getOilColor().z = value / 255.;
 
     if (ui->waterColor->isChecked())
-        ui->widget->getPhase2Color().z = value / 255.;
+        ui->widget->getWaterColor().z = value / 255.;
 
     if (ui->tracerColor->isChecked())
-        ui->widget->getPhase3Color().z = value / 255.;
+        ui->widget->getTracerColor().z = value / 255.;
 
     ui->widget->updateGL();
 }
 
 void MainWindow::on_pushButton_4_clicked()
 {
-    ui->widget->setPhase1Color(glm::vec3(0.9f, 0.35f, 0.2f));
-    ui->widget->setPhase2Color(glm::vec3(0.3f, 0.65f, 0.9f));
-    ui->widget->setPhase3Color(glm::vec3(0.65f, 0.95f, 0.15f));
+    ui->widget->setOilColor(glm::vec3(0.9f, 0.35f, 0.2f));
+    ui->widget->setWaterColor(glm::vec3(0.3f, 0.65f, 0.9f));
+    ui->widget->setTracerColor(glm::vec3(0.65f, 0.95f, 0.15f));
     ui->oilColor->click();
 
     ui->widget->updateGL();
@@ -693,7 +701,6 @@ void MainWindow::on_twoPhaseSaveCurveButton_clicked()
     ui->plotWidget->savePng(fn, 540, 540);
 }
 
-
 void MainWindow::on_pushButton_clicked()
 {
     if (ui->title->text() != "")
@@ -759,7 +766,7 @@ void MainWindow::on_plot_clicked()
         std::vector<QString> dataHeaders;
         data.resize(vstrings.size());
 
-        for (auto& header : vstrings)
+        for (auto &header : vstrings)
             dataHeaders.push_back(QString::fromStdString((header)));
 
         double value;

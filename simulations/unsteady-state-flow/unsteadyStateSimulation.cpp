@@ -374,7 +374,7 @@ void unsteadyStateSimulation::solvePressureField()
 
         for (pore *p : pnmRange<pore>(network))
         {
-            if (p->getActive() && p->getNodeIn() != 0 && p->getNodeOut() != 0 && ((p->getFlow() > 0 && p->getNodeOut()->getPhaseFlag() == phase::oil && p->getNodeIn()->getPhaseFlag() == phase::water) || (p->getFlow() < 0 && p->getNodeOut()->getPhaseFlag() == phase::water && p->getNodeIn()->getPhaseFlag() == phase::oil)))
+            if (p->getActive() && p->getNodeIn() != 0 && p->getNodeOut() != 0 && ((p->getFlow() > 0 && p->getNodeOut()->getPhaseFlag() == phase::oil && p->getNodeIn()->getWaterFraction() > 1e-20) || (p->getFlow() < 0 && p->getNodeOut()->getWaterFraction() > 1e-20 && p->getNodeIn()->getPhaseFlag() == phase::oil)))
             {
                 p->setCapillaryPressure(0);
                 p->setActive(false);
