@@ -22,9 +22,15 @@ TEMPLATE = app
 LIBS += -fopenmp
 
 win32 {
-    LIBS += -lopengl32 $$PWD/libs/Glew/glew32.dll
-    LIBS += -L$$PWD/libs/Glew/ -lglew32
-    LIBS += -L$$PWD/libs/Glew/ -lglew32s
+    contains(QT_ARCH, i386) {
+        #32 bit
+        LIBS += -lopengl32 $$PWD/libs/glew/bin/Release/Win32/glew32.dll
+        LIBS += -L$$PWD/libs/glew/lib/Release/Win32/ -lglew32
+    } else {
+        #64 bit
+        LIBS += -lopengl32 $$PWD/libs/glew/bin/Release/x64/glew32.dll
+        LIBS += -L$$PWD/libs/glew/lib/Release/x64/ -lglew32
+    }
 }
 
 unix {
@@ -38,7 +44,6 @@ SOURCES += main.cpp \
     builders/regularNetworkBuilder.cpp \
     builders/statoilNetworkBuilder.cpp \
     gui/mainwindow.cpp \
-    gui/qcustomplot.cpp \
     gui/widget3d.cpp \
     misc/randomGenerator.cpp \
     misc/scopedtimer.cpp \
@@ -63,7 +68,8 @@ SOURCES += main.cpp \
     simulations/template-simulation/templateFlowSimulation.cpp \
     simulations/simulation.cpp \
     simulations/renderer/renderer.cpp \
-    misc/maths.cpp
+    misc/maths.cpp \
+    libs/qcustomplot/qcustomplot.cpp
 
 
 HEADERS += \
@@ -72,7 +78,6 @@ HEADERS += \
     builders/regularNetworkBuilder.h \
     builders/statoilNetworkBuilder.h \
     gui/mainwindow.h \
-    gui/qcustomplot.h \
     gui/widget3d.h \
     misc/maths.h \
     misc/randomGenerator.h \
@@ -99,7 +104,8 @@ HEADERS += \
     simulations/unsteady-state-flow/unsteadyStateSimulation.h \
     simulations/template-simulation/templateFlowSimulation.h \
     simulations/simulation.h \
-    simulations/renderer/renderer.h
+    simulations/renderer/renderer.h \
+    libs/qcustomplot/qcustomplot.h
 
 
 INCLUDEPATH += \

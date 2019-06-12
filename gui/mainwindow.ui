@@ -895,7 +895,7 @@
             <string>aspect ratio (node/throat)</string>
            </property>
            <property name="text">
-            <string>2</string>
+            <string>1.5</string>
            </property>
           </widget>
          </widget>
@@ -3354,7 +3354,7 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
-   <header location="global">qcustomplot.h</header>
+   <header>libs/qcustomplot/qcustomplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

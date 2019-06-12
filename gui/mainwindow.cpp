@@ -12,7 +12,7 @@
 #include "misc/userInput.h"
 
 #include "libs/boost/format.hpp"
-#include "qcustomplot.h"
+#include "libs/qcustomplot/qcustomplot.h"
 
 #include <thread>
 #include <iostream>
@@ -392,9 +392,9 @@ void MainWindow::updateGUIDuringRendering()
 
 void MainWindow::exportNetworkToImage()
 {
-    ui->widget->updateGL();
+    ui->widget->update();
 
-    QImage image = ui->widget->grabFrameBuffer();
+    QImage image = ui->widget->grabFramebuffer();
     std::string imagePath = "Videos/IMG" + boost::str(boost::format("%07d") % imageIndex) + ".png";
     image.save(imagePath.c_str());
 
@@ -414,49 +414,49 @@ void MainWindow::on_renderStopButton_clicked()
 void MainWindow::on_visibleOilCheckBox_clicked()
 {
     ui->widget->setOilVisible(ui->visibleOilCheckBox->isChecked());
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_visibleWaterCheckBox_clicked()
 {
     ui->widget->setWaterVisible(ui->visibleWaterCheckBox->isChecked());
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_visibleOilWetCheckBox_clicked()
 {
     ui->widget->setOilWetVisible(ui->visibleOilWetCheckBox->isChecked());
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_visibleWaterWetCheckBox_clicked()
 {
     ui->widget->setWaterWetVisible(ui->visibleWaterWetCheckBox->isChecked());
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_pore3DCheckBox_clicked()
 {
     ui->widget->setPoreBodies(ui->pore3DCheckBox->isChecked());
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_node3DCheckBox_clicked()
 {
     ui->widget->setNodeBodies(ui->node3DCheckBox->isChecked());
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_lightCheckBox_clicked()
 {
     ui->widget->setAxes(ui->lightCheckBox->isChecked());
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_resetRadioButton_clicked()
 {
     ui->widget->setAspectRatio();
-    ui->widget->updateGL();
+    ui->widget->update();
     ui->resetRadioButton->setChecked(false);
 }
 
@@ -542,7 +542,7 @@ void MainWindow::on_Rcolor_valueChanged(int value)
     if (ui->tracerColor->isChecked())
         ui->widget->getTracerColor().x = value / 255.;
 
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_Gcolor_valueChanged(int value)
@@ -556,7 +556,7 @@ void MainWindow::on_Gcolor_valueChanged(int value)
     if (ui->tracerColor->isChecked())
         ui->widget->getTracerColor().y = value / 255.;
 
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_Bcolor_valueChanged(int value)
@@ -570,7 +570,7 @@ void MainWindow::on_Bcolor_valueChanged(int value)
     if (ui->tracerColor->isChecked())
         ui->widget->getTracerColor().z = value / 255.;
 
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_pushButton_4_clicked()
@@ -580,28 +580,28 @@ void MainWindow::on_pushButton_4_clicked()
     ui->widget->setTracerColor(glm::vec3(0.65f, 0.95f, 0.15f));
     ui->oilColor->click();
 
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_xCutCheckBox_clicked(bool checked)
 {
     ui->widget->setCutXValue(ui->xSlider->value() / 100.);
     ui->widget->setCutX(checked);
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_yCutCheckBox_clicked(bool checked)
 {
     ui->widget->setCutYValue(ui->ySlider->value() / 100.);
     ui->widget->setCutY(checked);
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_zCutCheckBox_clicked(bool checked)
 {
     ui->widget->setCutZValue(ui->zSlider->value() / 100.);
     ui->widget->setCutZ(checked);
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_xSlider_valueChanged(int value)
@@ -609,7 +609,7 @@ void MainWindow::on_xSlider_valueChanged(int value)
     if (ui->xCutCheckBox->isChecked())
     {
         ui->widget->setCutXValue(value / 100.);
-        ui->widget->updateGL();
+        ui->widget->update();
     }
 }
 
@@ -618,7 +618,7 @@ void MainWindow::on_ySlider_valueChanged(int value)
     if (ui->yCutCheckBox->isChecked())
     {
         ui->widget->setCutYValue(value / 100.);
-        ui->widget->updateGL();
+        ui->widget->update();
     }
 }
 
@@ -627,14 +627,14 @@ void MainWindow::on_zSlider_valueChanged(int value)
     if (ui->zCutCheckBox->isChecked())
     {
         ui->widget->setCutZValue(value / 100.);
-        ui->widget->updateGL();
+        ui->widget->update();
     }
 }
 
 void MainWindow::on_linesCheckbox_clicked(bool checked)
 {
     ui->widget->setPoreLines(checked);
-    ui->widget->updateGL();
+    ui->widget->update();
 }
 
 void MainWindow::on_regularNetworkButton_clicked()
@@ -671,7 +671,7 @@ void MainWindow::on_saveNetworkImageButton_clicked()
     if (!(fn.endsWith(".png", Qt::CaseInsensitive)))
         fn += ".png"; // default
 
-    QImage image = ui->widget->grabFrameBuffer();
+    QImage image = ui->widget->grabFramebuffer();
     image.save(fn, "png");
 }
 

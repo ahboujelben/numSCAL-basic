@@ -21,7 +21,7 @@ using namespace PNM;
 using namespace std;
 
 widget3d::widget3d(QWidget *parent)
-    : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+    : QOpenGLWidget(parent)
 {
     axes = true;
     animation = false;
@@ -450,7 +450,7 @@ void widget3d::bufferAxesData()
 void widget3d::loadShaderUniforms(Shader *shader)
 {
     // set view transformation
-    view = glm::mat4();
+    view = glm::mat4(1.0f);
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, float(scale)));
     view = glm::translate(view, glm::vec3(0.0f + xTran, 0.0f + yTran, -2.5f));
     view = glm::rotate(view, float(xInitRot + xRot), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -467,9 +467,9 @@ void widget3d::loadShaderUniforms(Shader *shader)
     shader->setVec3("lightPos", 1.0f, 0.0f, 2.0f);
 
     //Normal
-    viewInv = inverse(view);
+    viewInv = glm::inverse(view);
     shader->setVec4("eyePoint", viewInv * glm::vec4(0.0, 0.0, 0.0, 1.0));
-    shader->setMat3("normalMatrix", glm::mat3(transpose(viewInv)));
+    shader->setMat3("normalMatrix", glm::mat3(glm::transpose(viewInv)));
 
     //Phase Colors
     shader->setVec3("oilColor", oilColor.x, oilColor.y, oilColor.z);
@@ -480,7 +480,7 @@ void widget3d::loadShaderUniforms(Shader *shader)
 void widget3d::loadShaderUniformsAxes(Shader *shader)
 {
     // set view transformation
-    view = glm::mat4();
+    view = glm::mat4(1.0f);
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.5f));
     view = glm::translate(view, glm::vec3(1.0f, -1.0f, -0.5f));
     view = glm::rotate(view, float(xInitRot + xRot), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -496,9 +496,9 @@ void widget3d::loadShaderUniformsAxes(Shader *shader)
     shader->setVec3("lightPos", 1.0f, 0.0f, 2.0f);
 
     //Normal
-    viewInv = inverse(view);
+    viewInv = glm::inverse(view);
     shader->setVec4("eyePoint", viewInv * glm::vec4(0.0, 0.0, 0.0, 1.0));
-    shader->setMat3("normalMatrix", glm::mat3(transpose(viewInv)));
+    shader->setMat3("normalMatrix", glm::mat3(glm::transpose(viewInv)));
 }
 
 void widget3d::drawSpheres()
@@ -568,13 +568,13 @@ void widget3d::mouseMoveEvent(QMouseEvent *event)
             xRot += 0.005 * dy;
             yRot += 0.005 * dx;
         }
-        updateGL();
+        update();
     }
     else if (event->buttons() & Qt::RightButton)
     {
         xRot += 0.005 * dy;
         zRot += 0.005 * dx;
-        updateGL();
+        update();
     }
 
     lastPos = event->pos();
@@ -583,7 +583,7 @@ void widget3d::mouseMoveEvent(QMouseEvent *event)
 void widget3d::wheelEvent(QWheelEvent *event)
 {
     scale += event->delta() / 800.;
-    updateGL();
+    update();
 }
 
 void widget3d::initializeGL()
@@ -727,7 +727,7 @@ void widget3d::paintGL()
 
 void widget3d::timerUpdate()
 {
-    updateGL();
+    update();
 }
 
 bool widget3d::getNetworkBuilt() const

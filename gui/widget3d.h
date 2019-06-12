@@ -8,7 +8,7 @@
 #ifndef WIDGET3D_H
 #define WIDGET3D_H
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <libs/glm/glm.hpp>
 #include <memory>
 
@@ -21,7 +21,7 @@ class Shader;
 class QMouseEvent;
 class QTimer;
 
-class widget3d : public QGLWidget
+class widget3d : public QOpenGLWidget
 {
   Q_OBJECT
 public:

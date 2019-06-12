@@ -8,7 +8,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <libs/GL/glew.h>
+#include <libs/glew/include/GL/glew.h>
 #include <libs/glm/glm.hpp>
 #include <libs/glm/gtc/matrix_transform.hpp>
 #include <libs/glm/gtc/type_ptr.hpp>
