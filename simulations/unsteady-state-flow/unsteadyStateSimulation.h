@@ -12,26 +12,27 @@
 
 #include <unordered_set>
 
-namespace PNM
-{
+namespace PNM {
 
 class pore;
 class node;
 
-class unsteadyStateSimulation : public simulation
-{
-public:
-  unsteadyStateSimulation() {}
-  ~unsteadyStateSimulation() {}
+class unsteadyStateSimulation : public simulation {
+ public:
+  unsteadyStateSimulation();
+  ~unsteadyStateSimulation() override;
   unsteadyStateSimulation(const unsteadyStateSimulation &) = delete;
   unsteadyStateSimulation(unsteadyStateSimulation &&) = delete;
-  auto operator=(const unsteadyStateSimulation &) -> unsteadyStateSimulation & = delete;
-  auto operator=(unsteadyStateSimulation &&) -> unsteadyStateSimulation & = delete;
+  auto operator=(const unsteadyStateSimulation &)
+      -> unsteadyStateSimulation & = delete;
+  auto operator=(unsteadyStateSimulation &&)
+      -> unsteadyStateSimulation & = delete;
+
   virtual void run() override;
   virtual std::string getNotification() override;
   virtual int getProgress() override;
 
-private:
+ private:
   void initialiseOutputFiles();
   void initialiseCapillaries();
   void initialiseSimulationAttributes();
@@ -64,6 +65,6 @@ private:
   std::unordered_set<node *> nodesToCheck;
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // UNSTEADYSTATESIMULATION_H
+#endif  // UNSTEADYSTATESIMULATION_H

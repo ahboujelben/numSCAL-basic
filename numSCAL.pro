@@ -47,6 +47,7 @@ SOURCES += main.cpp \
     gui/widget3d.cpp \
     misc/randomGenerator.cpp \
     misc/scopedtimer.cpp \
+    misc/shader.cpp \
     misc/tools.cpp \
     misc/userInput.cpp \
     network/cluster.cpp \

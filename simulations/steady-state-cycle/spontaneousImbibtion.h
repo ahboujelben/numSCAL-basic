@@ -12,24 +12,24 @@
 
 #include <unordered_set>
 
-namespace PNM
-{
+namespace PNM {
 class element;
 
-class spontaneousImbibtion : public simulation
-{
-public:
-  spontaneousImbibtion() {}
-  ~spontaneousImbibtion() {}
+class spontaneousImbibtion : public simulation {
+ public:
+  spontaneousImbibtion();
+  ~spontaneousImbibtion() override;
   spontaneousImbibtion(const spontaneousImbibtion &) = delete;
   spontaneousImbibtion(spontaneousImbibtion &&) = delete;
-  auto operator=(const spontaneousImbibtion &) -> spontaneousImbibtion & = delete;
+  auto operator=(const spontaneousImbibtion &)
+      -> spontaneousImbibtion & = delete;
   auto operator=(spontaneousImbibtion &&) -> spontaneousImbibtion & = delete;
+
   virtual void run() override;
   virtual std::string getNotification() override;
   virtual int getProgress() override;
 
-private:
+ private:
   void initialiseOutputFiles();
   void initialiseSimulationAttributes();
   void initialiseCapillaries();
@@ -49,7 +49,7 @@ private:
   void generateNetworkStateFiles();
   void updateVariables();
 
-  double step;
+  int step;
   double radiusStep;
   double currentRadius;
   double currentPc;
@@ -61,6 +61,6 @@ private:
   std::unordered_set<element *> elementsToInvade;
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // SPONTANEOUSIMBIBTION_H
+#endif  // SPONTANEOUSIMBIBTION_H

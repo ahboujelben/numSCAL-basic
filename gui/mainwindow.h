@@ -11,33 +11,30 @@
 #include <QMainWindow>
 #include <memory>
 
-namespace Ui
-{
+namespace Ui {
 class MainWindow;
 }
 
-namespace PNM
-{
+namespace PNM {
 class networkModel;
 class networkBuilder;
 class simulation;
-} // namespace PNM
+}  // namespace PNM
 
 class QCPPlotTitle;
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
   Q_OBJECT
 
-public:
-  explicit MainWindow(QWidget *parent = 0);
+ public:
+  explicit MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void exportNetworkDataFromGUI();
   void exportSimulationDataFromGUI();
-  void importNetworkDataFromGUI();
-  void importSimulationDataFromGUI();
+  void importNetworkDataFromFile();
+  void importSimulationDataFromFile();
 
-private:
+ private:
   void initialiseGUI();
   void initialiseCurvesWidget();
   void initialiseVariables();
@@ -52,11 +49,13 @@ private:
   bool currentlyBusy;
   bool networkBuilt;
 
-signals:
+  static Qt::GlobalColor COLOR_LIST[];
+
+ signals:
   void closing();
   void updateGui();
 
-private slots:
+ private slots:
   void updateGUIBeforeLoadingNetwork();
   void updateGUIAfterLoadingNetwork();
   void updateGUIAfterNetworkFailure();
@@ -67,6 +66,7 @@ private slots:
   void updateGUIBeforeRendering();
   void updateGUIAfterRendering();
   void updateGUIDuringRendering();
+  void updateGUIAfterSimulationFailure();
   void exportNetworkToImage();
   void on_loadNetworkButton_clicked();
   void on_twoPhaseSimButton_clicked();
@@ -115,4 +115,4 @@ private slots:
   void on_statoilNetworkButton_clicked();
 };
 
-#endif // MAINWINDOW_H
+#endif  // MAINWINDOW_H

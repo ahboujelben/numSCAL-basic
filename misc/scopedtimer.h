@@ -9,31 +9,25 @@
 #define SCOPEDTIMER_H
 
 #include <chrono>
-#include <unordered_map>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <unordered_map>
 
 #define MEASURE_FUNCTION() \
   ScopedTimer timer { __func__ }
 
-class ScopedTimer
-{
-
-public:
+class ScopedTimer {
+ public:
   using ClockType = std::chrono::steady_clock;
 
-  ScopedTimer(const char *func)
-      : function_{func}, start_{ClockType::now()}
-  {
-  }
+  ScopedTimer(const char *func) : function_{func}, start_{ClockType::now()} {}
 
   ScopedTimer(const ScopedTimer &) = delete;
   ScopedTimer(ScopedTimer &&) = delete;
   auto operator=(const ScopedTimer &) -> ScopedTimer & = delete;
   auto operator=(ScopedTimer &&) -> ScopedTimer & = delete;
 
-  ~ScopedTimer()
-  {
+  ~ScopedTimer() {
     using namespace std::chrono;
     auto stop = ClockType::now();
     auto duration = (stop - start_);
@@ -42,24 +36,22 @@ public:
     profile[function_].second++;
   }
 
-  static void printProfileData()
-  {
+  static void printProfileData() {
     std::ofstream profileData("Results/Profiling/profileData.txt");
     profileData << "Function\tCalls\tT (ms)\tAvg. T per Call (ms)" << std::endl;
-    for(auto it : ScopedTimer::profile)
-    {
-       profileData << it.first;
-       profileData << "\t" << it.second.second;
-       profileData << "\t" << it.second.first/1e6;
-       profileData << "\t" << it.second.first/it.second.second/1e6;
-       profileData << std::endl;
+    for (auto it : ScopedTimer::profile) {
+      profileData << it.first;
+      profileData << "\t" << it.second.second;
+      profileData << "\t" << it.second.first / 1e6;
+      profileData << "\t" << it.second.first / it.second.second / 1e6;
+      profileData << std::endl;
     }
   }
 
-private:
+ private:
   static std::unordered_map<const char *, std::pair<double, int>> profile;
   const char *function_ = {};
   const ClockType::time_point start_ = {};
 };
 
-#endif // SCOPEDTIMER_H
+#endif  // SCOPEDTIMER_H

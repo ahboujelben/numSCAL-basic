@@ -7,21 +7,21 @@
 
 #include "node.h"
 
-namespace PNM
-{
+namespace PNM {
 
-node::node(double X, double Y, double Z)
-{
-    type = capillaryType::poreBody;
-    x = X;
-    y = Y;
-    z = Z;
-    xCoordinate = X;
-    yCoordinate = Y;
-    zCoordinate = Z;
-    connectionNumber = 6;
-    pressure = 0;
-    rank = 0;
+node::node(double X, double Y, double Z) {
+  type = capillaryType::poreBody;
+  x = X;
+  y = Y;
+  z = Z;
+  xCoordinate = X;
+  yCoordinate = Y;
+  zCoordinate = Z;
+  connectionNumber = 6;
+  pressure = 0;
+  rank = 0;
 }
 
-} // namespace PNM
+node::~node() {}
+
+}  // namespace PNM

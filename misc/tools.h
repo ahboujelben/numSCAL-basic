@@ -10,14 +10,13 @@
 
 #include <string>
 
-namespace tools
-{
+namespace tools {
 void createRequiredFolders();
 void initialiseFolder(std::string);
 void createFolder(std::string);
 void cleanFolder(std::string);
 void cleanVideosFolder();
 void renderVideo(int fps = 25);
-} // namespace tools
+}  // namespace tools
 
-#endif // TOOLS_H
+#endif  // TOOLS_H

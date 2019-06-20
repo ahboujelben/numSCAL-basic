@@ -10,14 +10,12 @@
 
 #include "element.h"
 
-namespace PNM
-{
+namespace PNM {
 
-class node : public element
-{
-public:
+class node : public element {
+ public:
   explicit node(double, double, double);
-  virtual ~node() {}
+  virtual ~node();
   node(const node &) = delete;
   node(node &&) = delete;
   auto operator=(const node &) -> node & = delete;
@@ -50,21 +48,21 @@ public:
   int getRank() const { return rank; }
   void setRank(int value) { rank = value; }
 
-private:
-  int x; // relative x coordinate
-  int y; // relative y coordinate
-  int z; // relative z coordinate
+ private:
+  int x;  // relative x coordinate
+  int y;  // relative y coordinate
+  int z;  // relative z coordinate
 
-  double xCoordinate; // absolute x coordinate
-  double yCoordinate; // absolute y coordinate
-  double zCoordinate; // absolute z coordinate
+  double xCoordinate;  // absolute x coordinate
+  double yCoordinate;  // absolute y coordinate
+  double zCoordinate;  // absolute z coordinate
 
-  int connectionNumber; //coordination number
+  int connectionNumber;  // coordination number
 
-  double pressure; // pressure (SI)
-  int rank;        // solver ranking
+  double pressure;  // pressure (SI)
+  int rank;         // solver ranking
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // NODE_H
+#endif  // NODE_H

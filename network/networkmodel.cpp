@@ -7,21 +7,16 @@
 
 #include "networkmodel.h"
 
-namespace PNM
-{
+namespace PNM {
 
-pore *networkModel::getPore(int i) const
-{
-    if (i < 0 || i > totalPores - 1)
-        return 0;
-    return tableOfPores[i].get();
+pore *networkModel::getPore(int i) const {
+  if (i < 0 || i > totalPores - 1) return nullptr;
+  return tableOfPores[i].get();
 }
 
-node *networkModel::getNode(int i) const
-{
-    if (i < 0 || i > totalNodes - 1)
-        return 0;
-    return tableOfNodes[i].get();
+node *networkModel::getNode(int i) const {
+  if (i < 0 || i > totalNodes - 1) return nullptr;
+  return tableOfNodes[i].get();
 }
 
-} // namespace PNM
+}  // namespace PNM

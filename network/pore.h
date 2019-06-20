@@ -10,16 +10,14 @@
 
 #include "element.h"
 
-namespace PNM
-{
+namespace PNM {
 
 class node;
 
-class pore : public element
-{
-public:
+class pore : public element {
+ public:
   explicit pore(node *const &, node *const &);
-  virtual ~pore() {}
+  virtual ~pore();
   pore(const pore &) = delete;
   pore(pore &&) = delete;
   auto operator=(const pore &) -> pore & = delete;
@@ -29,8 +27,12 @@ public:
   void setNodeIn(node *value) { nodeIn = value; }
   node *getNodeOut() const { return nodeOut; }
   void setNodeOut(node *value) { nodeOut = value; }
-  node *getOtherNode(const node *other) const { return other == nodeIn ? nodeOut : nodeIn; }
-  bool hasNode(const node *other) const { return other == nodeIn || other == nodeOut ? true : false; }
+  node *getOtherNode(const node *other) const {
+    return other == nodeIn ? nodeOut : nodeIn;
+  }
+  bool hasNode(const node *other) const {
+    return other == nodeIn || other == nodeOut ? true : false;
+  }
 
   double getFullLength() const { return fullLength; }
   void setFullLength(double value) { fullLength = value; }
@@ -47,7 +49,7 @@ public:
   bool getNodeOutOil() const { return nodeOutOil; }
   void setNodeOutOil(bool value) { nodeOutOil = value; }
 
-  //implemented methods
+  // implemented methods
 
   double getXCoordinate() const;
   double getYCoordinate() const;
@@ -62,18 +64,18 @@ public:
   double getMinZCoordinate() const;
   double getMaxZCoordinate() const;
 
-protected:
-  node *nodeIn;      // node pointer at the first end of the pore
-  node *nodeOut;     // node pointer at the second end of the pore
-  double fullLength; // distance (SI) between both connecting nodes centers
+ protected:
+  node *nodeIn;       // node pointer at the first end of the pore
+  node *nodeOut;      // node pointer at the second end of the pore
+  double fullLength;  // distance (SI) between both connecting nodes centers
 
   // simulation related attributes
-  bool nodeInOil;    // flags oil existence at nodeIn
-  bool nodeOutWater; // flags water existence at nodeOut
-  bool nodeInWater;  // flags water existence at nodeIn
-  bool nodeOutOil;   // flags oil existence at nodeOut
+  bool nodeInOil;     // flags oil existence at nodeIn
+  bool nodeOutWater;  // flags water existence at nodeOut
+  bool nodeInWater;   // flags water existence at nodeIn
+  bool nodeOutOil;    // flags oil existence at nodeOut
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // PORE_H
+#endif  // PORE_H

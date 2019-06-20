@@ -10,44 +10,44 @@
 
 #include "simulations/simulation.h"
 
-namespace PNM
-{
+namespace PNM {
 
-class tracerFlowSimulation : public simulation
-{
-  public:
-    tracerFlowSimulation() {}
-    ~tracerFlowSimulation() {}
-    tracerFlowSimulation(const tracerFlowSimulation &) = delete;
-    tracerFlowSimulation(tracerFlowSimulation &&) = delete;
-    auto operator=(const tracerFlowSimulation &) -> tracerFlowSimulation & = delete;
-    auto operator=(tracerFlowSimulation &&) -> tracerFlowSimulation & = delete;
-    virtual void run() override;
-    virtual std::string getNotification() override;
-    virtual int getProgress() override;
+class tracerFlowSimulation : public simulation {
+ public:
+  tracerFlowSimulation();
+  ~tracerFlowSimulation() override;
+  tracerFlowSimulation(const tracerFlowSimulation &) = delete;
+  tracerFlowSimulation(tracerFlowSimulation &&) = delete;
+  auto operator=(const tracerFlowSimulation &)
+      -> tracerFlowSimulation & = delete;
+  auto operator=(tracerFlowSimulation &&) -> tracerFlowSimulation & = delete;
 
-  private:
-    void initialiseOutputFiles();
-    void initialiseSimulationAttributes();
-    void initialiseCapillaries();
-    void setInitialAttributes();
-    void fetchNonFlowingCapillaries();
-    void solvePressureField();
-    void calculateTimeStep();
-    void updateConcentrations();
-    void updateVariables();
-    void updateOutputFiles();
-    void generateNetworkStateFiles();
+  virtual void run() override;
+  virtual std::string getNotification() override;
+  virtual int getProgress() override;
 
-    double simulationTime;
-    double timeSoFar;
-    double timeStep;
-    double injectedPVs;
-    double flowVelocity;
-    double outputCounter;
-    int frameCount;
+ private:
+  void initialiseOutputFiles();
+  void initialiseSimulationAttributes();
+  void initialiseCapillaries();
+  void setInitialAttributes();
+  void fetchNonFlowingCapillaries();
+  void solvePressureField();
+  void calculateTimeStep();
+  void updateConcentrations();
+  void updateVariables();
+  void updateOutputFiles();
+  void generateNetworkStateFiles();
+
+  double simulationTime;
+  double timeSoFar;
+  double timeStep;
+  double injectedPVs;
+  double flowVelocity;
+  double outputCounter;
+  int frameCount;
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // TRACERFLOWSIMULATION_H
+#endif  // TRACERFLOWSIMULATION_H

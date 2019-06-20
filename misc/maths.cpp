@@ -7,22 +7,12 @@
 
 #include "maths.h"
 
-namespace maths
-{
+namespace maths {
 
-double pi()
-{
-    return 3.14159265358979323846264;
-}
+double pi() { return 3.14159265358979323846264; }
 
-double PsiToPa(const double &pressure)
-{
-    return pressure / 14.50377 * 1e5;
-}
+double PsiToPa(const double &pressure) { return pressure / 14.50377 * 1e5; }
 
-double PaToPsi(const double &pressure)
-{
-    return pressure * 14.50377 / 1e5;
-}
+double PaToPsi(const double &pressure) { return pressure * 14.50377 / 1e5; }
 
-} // namespace maths
+}  // namespace maths

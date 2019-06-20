@@ -13,41 +13,38 @@
 
 #include <QObject>
 
-namespace PNM
-{
+namespace PNM {
 
 class networkModel;
 
-class networkBuilder : public QObject
-{
-    Q_OBJECT
-  public:
-    virtual ~networkBuilder() {}
-    static std::shared_ptr<networkBuilder> createBuilder();
-    std::shared_ptr<networkModel> build();
-    virtual std::string getNotification() = 0;
-    virtual int getProgress();
-    std::shared_ptr<networkModel> getNetwork() const;
+class networkBuilder : public QObject {
+  Q_OBJECT
+ public:
+  static std::shared_ptr<networkBuilder> createBuilder();
+  std::shared_ptr<networkModel> build();
+  virtual std::string getNotification() = 0;
+  virtual int getProgress();
+  std::shared_ptr<networkModel> getNetwork() const;
 
-  signals:
-    void notifyGUI();
-    void finished();
+ signals:
+  void notifyGUI();
+  void finished();
 
-  protected:
-    networkBuilder(QObject *parent = 0) : QObject(parent) {}
-    networkBuilder(const networkBuilder &) = delete;
-    networkBuilder(networkBuilder &&) = delete;
-    auto operator=(const networkBuilder &) -> networkBuilder & = delete;
-    auto operator=(networkBuilder &&) -> networkBuilder & = delete;
-    virtual void make() = 0;
-    void initialise();
-    void finalise();
-    void signalProgress(int);
+ protected:
+  networkBuilder(QObject *parent = nullptr) : QObject(parent) {}
+  networkBuilder(const networkBuilder &) = delete;
+  networkBuilder(networkBuilder &&) = delete;
+  auto operator=(const networkBuilder &) -> networkBuilder & = delete;
+  auto operator=(networkBuilder &&) -> networkBuilder & = delete;
+  virtual void make() = 0;
+  void initialise();
+  void finalise();
+  void signalProgress(int);
 
-    std::shared_ptr<networkModel> network;
-    int progress;
+  std::shared_ptr<networkModel> network;
+  int progress;
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // NETWORKBUILDER_H
+#endif  // NETWORKBUILDER_H

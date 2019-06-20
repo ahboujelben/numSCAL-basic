@@ -12,24 +12,24 @@
 
 #include <unordered_set>
 
-namespace PNM
-{
+namespace PNM {
 class element;
 
-class secondaryOilDrainage : public simulation
-{
-public:
-  secondaryOilDrainage() {}
-  ~secondaryOilDrainage() {}
+class secondaryOilDrainage : public simulation {
+ public:
+  secondaryOilDrainage();
+  ~secondaryOilDrainage() override;
   secondaryOilDrainage(const secondaryOilDrainage &) = delete;
   secondaryOilDrainage(secondaryOilDrainage &&) = delete;
-  auto operator=(const secondaryOilDrainage &) -> secondaryOilDrainage & = delete;
+  auto operator=(const secondaryOilDrainage &)
+      -> secondaryOilDrainage & = delete;
   auto operator=(secondaryOilDrainage &&) -> secondaryOilDrainage & = delete;
+
   virtual void run() override;
   virtual std::string getNotification() override;
   virtual int getProgress() override;
 
-private:
+ private:
   void initialiseOutputFiles();
   void initialiseSimulationAttributes();
   void initialiseCapillaries();
@@ -49,7 +49,7 @@ private:
   void generateNetworkStateFiles();
   void updateVariables();
 
-  double step;
+  int step;
   double radiusStep;
   double currentRadius;
   double currentPc;
@@ -61,6 +61,6 @@ private:
   std::unordered_set<element *> elementsToInvade;
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // SECONDARYOILDRAINAGE_H
+#endif  // SECONDARYOILDRAINAGE_H

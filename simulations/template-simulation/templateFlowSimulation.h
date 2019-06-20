@@ -10,33 +10,34 @@
 
 #include "simulations/simulation.h"
 
-namespace PNM
-{
+namespace PNM {
 
-class templateFlowSimulation : public simulation
-{
-public:
-  templateFlowSimulation() {}
-  ~templateFlowSimulation() {}
+class templateFlowSimulation : public simulation {
+ public:
+  templateFlowSimulation();
+  ~templateFlowSimulation() override;
   templateFlowSimulation(const templateFlowSimulation &) = delete;
   templateFlowSimulation(templateFlowSimulation &&) = delete;
-  auto operator=(const templateFlowSimulation &) -> templateFlowSimulation & = delete;
-  auto operator=(templateFlowSimulation &&) -> templateFlowSimulation & = delete;
+  auto operator=(const templateFlowSimulation &)
+      -> templateFlowSimulation & = delete;
+  auto operator=(templateFlowSimulation &&)
+      -> templateFlowSimulation & = delete;
+
   virtual void run() override;
   virtual std::string getNotification() override;
   virtual int getProgress() override;
 
-private:
-  //methods
+ private:
+  // methods
   ////////////////////////////////////////
 
-  //attributes
+  // attributes
   ///////////////////////////////////////
   double simulationTime;
   double timeSoFar;
   double timeStep;
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // TEMPLATEFLOWSIMULATION_H
+#endif  // TEMPLATEFLOWSIMULATION_H

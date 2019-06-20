@@ -12,30 +12,29 @@
 
 #include <memory>
 
-namespace PNM
-{
+namespace PNM {
 
-class renderer : public simulation
-{
-  public:
-    renderer() : currentFileIndex(0), totalFiles(1) {}
-    ~renderer() {}
-    renderer(const renderer &) = delete;
-    renderer(renderer &&) = delete;
-    auto operator=(const renderer &) -> renderer & = delete;
-    auto operator=(renderer &&) -> renderer & = delete;
-    virtual void run() override;
-    virtual std::string getNotification() override;
-    virtual int getProgress() override;
+class renderer : public simulation {
+ public:
+  renderer();
+  ~renderer() override;
+  renderer(const renderer &) = delete;
+  renderer(renderer &&) = delete;
+  auto operator=(const renderer &) -> renderer & = delete;
+  auto operator=(renderer &&) -> renderer & = delete;
 
-  private:
-    void loadStateFiles();
-    void processFrames();
+  virtual void run() override;
+  virtual std::string getNotification() override;
+  virtual int getProgress() override;
 
-    int currentFileIndex;
-    int totalFiles;
+ private:
+  void loadStateFiles();
+  void processFrames();
+
+  int currentFileIndex;
+  int totalFiles;
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // RENDERER_H
+#endif  // RENDERER_H

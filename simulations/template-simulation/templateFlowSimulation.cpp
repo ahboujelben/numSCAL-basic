@@ -8,47 +8,44 @@
 #include "templateFlowSimulation.h"
 #include "misc/userInput.h"
 
-#include <sstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <sstream>
 
-namespace PNM
-{
+namespace PNM {
 
-void templateFlowSimulation::run()
-{
-    //initialisation
-    /////////////////////////////////////
-    simulationTime = userInput::get().simulationTime;
-    timeStep = 0.01;
-    timeSoFar = 0;
+templateFlowSimulation::templateFlowSimulation() {}
 
-    while (!simulationInterrupted && timeSoFar < simulationTime)
-    {
-        //algorithms
-        ////////////////////////////////
+templateFlowSimulation::~templateFlowSimulation() {}
 
-        timeSoFar += timeStep;
+void templateFlowSimulation::run() {
+  // initialisation
+  /////////////////////////////////////
+  simulationTime = userInput::get().simulationTime;
+  timeStep = 0.01;
+  timeSoFar = 0;
 
-        updateGUI();
+  while (!simulationInterrupted && timeSoFar < simulationTime) {
+    // algorithms
+    ////////////////////////////////
 
-        if (simulationInterrupted)
-            break;
-    }
+    timeSoFar += timeStep;
+
+    updateGUI();
+
+    if (simulationInterrupted) break;
+  }
 }
 
-std::string templateFlowSimulation::getNotification()
-{
-    std::ostringstream ss;
-    ss << "Template Flow Simulation \n"
-       << std::fixed << std::setprecision(2)
-       << "Time: " << timeSoFar;
-    return ss.str();
+std::string templateFlowSimulation::getNotification() {
+  std::ostringstream ss;
+  ss << "Template Flow Simulation \n"
+     << std::fixed << std::setprecision(2) << "Time: " << timeSoFar;
+  return ss.str();
 }
 
-int templateFlowSimulation::getProgress()
-{
-    return timeSoFar / simulationTime * 100;
+int templateFlowSimulation::getProgress() {
+  return static_cast<int>(timeSoFar / simulationTime * 100);
 }
 
-} // namespace PNM
+}  // namespace PNM

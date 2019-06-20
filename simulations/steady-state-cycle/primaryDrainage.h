@@ -12,24 +12,23 @@
 
 #include <unordered_set>
 
-namespace PNM
-{
+namespace PNM {
 class element;
 
-class primaryDrainage : public simulation
-{
-public:
+class primaryDrainage : public simulation {
+ public:
   primaryDrainage(double _finalSwi = 0);
-  ~primaryDrainage() {}
+  ~primaryDrainage() override;
   primaryDrainage(const primaryDrainage &) = delete;
   primaryDrainage(primaryDrainage &&) = delete;
   auto operator=(const primaryDrainage &) -> primaryDrainage & = delete;
   auto operator=(primaryDrainage &&) -> primaryDrainage & = delete;
+
   virtual void run() override;
   virtual std::string getNotification() override;
   virtual int getProgress() override;
 
-private:
+ private:
   void initialiseOutputFiles();
   void initialiseSimulationAttributes();
   void initialiseCapillaries();
@@ -49,7 +48,7 @@ private:
   void finalise();
 
   double finalSwi;
-  double step;
+  int step;
   double radiusStep;
   double currentRadius;
   double currentPc;
@@ -61,6 +60,6 @@ private:
   std::unordered_set<element *> elementsToInvade;
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // PRIMARYDRAINAGE_H
+#endif  // PRIMARYDRAINAGE_H

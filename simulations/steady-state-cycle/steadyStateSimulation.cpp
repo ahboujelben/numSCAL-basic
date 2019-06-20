@@ -6,70 +6,68 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "steadyStateSimulation.h"
-#include "primaryDrainage.h"
-#include "spontaneousImbibtion.h"
 #include "forcedWaterInjection.h"
-#include "spontaneousOilInvasion.h"
-#include "secondaryOilDrainage.h"
 #include "misc/userInput.h"
+#include "primaryDrainage.h"
+#include "secondaryOilDrainage.h"
+#include "spontaneousImbibtion.h"
+#include "spontaneousOilInvasion.h"
 
-namespace PNM
-{
+namespace PNM {
 
-void steadyStateSimulation::run()
-{
-    if (userInput::get().primaryDrainageSimulation)
-    {
-        currentSimulation = std::make_shared<primaryDrainage>();
-        runCurrentSimulation();
-    }
+steadyStateSimulation::steadyStateSimulation() {}
 
-    if (!simulationInterrupted && userInput::get().spontaneousImbibitionSimulation)
-    {
-        currentSimulation = std::make_shared<spontaneousImbibtion>();
-        runCurrentSimulation();
-    }
+steadyStateSimulation::~steadyStateSimulation() {}
 
-    if (!simulationInterrupted && userInput::get().forcedWaterInjectionSimulation)
-    {
-        currentSimulation = std::make_shared<forcedWaterInjection>();
-        runCurrentSimulation();
-    }
+void steadyStateSimulation::run() {
+  if (userInput::get().primaryDrainageSimulation) {
+    currentSimulation = std::make_shared<primaryDrainage>();
+    runCurrentSimulation();
+  }
 
-    if (!simulationInterrupted && userInput::get().spontaneousOilInvasionSimulation)
-    {
-        currentSimulation = std::make_shared<spontaneousOilInvasion>();
-        runCurrentSimulation();
-    }
+  if (!simulationInterrupted &&
+      userInput::get().spontaneousImbibitionSimulation) {
+    currentSimulation = std::make_shared<spontaneousImbibtion>();
+    runCurrentSimulation();
+  }
 
-    if (!simulationInterrupted && userInput::get().secondaryOilDrainageSimulation)
-    {
-        currentSimulation = std::make_shared<secondaryOilDrainage>();
-        runCurrentSimulation();
-    }
+  if (!simulationInterrupted &&
+      userInput::get().forcedWaterInjectionSimulation) {
+    currentSimulation = std::make_shared<forcedWaterInjection>();
+    runCurrentSimulation();
+  }
+
+  if (!simulationInterrupted &&
+      userInput::get().spontaneousOilInvasionSimulation) {
+    currentSimulation = std::make_shared<spontaneousOilInvasion>();
+    runCurrentSimulation();
+  }
+
+  if (!simulationInterrupted &&
+      userInput::get().secondaryOilDrainageSimulation) {
+    currentSimulation = std::make_shared<secondaryOilDrainage>();
+    runCurrentSimulation();
+  }
 }
 
-std::string steadyStateSimulation::getNotification()
-{
-    return currentSimulation->getNotification();
+std::string steadyStateSimulation::getNotification() {
+  return currentSimulation->getNotification();
 }
 
-int steadyStateSimulation::getProgress()
-{
-    return currentSimulation->getProgress();
+int steadyStateSimulation::getProgress() {
+  return currentSimulation->getProgress();
 }
 
-void steadyStateSimulation::interrupt()
-{
-    simulationInterrupted = true;
-    currentSimulation->interrupt();
+void steadyStateSimulation::interrupt() {
+  simulationInterrupted = true;
+  currentSimulation->interrupt();
 }
 
-void steadyStateSimulation::runCurrentSimulation()
-{
-    currentSimulation->setNetwork(network);
-    connect(currentSimulation.get(), SIGNAL(notifyGUI()), this, SLOT(updateGUI()));
-    currentSimulation->execute();
+void steadyStateSimulation::runCurrentSimulation() {
+  currentSimulation->setNetwork(network);
+  connect(currentSimulation.get(), SIGNAL(notifyGUI()), this,
+          SLOT(updateGUI()));
+  currentSimulation->execute();
 }
 
-} // namespace PNM
+}  // namespace PNM

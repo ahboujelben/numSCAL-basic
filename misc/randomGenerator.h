@@ -10,11 +10,10 @@
 
 #include <libs/boost/random/mersenne_twister.hpp>
 
-class randomGenerator
-{
+class randomGenerator {
   using mt = boost::random::mt19937;
 
-public:
+ public:
   randomGenerator(int seed);
   ~randomGenerator() {}
   randomGenerator(const randomGenerator &) = delete;
@@ -29,8 +28,8 @@ public:
   double normal(double, double, double, double);
   double weibull(double, double, double, double);
 
-private:
+ private:
   mt gen;
 };
 
-#endif // RANDOMGENERATOR_H
+#endif  // RANDOMGENERATOR_H

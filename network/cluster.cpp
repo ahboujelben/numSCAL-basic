@@ -7,53 +7,27 @@
 
 #include "cluster.h"
 
-namespace PNM
-{
+namespace PNM {
 
-cluster::cluster(int pLabel)
-{
-    id = pLabel;
-    inlet = false;
-    outlet = false;
-    spanning = false;
+cluster::cluster(int pLabel) {
+  id = pLabel;
+  inlet = false;
+  outlet = false;
+  spanning = false;
 }
 
-bool cluster::getInlet() const
-{
-    return inlet;
-}
+bool cluster::getInlet() const { return inlet; }
 
-void cluster::setInlet(bool value)
-{
-    inlet = value;
-}
-bool cluster::getOutlet() const
-{
-    return outlet;
-}
+void cluster::setInlet(bool value) { inlet = value; }
+bool cluster::getOutlet() const { return outlet; }
 
-void cluster::setOutlet(bool value)
-{
-    outlet = value;
-}
-bool cluster::getSpanning() const
-{
-    return spanning;
-}
+void cluster::setOutlet(bool value) { outlet = value; }
+bool cluster::getSpanning() const { return spanning; }
 
-void cluster::setSpanning(bool value)
-{
-    spanning = value;
-}
+void cluster::setSpanning(bool value) { spanning = value; }
 
-int cluster::getId() const
-{
-    return id;
-}
+int cluster::getId() const { return id; }
 
-void cluster::setId(int value)
-{
-    id = value;
-}
+void cluster::setId(int value) { id = value; }
 
-} // namespace PNM
+}  // namespace PNM

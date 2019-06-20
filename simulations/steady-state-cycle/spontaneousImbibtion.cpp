@@ -6,348 +6,332 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "spontaneousImbibtion.h"
-#include "operations/pnmSolver.h"
+#include "misc/maths.h"
+#include "misc/tools.h"
+#include "misc/userInput.h"
+#include "network/cluster.h"
+#include "network/iterator.h"
 #include "operations/hkClustering.h"
 #include "operations/pnmOperation.h"
-#include "network/iterator.h"
-#include "network/cluster.h"
-#include "misc/userInput.h"
-#include "misc/tools.h"
-#include "misc/maths.h"
+#include "operations/pnmSolver.h"
 
-#include <unordered_set>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
 #include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <unordered_set>
 
-namespace PNM
-{
+namespace PNM {
 
-void spontaneousImbibtion::run()
-{
-    initialiseOutputFiles();
-    initialiseCapillaries();
-    initialiseSimulationAttributes();
+spontaneousImbibtion::spontaneousImbibtion() {}
 
-    while (step < userInput::get().twoPhaseSimulationSteps)
-    {
-        invadeCapillariesAtCurrentPc();
-        dismissTrappedElements();
-        adjustCapillaryVolumes();
+spontaneousImbibtion::~spontaneousImbibtion() {}
 
-        updateOutputFiles();
-        updateVariables();
-        updateGUI();
+void spontaneousImbibtion::run() {
+  initialiseOutputFiles();
+  initialiseCapillaries();
+  initialiseSimulationAttributes();
 
-        if (simulationInterrupted)
-            break;
-    }
-    finalise();
+  while (step < userInput::get().twoPhaseSimulationSteps) {
+    invadeCapillariesAtCurrentPc();
+    dismissTrappedElements();
+    adjustCapillaryVolumes();
+
+    updateOutputFiles();
+    updateVariables();
+    updateGUI();
+
+    if (simulationInterrupted) break;
+  }
+  finalise();
 }
 
-std::string spontaneousImbibtion::getNotification()
-{
-    std::ostringstream ss;
-    ss << "Spontaneous Imbibition Simulation \n"
-       << std::fixed << std::setprecision(2)
-       << "Current PC (psi): " << maths::PaToPsi(currentPc) << " / Sw: " << currentSw;
-    return ss.str();
+std::string spontaneousImbibtion::getNotification() {
+  std::ostringstream ss;
+  ss << "Spontaneous Imbibition Simulation \n"
+     << std::fixed << std::setprecision(2)
+     << "Current PC (psi): " << maths::PaToPsi(currentPc)
+     << " / Sw: " << currentSw;
+  return ss.str();
 }
 
-int spontaneousImbibtion::getProgress()
-{
-    return step / userInput::get().twoPhaseSimulationSteps * 100;
+int spontaneousImbibtion::getProgress() {
+  return step / userInput::get().twoPhaseSimulationSteps * 100;
 }
 
-void spontaneousImbibtion::initialiseOutputFiles()
-{
-    tools::initialiseFolder("Network_State/Spontaneous_Imbibition");
+void spontaneousImbibtion::initialiseOutputFiles() {
+  tools::initialiseFolder("Network_State/Spontaneous_Imbibition");
 
-    pcFilename = "Results/SS_Simulation/2-spontaneousImbibtionPcCurve.txt";
-    relPermFilename = "Results/SS_Simulation/2-spontaneousImbibtionRelativePermeabilies.txt";
+  pcFilename = "Results/SS_Simulation/2-spontaneousImbibtionPcCurve.txt";
+  relPermFilename =
+      "Results/SS_Simulation/2-spontaneousImbibtionRelativePermeabilies.txt";
 
-    std::ofstream file;
+  std::ofstream file;
 
-    file.open(pcFilename.c_str());
-    file << "Sw\tPc\n";
-    file.close();
+  file.open(pcFilename.c_str());
+  file << "Sw\tPc\n";
+  file.close();
 
-    file.open(relPermFilename.c_str());
-    file << "Sw\tKro\tKrw\n";
-    file.close();
+  file.open(relPermFilename.c_str());
+  file << "Sw\tKro\tKrw\n";
+  file.close();
 }
 
-void spontaneousImbibtion::initialiseSimulationAttributes()
-{
-    step = 0;
-    currentSw = 0;
+void spontaneousImbibtion::initialiseSimulationAttributes() {
+  step = 0;
+  currentSw = 0;
 
-    outputCounter = 0;
-    frameCount = 0;
+  outputCounter = 0;
+  frameCount = 0;
 
-    double effectiveMinRadius = userInput::get().OWSurfaceTension / getMaxPc();
-    double effectiveMaxRadius = userInput::get().OWSurfaceTension / getMinPc();
-    radiusStep = (effectiveMaxRadius - effectiveMinRadius) / userInput::get().twoPhaseSimulationSteps;
-    currentRadius = effectiveMinRadius + radiusStep;
-    currentPc = userInput::get().OWSurfaceTension / currentRadius;
+  double effectiveMinRadius = userInput::get().OWSurfaceTension / getMaxPc();
+  double effectiveMaxRadius = userInput::get().OWSurfaceTension / getMinPc();
+  radiusStep = (effectiveMaxRadius - effectiveMinRadius) /
+               userInput::get().twoPhaseSimulationSteps;
+  currentRadius = effectiveMinRadius + radiusStep;
+  currentPc = userInput::get().OWSurfaceTension / currentRadius;
 
-    elementsToInvade.clear();
-    for (element *e : pnmRange<element>(network))
-        if (e->getPhaseFlag() == phase::oil && e->getWettabilityFlag() == wettability::waterWet)
-            elementsToInvade.insert(e);
+  elementsToInvade.clear();
+  for (element *e : pnmRange<element>(network))
+    if (e->getPhaseFlag() == phase::oil &&
+        e->getWettabilityFlag() == wettability::waterWet)
+      elementsToInvade.insert(e);
 }
 
-void spontaneousImbibtion::initialiseCapillaries()
-{
+void spontaneousImbibtion::initialiseCapillaries() {}
+
+double spontaneousImbibtion::getMinPc() {
+  double minPc(1e20);
+  for (element *e : pnmRange<element>(network)) {
+    double pc = std::abs(userInput::get().OWSurfaceTension *
+                         std::cos(e->getTheta()) / e->getRadius());
+    if (pc < minPc) minPc = pc;
+  }
+  return minPc;
 }
 
-double spontaneousImbibtion::getMinPc()
-{
-    double minPc(1e20);
-    for (element *e : pnmRange<element>(network))
-    {
-        double pc = std::abs(userInput::get().OWSurfaceTension * std::cos(e->getTheta()) / e->getRadius());
-        if (pc < minPc)
-            minPc = pc;
-    }
-    return minPc;
+double spontaneousImbibtion::getMaxPc() {
+  double maxPc(-1e20);
+  for (element *e : pnmRange<element>(network)) {
+    double pc = std::abs(e->getEntryPressureCoefficient() *
+                         userInput::get().OWSurfaceTension *
+                         std::cos(e->getTheta()) / e->getRadius());
+    if (pc > maxPc) maxPc = pc;
+  }
+  return maxPc;
 }
 
-double spontaneousImbibtion::getMaxPc()
-{
-    double maxPc(-1e20);
-    for (element *e : pnmRange<element>(network))
-    {
-        double pc = std::abs(e->getEntryPressureCoefficient() * userInput::get().OWSurfaceTension * std::cos(e->getTheta()) / e->getRadius());
-        if (pc > maxPc)
-            maxPc = pc;
-    }
-    return maxPc;
+void spontaneousImbibtion::invadeCapillariesAtCurrentPc() {
+  invadeCapillariesViaSnapOff();
+  invadeCapillariesViaBulk();
 }
 
-void spontaneousImbibtion::invadeCapillariesAtCurrentPc()
-{
-    invadeCapillariesViaSnapOff();
-    invadeCapillariesViaBulk();
+void spontaneousImbibtion::invadeCapillariesViaSnapOff() {
+  hkClustering::get(network).clusterWaterConductorElements();
+  hkClustering::get(network).clusterOilConductorElements();
+
+  std::vector<element *> invadedElements;
+  for (element *e : elementsToInvade) {
+    if (isInvadableViaSnapOff(e)) invadedElements.push_back(e);
+  }
+
+  for (element *e : invadedElements) {
+    fillWithWater(e);
+    elementsToInvade.erase(e);
+  }
+
+  updateOutputFiles();
+  updateGUI();
 }
 
-void spontaneousImbibtion::invadeCapillariesViaSnapOff()
-{
+void spontaneousImbibtion::invadeCapillariesViaBulk() {
+  bool stillMore = true;
+  while (stillMore) {
+    stillMore = false;
+
     hkClustering::get(network).clusterWaterConductorElements();
     hkClustering::get(network).clusterOilConductorElements();
 
     std::vector<element *> invadedElements;
-    for (element *e : elementsToInvade)
-    {
-        if (isInvadableViaSnapOff(e))
-            invadedElements.push_back(e);
+    for (element *e : elementsToInvade) {
+      if (isInvadableViaBulk(e)) invadedElements.push_back(e);
     }
 
-    for (element *e : invadedElements)
-    {
-        fillWithWater(e);
-        elementsToInvade.erase(e);
+    for (element *e : invadedElements) {
+      fillWithWater(e);
+      elementsToInvade.erase(e);
+      stillMore = true;
     }
 
     updateOutputFiles();
     updateGUI();
+
+    if (simulationInterrupted) break;
+  }
 }
 
-void spontaneousImbibtion::invadeCapillariesViaBulk()
-{
-    bool stillMore = true;
-    while (stillMore)
-    {
-        stillMore = false;
+void spontaneousImbibtion::dismissTrappedElements() {
+  std::vector<element *> trappedElements;
+  for (element *e : elementsToInvade) {
+    if (!e->getClusterOilConductor()->getOutlet()) trappedElements.push_back(e);
+  }
 
-        hkClustering::get(network).clusterWaterConductorElements();
-        hkClustering::get(network).clusterOilConductorElements();
-
-        std::vector<element *> invadedElements;
-        for (element *e : elementsToInvade)
-        {
-            if (isInvadableViaBulk(e))
-                invadedElements.push_back(e);
-        }
-
-        for (element *e : invadedElements)
-        {
-            fillWithWater(e);
-            elementsToInvade.erase(e);
-            stillMore = true;
-        }
-
-        updateOutputFiles();
-        updateGUI();
-
-        if (simulationInterrupted)
-            break;
-    }
+  for (element *e : trappedElements) elementsToInvade.erase(e);
 }
 
-void spontaneousImbibtion::dismissTrappedElements()
-{
-    std::vector<element *> trappedElements;
-    for (element *e : elementsToInvade)
-    {
-        if (!e->getClusterOilConductor()->getOutlet())
-            trappedElements.push_back(e);
+void spontaneousImbibtion::adjustCapillaryVolumes() {
+  double waterVolume(0);
+
+  for (element *e : pnmRange<element>(network)) {
+    if (e->getPhaseFlag() == phase::oil &&
+        e->getWettabilityFlag() == wettability::waterWet) {
+      if (e->getWaterCornerActivated() &&
+          e->getClusterWaterConductor()->getInlet() &&
+          e->getClusterOilConductor()->getOutlet())
+        adjustVolumetrics(e);
+
+      waterVolume += e->getWaterFilmVolume();
     }
 
-    for (element *e : trappedElements)
-        elementsToInvade.erase(e);
+    if (e->getPhaseFlag() == phase::oil &&
+        e->getWettabilityFlag() == wettability::oilWet)
+      waterVolume += e->getWaterFilmVolume();
+
+    if (e->getPhaseFlag() == phase::water &&
+        e->getWettabilityFlag() == wettability::oilWet)
+      waterVolume += e->getEffectiveVolume() + e->getWaterFilmVolume();
+
+    if (e->getPhaseFlag() == phase::water &&
+        e->getWettabilityFlag() == wettability::waterWet)
+      waterVolume += e->getVolume();
+  }
+
+  currentSw = waterVolume / network->totalNetworkVolume;
 }
 
-void spontaneousImbibtion::adjustCapillaryVolumes()
-{
-    double waterVolume(0);
+bool spontaneousImbibtion::isInvadableViaSnapOff(element *e) {
+  bool isInvadable = false;
+  double entryPressure =
+      userInput::get().OWSurfaceTension * cos(e->getTheta()) / e->getRadius();
+  if (currentPc - 1e-5 <= entryPressure && e->getWaterCornerActivated() &&
+      e->getClusterWaterConductor()->getInlet() &&
+      e->getClusterOilConductor()->getOutlet())
+    isInvadable = true;
+  return isInvadable;
+}
 
-    for (element *e : pnmRange<element>(network))
-    {
-        if (e->getPhaseFlag() == phase::oil && e->getWettabilityFlag() == wettability::waterWet)
-        {
-            if (e->getWaterCornerActivated() && e->getClusterWaterConductor()->getInlet() && e->getClusterOilConductor()->getOutlet())
-                adjustVolumetrics(e);
+bool spontaneousImbibtion::isInvadableViaBulk(element *e) {
+  bool isInvadable = false;
 
-            waterVolume += e->getWaterFilmVolume();
-        }
+  if (e->getType() == capillaryType::throat &&
+      (e->getInlet() || isConnectedToInletCluster(e)) &&
+      e->getClusterOilConductor()->getOutlet()) {
+    double entryPressure = e->getEntryPressureCoefficient() *
+                           userInput::get().OWSurfaceTension *
+                           std::cos(e->getTheta()) / e->getRadius();
+    if (currentPc - 1e-5 <= entryPressure) isInvadable = true;
+  }
 
-        if (e->getPhaseFlag() == phase::oil && e->getWettabilityFlag() == wettability::oilWet)
-            waterVolume += e->getWaterFilmVolume();
-
-        if (e->getPhaseFlag() == phase::water && e->getWettabilityFlag() == wettability::oilWet)
-            waterVolume += e->getEffectiveVolume() + e->getWaterFilmVolume();
-
-        if (e->getPhaseFlag() == phase::water && e->getWettabilityFlag() == wettability::waterWet)
-            waterVolume += e->getVolume();
+  else if (e->getType() == capillaryType::poreBody &&
+           isConnectedToInletCluster(e) &&
+           e->getClusterOilConductor()->getOutlet()) {
+    int oilNeighboorsNumber(0);
+    for (element *n : e->getNeighboors()) {
+      if (n->getPhaseFlag() == phase::oil) oilNeighboorsNumber++;
     }
 
-    currentSw = waterVolume / network->totalNetworkVolume;
+    double entryPressureBodyFilling = 0;
+    if (oilNeighboorsNumber == 1)
+      entryPressureBodyFilling = e->getEntryPressureCoefficient() *
+                                 userInput::get().OWSurfaceTension *
+                                 std::cos(e->getTheta()) / e->getRadius();
+    if (oilNeighboorsNumber > 1)
+      entryPressureBodyFilling = e->getEntryPressureCoefficient() *
+                                 userInput::get().OWSurfaceTension *
+                                 std::cos(e->getTheta()) / e->getRadius() /
+                                 double(oilNeighboorsNumber);
+
+    if (currentPc - 1e-5 <= entryPressureBodyFilling) isInvadable = true;
+  }
+
+  return isInvadable;
 }
 
-bool spontaneousImbibtion::isInvadableViaSnapOff(element *e)
-{
-    bool isInvadable = false;
-    double entryPressure = userInput::get().OWSurfaceTension * cos(e->getTheta()) / e->getRadius();
-    if (currentPc - 1e-5 <= entryPressure && e->getWaterCornerActivated() && e->getClusterWaterConductor()->getInlet() && e->getClusterOilConductor()->getOutlet())
-        isInvadable = true;
-    return isInvadable;
-}
-
-bool spontaneousImbibtion::isInvadableViaBulk(element *e)
-{
-    bool isInvadable = false;
-
-    if (e->getType() == capillaryType::throat && (e->getInlet() || isConnectedToInletCluster(e)) && e->getClusterOilConductor()->getOutlet())
-    {
-        double entryPressure = e->getEntryPressureCoefficient() * userInput::get().OWSurfaceTension * std::cos(e->getTheta()) / e->getRadius();
-        if (currentPc - 1e-5 <= entryPressure)
-            isInvadable = true;
+bool spontaneousImbibtion::isConnectedToInletCluster(element *e) {
+  bool connectedToInletCluster = false;
+  for (element *n : e->getNeighboors())
+    if (n->getPhaseFlag() == phase::water &&
+        n->getClusterWaterConductor()->getInlet()) {
+      connectedToInletCluster = true;
+      break;
     }
-
-    else if (e->getType() == capillaryType::poreBody && isConnectedToInletCluster(e) && e->getClusterOilConductor()->getOutlet())
-    {
-        int oilNeighboorsNumber(0);
-        for (element *n : e->getNeighboors())
-        {
-            if (n->getPhaseFlag() == phase::oil)
-                oilNeighboorsNumber++;
-        }
-
-        double entryPressureBodyFilling = 0;
-        if (oilNeighboorsNumber == 1)
-            entryPressureBodyFilling = e->getEntryPressureCoefficient() * userInput::get().OWSurfaceTension * std::cos(e->getTheta()) / e->getRadius();
-        if (oilNeighboorsNumber > 1)
-            entryPressureBodyFilling = e->getEntryPressureCoefficient() * userInput::get().OWSurfaceTension * std::cos(e->getTheta()) / e->getRadius() / double(oilNeighboorsNumber);
-
-        if (currentPc - 1e-5 <= entryPressureBodyFilling)
-            isInvadable = true;
-    }
-
-    return isInvadable;
+  return connectedToInletCluster;
 }
 
-bool spontaneousImbibtion::isConnectedToInletCluster(element *e)
-{
-    bool connectedToInletCluster = false;
-    for (element *n : e->getNeighboors())
-        if (n->getPhaseFlag() == phase::water && n->getClusterWaterConductor()->getInlet())
-        {
-            connectedToInletCluster = true;
-            break;
-        }
-    return connectedToInletCluster;
+void spontaneousImbibtion::fillWithWater(element *e) {
+  e->setPhaseFlag(phase::water);
+  e->setWaterConductor(true);
+  e->setOilFraction(0);
+  e->setWaterFraction(1);
+  e->setWaterCornerActivated(false);
+  e->setWaterFilmVolume(0);
+  e->setWaterFilmConductivity(1e-200);
+
+  e->setOilConductor(false);
 }
 
-void spontaneousImbibtion::fillWithWater(element *e)
-{
-    e->setPhaseFlag(phase::water);
-    e->setWaterConductor(true);
-    e->setOilFraction(0);
-    e->setWaterFraction(1);
-    e->setWaterCornerActivated(false);
-    e->setWaterFilmVolume(0);
-    e->setWaterFilmConductivity(1e-200);
+void spontaneousImbibtion::adjustVolumetrics(element *e) {
+  double rSquared = std::pow(userInput::get().OWSurfaceTension / currentPc, 2);
+  double filmVolume =
+      std::min(rSquared * e->getFilmAreaCoefficient() * e->getLength(),
+               (1 - 4 * maths::pi() * e->getShapeFactor()) * e->getVolume());
+  double filmConductance = rSquared * filmVolume / e->getLength() /
+                           (userInput::get().waterViscosity * e->getLength());
 
-    e->setOilConductor(false);
+  e->setWaterFilmVolume(filmVolume);
+  e->setWaterFilmConductivity(filmConductance);
+  e->setEffectiveVolume(e->getVolume() - e->getWaterFilmVolume());
 }
 
-void spontaneousImbibtion::adjustVolumetrics(element *e)
-{
-    double rSquared = std::pow(userInput::get().OWSurfaceTension / currentPc, 2);
-    double filmVolume = std::min(rSquared * e->getFilmAreaCoefficient() * e->getLength(), (1 - 4 * maths::pi() * e->getShapeFactor()) * e->getVolume());
-    double filmConductance = rSquared * filmVolume / e->getLength() / (userInput::get().waterViscosity * e->getLength());
+void spontaneousImbibtion::updateVariables() {
+  step++;
 
-    e->setWaterFilmVolume(filmVolume);
-    e->setWaterFilmConductivity(filmConductance);
-    e->setEffectiveVolume(e->getVolume() - e->getWaterFilmVolume());
+  if (step != userInput::get().twoPhaseSimulationSteps) {
+    currentRadius += radiusStep;
+    currentPc = userInput::get().OWSurfaceTension / currentRadius;
+  }
 }
 
-void spontaneousImbibtion::updateVariables()
-{
-    step++;
+void spontaneousImbibtion::updateOutputFiles() {
+  if (std::abs(outputCounter - currentSw) < 0.01) return;
 
-    if (step != userInput::get().twoPhaseSimulationSteps)
-    {
-        currentRadius += radiusStep;
-        currentPc = userInput::get().OWSurfaceTension / currentRadius;
-    }
-}
+  std::ofstream file;
 
-void spontaneousImbibtion::updateOutputFiles()
-{
-    if (std::abs(outputCounter - currentSw) < 0.01)
-        return;
+  file.open(pcFilename, std::ofstream::app);
+  file << currentSw << "\t" << currentPc << std::endl;
+  file.close();
 
-    std::ofstream file;
+  if (userInput::get().relativePermeabilitiesCalculation) {
+    auto relPerms = pnmSolver::get(network).calculateRelativePermeabilities();
 
-    file.open(pcFilename, std::ofstream::app);
-    file << currentSw << "\t" << currentPc << std::endl;
+    file.open(relPermFilename, std::ofstream::app);
+    file << currentSw << "\t" << relPerms.first << "\t" << relPerms.second
+         << std::endl;
     file.close();
+  }
 
-    if (userInput::get().relativePermeabilitiesCalculation)
-    {
-        auto relPerms = pnmSolver::get(network).calculateRelativePermeabilities();
+  generateNetworkStateFiles();
 
-        file.open(relPermFilename, std::ofstream::app);
-        file << currentSw << "\t" << relPerms.first << "\t" << relPerms.second << std::endl;
-        file.close();
-    }
-
-    generateNetworkStateFiles();
-
-    outputCounter = currentSw;
+  outputCounter = currentSw;
 }
 
-void spontaneousImbibtion::generateNetworkStateFiles()
-{
-    if (!userInput::get().extractDataSS)
-        return;
+void spontaneousImbibtion::generateNetworkStateFiles() {
+  if (!userInput::get().extractDataSS) return;
 
-    pnmOperation::get(network).generateNetworkState(frameCount, "Spontaneous_Imbibition");
-    frameCount++;
+  pnmOperation::get(network).generateNetworkState(frameCount,
+                                                  "Spontaneous_Imbibition");
+  frameCount++;
 }
 
-} // namespace PNM
+}  // namespace PNM

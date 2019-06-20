@@ -8,10 +8,9 @@
 #ifndef MATHS_H
 #define MATHS_H
 
-namespace maths
-{
+namespace maths {
 double pi();
 double PsiToPa(double const &pressure);
 double PaToPsi(double const &pressure);
-} // namespace maths
-#endif // MATHS_H
+}  // namespace maths
+#endif  // MATHS_H

@@ -10,30 +10,28 @@
 
 #include "regularNetworkBuilder.h"
 
-namespace PNM
-{
+namespace PNM {
 
-class numscalNetworkBuilder : public regularNetworkBuilder
-{
-    Q_OBJECT
-  public:
-    numscalNetworkBuilder() {}
-    ~numscalNetworkBuilder() {}
-    numscalNetworkBuilder(const numscalNetworkBuilder &) = delete;
-    numscalNetworkBuilder(numscalNetworkBuilder &&) = delete;
-    auto operator=(const numscalNetworkBuilder &) -> numscalNetworkBuilder & = delete;
-    auto operator=(numscalNetworkBuilder &&) -> numscalNetworkBuilder & = delete;
-    void make() override;
-    std::string getNotification() override;
+class numscalNetworkBuilder : public regularNetworkBuilder {
+  Q_OBJECT
+ public:
+  numscalNetworkBuilder() {}
+  numscalNetworkBuilder(const numscalNetworkBuilder &) = delete;
+  numscalNetworkBuilder(numscalNetworkBuilder &&) = delete;
+  auto operator=(const numscalNetworkBuilder &)
+      -> numscalNetworkBuilder & = delete;
+  auto operator=(numscalNetworkBuilder &&) -> numscalNetworkBuilder & = delete;
+  void make() override;
+  std::string getNotification() override;
 
-  protected:
-    void initiateNetworkProperties() override;
-    void importNodes();
-    void importPores();
-    void assignMissingValues();
-    double computeAverageLength();
+ protected:
+  void initiateNetworkProperties() override;
+  void importNodes();
+  void importPores();
+  void assignMissingValues();
+  double computeAverageLength();
 };
 
-} // namespace PNM
+}  // namespace PNM
 
-#endif // NUMSCALNETWORKBUILDER_H
+#endif  // NUMSCALNETWORKBUILDER_H

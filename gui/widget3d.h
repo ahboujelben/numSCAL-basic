@@ -12,8 +12,7 @@
 #include <libs/glm/glm.hpp>
 #include <memory>
 
-namespace PNM
-{
+namespace PNM {
 class networkModel;
 }
 
@@ -21,16 +20,14 @@ class Shader;
 class QMouseEvent;
 class QTimer;
 
-class widget3d : public QOpenGLWidget
-{
+class widget3d : public QOpenGLWidget {
   Q_OBJECT
-public:
-  widget3d(QWidget *parent = 0);
-  ~widget3d() {}
+ public:
+  widget3d(QWidget *parent = nullptr);
   void setNetwork(const std::shared_ptr<PNM::networkModel> &value);
   void setAspectRatio();
 
-  //getters and setters
+  // getters and setters
 
   bool getNetworkBuilt() const;
   void setNetworkBuilt(bool value);
@@ -130,14 +127,16 @@ public:
 
   void setSimulationRunnning(bool value);
 
-public slots:
+ public slots:
   void timerUpdate();
 
-protected:
+ protected:
   template <typename T>
-  void allocateBufferOnGPU(GLuint buffer, const unsigned count, GLenum target, GLenum access);
+  void allocateBufferOnGPU(GLuint buffer, const unsigned count, GLenum target,
+                           GLenum access);
   template <typename T>
-  void uploadDataToGPU(GLuint buffer, std::vector<T> h_data, const unsigned count, GLenum target);
+  void uploadDataToGPU(GLuint buffer, std::vector<T> h_data,
+                       const unsigned count, GLenum target);
   void initialiseDataBuffers();
   void bufferCylinderDynamicData();
   void bufferCylinderStaticData();
@@ -163,43 +162,35 @@ protected:
   void resizeGL(int w, int h);
   void paintGL();
 
-  double xRot, yRot, zRot,
-      xTran, yTran, scale,
-      xInitRot, yInitRot,
-      xInitTran, yInitTran, zInitTran,
-      aspect,
-      cutXValue, cutYValue, cutZValue;
+  double xRot, yRot, zRot, xTran, yTran, scale, xInitRot, yInitRot, xInitTran,
+      yInitTran, zInitTran, aspect, cutXValue, cutYValue, cutZValue;
   int sphereCount, cylinderCount, lineCount;
   bool networkBuilt, simulationRunnning, buffersAllocated, refreshRequested,
-      axes, animation,
-      poreBodies, nodeBodies, poreLines,
-      oilVisible, waterVisible, waterWetVisible, oilWetVisible,
-      cutX, cutY, cutZ;
+      axes, animation, poreBodies, nodeBodies, poreLines, oilVisible,
+      waterVisible, waterWetVisible, oilWetVisible, cutX, cutY, cutZ;
 
   glm::vec4 backgroundColor;
   glm::vec3 oilColor, waterColor, tracerColor;
   QPoint lastPos;
-  //data buffers
+  // data buffers
   std::vector<GLfloat> dynamicSphereBuffer, staticSphereBuffer,
-      dynamicCylinderBuffer, staticCylinderBuffer,
-      dynamicLineBuffer, staticLineBuffer;
+      dynamicCylinderBuffer, staticCylinderBuffer, dynamicLineBuffer,
+      staticLineBuffer;
 
-  std::vector<GLint> sphereIndicesBuffer,
-      cylinderIndicesBuffer,
+  std::vector<GLint> sphereIndicesBuffer, cylinderIndicesBuffer,
       lineIndicesBuffer;
-  //shader attributes
+  // shader attributes
   unsigned int dynamicSphereVBO, staticSphereVBO, sphereIndicesVBO, sphereVAO,
       dynamicCylinderVBO, staticCylinderVBO, cylinderIndicesVBO, cylinderVAO,
-      dynamicLineVBO, staticLineVBO, lineIndicesVBO, lineVAO,
-      axesVBO, axesVAO;
+      dynamicLineVBO, staticLineVBO, lineIndicesVBO, lineVAO, axesVBO, axesVAO;
   // matrices
   glm::mat4 view, viewInv, projection;
-  //shaders
+  // shaders
   std::shared_ptr<Shader> sphereShader, cylinderShader, lineShader;
-  //network model
+  // network model
   std::shared_ptr<PNM::networkModel> network;
-  //timer
+  // timer
   std::shared_ptr<QTimer> timer;
 };
 
-#endif // WIDGET3D_H
+#endif  // WIDGET3D_H
