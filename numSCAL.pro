@@ -19,8 +19,6 @@ CONFIG += c++14
 
 TEMPLATE = app
 
-LIBS += -fopenmp
-
 win32 {
     contains(QT_ARCH, i386) {
         #32 bit

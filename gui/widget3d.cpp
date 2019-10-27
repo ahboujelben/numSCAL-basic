@@ -95,18 +95,11 @@ void widget3d::setAspectRatio() {
 }
 
 template <typename T>
-void widget3d::allocateBufferOnGPU(GLuint buffer, const unsigned count,
-                                   GLenum target, GLenum access) {
-  glBindBuffer(target, buffer);
-  glBufferData(target, count * sizeof(T), nullptr, access);
-  glBindBuffer(target, 0);
-}
-
-template <typename T>
 void widget3d::uploadDataToGPU(GLuint buffer, std::vector<T> h_data,
-                               const unsigned count, GLenum target) {
+                               const unsigned count, GLenum target,
+                               GLenum access) {
   glBindBuffer(target, buffer);
-  glBufferSubData(target, 0, count * sizeof(T), (const void *)&h_data[0]);
+  glBufferData(target, count * sizeof(T), (const void *)&h_data[0], access);
   glBindBuffer(target, 0);
 }
 
@@ -121,13 +114,6 @@ void widget3d::initialiseDataBuffers() {
   sphereIndicesBuffer.clear();
   sphereIndicesBuffer.resize(sphereCount);
 
-  allocateBufferOnGPU<GLfloat>(staticSphereVBO, 4 * sphereCount,
-                               GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-  allocateBufferOnGPU<GLfloat>(dynamicSphereVBO, 2 * sphereCount,
-                               GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-  allocateBufferOnGPU<GLint>(sphereIndicesVBO, sphereCount,
-                             GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-
   // cylinders
 
   int cylinderCount = network->totalPores;
@@ -137,13 +123,6 @@ void widget3d::initialiseDataBuffers() {
   dynamicCylinderBuffer.resize(3 * cylinderCount);
   cylinderIndicesBuffer.clear();
   cylinderIndicesBuffer.resize(cylinderCount);
-
-  allocateBufferOnGPU<GLfloat>(staticCylinderVBO, 8 * cylinderCount,
-                               GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-  allocateBufferOnGPU<GLfloat>(dynamicCylinderVBO, 2 * cylinderCount,
-                               GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-  allocateBufferOnGPU<GLint>(cylinderIndicesVBO, cylinderCount,
-                             GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
   // lines
 
@@ -155,13 +134,6 @@ void widget3d::initialiseDataBuffers() {
   lineIndicesBuffer.clear();
   lineIndicesBuffer.resize(2 * lineCount);
 
-  allocateBufferOnGPU<GLfloat>(staticLineVBO, 2 * 3 * lineCount,
-                               GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-  allocateBufferOnGPU<GLfloat>(dynamicLineVBO, 2 * 2 * lineCount,
-                               GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-  allocateBufferOnGPU<GLint>(lineIndicesVBO, 2 * lineCount,
-                             GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-
   // initialise buffers
 
   bufferSphereStaticData();
@@ -172,6 +144,9 @@ void widget3d::initialiseDataBuffers() {
 
   bufferLineStaticData();
   bufferLineDynamicData();
+
+  bufferCylinderIndicesData();
+  bufferSphereIndicesData();
 
   buffersAllocated = true;
 }
@@ -193,7 +168,7 @@ void widget3d::bufferSphereStaticData() {
   }
 
   uploadDataToGPU(staticSphereVBO, staticSphereBuffer, 4 * network->totalNodes,
-                  GL_ARRAY_BUFFER);
+                  GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 }
 
 void widget3d::bufferSphereDynamicData() {
@@ -212,7 +187,7 @@ void widget3d::bufferSphereDynamicData() {
   }
 
   uploadDataToGPU(dynamicSphereVBO, dynamicSphereBuffer,
-                  2 * network->totalNodes, GL_ARRAY_BUFFER);
+                  2 * network->totalNodes, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 }
 
 void widget3d::bufferSphereIndicesData() {
@@ -237,7 +212,7 @@ void widget3d::bufferSphereIndicesData() {
   sphereCount = index;
   if (index != 0) {
     uploadDataToGPU(sphereIndicesVBO, sphereIndicesBuffer, index,
-                    GL_ELEMENT_ARRAY_BUFFER);
+                    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
   }
 }
 
@@ -285,7 +260,7 @@ void widget3d::bufferCylinderStaticData() {
   }
 
   uploadDataToGPU(staticCylinderVBO, staticCylinderBuffer,
-                  8 * network->totalPores, GL_ARRAY_BUFFER);
+                  8 * network->totalPores, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 }
 
 void widget3d::bufferCylinderDynamicData() {
@@ -308,7 +283,7 @@ void widget3d::bufferCylinderDynamicData() {
   }
 
   uploadDataToGPU(dynamicCylinderVBO, dynamicCylinderBuffer,
-                  2 * network->totalPores, GL_ARRAY_BUFFER);
+                  2 * network->totalPores, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 }
 
 void widget3d::bufferCylinderIndicesData() {
@@ -338,7 +313,7 @@ void widget3d::bufferCylinderIndicesData() {
   cylinderCount = index;
   if (index != 0) {
     uploadDataToGPU(cylinderIndicesVBO, cylinderIndicesBuffer, index,
-                    GL_ELEMENT_ARRAY_BUFFER);
+                    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
   }
 }
 
@@ -371,7 +346,7 @@ void widget3d::bufferLineStaticData() {
   }
 
   uploadDataToGPU(staticLineVBO, staticLineBuffer, 2 * 3 * network->totalPores,
-                  GL_ARRAY_BUFFER);
+                  GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 }
 
 void widget3d::bufferLineDynamicData() {
@@ -400,7 +375,8 @@ void widget3d::bufferLineDynamicData() {
   }
 
   uploadDataToGPU(dynamicLineVBO, dynamicLineBuffer,
-                  2 * 2 * network->totalPores, GL_ARRAY_BUFFER);
+                  2 * 2 * network->totalPores, GL_ARRAY_BUFFER,
+                  GL_DYNAMIC_DRAW);
 }
 
 void widget3d::bufferLinesIndicesData() {
@@ -428,7 +404,7 @@ void widget3d::bufferLinesIndicesData() {
   lineCount = index;
   if (index != 0) {
     uploadDataToGPU(lineIndicesVBO, lineIndicesBuffer, index,
-                    GL_ELEMENT_ARRAY_BUFFER);
+                    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
   }
 }
 
@@ -492,9 +468,7 @@ void widget3d::bufferAxesData() {
   axesBuffer[index + 8] = 4;
   axesBuffer[index + 9] = 0;
 
-  allocateBufferOnGPU<GLfloat>(axesVBO, 10 * 3, GL_ARRAY_BUFFER,
-                               GL_STATIC_DRAW);
-  uploadDataToGPU(axesVBO, axesBuffer, 10 * 3, GL_ARRAY_BUFFER);
+  uploadDataToGPU(axesVBO, axesBuffer, 10 * 3, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 }
 
 void widget3d::loadShaderUniforms(Shader *shader) {
@@ -555,8 +529,10 @@ void widget3d::loadShaderUniformsAxes(Shader *shader) {
 void widget3d::drawSpheres() {
   sphereShader->use();
   loadShaderUniforms(sphereShader.get());
-  if (simulationRunnning || refreshRequested) bufferSphereDynamicData();
-  bufferSphereIndicesData();
+  if (simulationRunnning || refreshRequested) {
+    bufferSphereDynamicData();
+    bufferSphereIndicesData();
+  }
   glBindVertexArray(sphereVAO);
   glDrawElements(GL_POINTS, sphereCount, GL_UNSIGNED_INT, nullptr);
   glBindVertexArray(0);
@@ -565,8 +541,10 @@ void widget3d::drawSpheres() {
 void widget3d::drawCylinders() {
   cylinderShader->use();
   loadShaderUniforms(cylinderShader.get());
-  if (simulationRunnning || refreshRequested) bufferCylinderDynamicData();
-  bufferCylinderIndicesData();
+  if (simulationRunnning || refreshRequested) {
+    bufferCylinderDynamicData();
+    bufferCylinderIndicesData();
+  }
   glBindVertexArray(cylinderVAO);
   glDrawElements(GL_POINTS, cylinderCount, GL_UNSIGNED_INT, nullptr);
   glBindVertexArray(0);
@@ -575,14 +553,17 @@ void widget3d::drawCylinders() {
 void widget3d::drawLines() {
   lineShader->use();
   loadShaderUniforms(lineShader.get());
-  if (simulationRunnning || refreshRequested) bufferLineDynamicData();
-  bufferLinesIndicesData();
+  if (simulationRunnning || refreshRequested) {
+    bufferLineDynamicData();
+    bufferLinesIndicesData();
+  }
   glBindVertexArray(lineVAO);
   glDrawElements(GL_LINES, lineCount, GL_UNSIGNED_INT, nullptr);
   glBindVertexArray(0);
 }
 
 void widget3d::drawAxes() {
+  glClear(GL_DEPTH_BUFFER_BIT);
   cylinderShader->use();
   loadShaderUniformsAxes(cylinderShader.get());
   glBindVertexArray(axesVAO);
@@ -640,17 +621,18 @@ void widget3d::initializeGL() {
 
   glBindVertexArray(sphereVAO);
 
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereIndicesVBO);
+
   glBindBuffer(GL_ARRAY_BUFFER, staticSphereVBO);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * 4, nullptr);
   glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * 4, (GLvoid *)12);
-  glEnableVertexAttribArray(0);  // pos
-  glEnableVertexAttribArray(1);  // radius
 
   glBindBuffer(GL_ARRAY_BUFFER, dynamicSphereVBO);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * 4, nullptr);
-  glEnableVertexAttribArray(2);  // color
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereIndicesVBO);
+  glEnableVertexAttribArray(0);  // pos
+  glEnableVertexAttribArray(1);  // radius
+  glEnableVertexAttribArray(2);  // color
 
   glBindVertexArray(0);
 
@@ -662,21 +644,22 @@ void widget3d::initializeGL() {
 
   glBindVertexArray(cylinderVAO);
 
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cylinderIndicesVBO);
+
   glBindBuffer(GL_ARRAY_BUFFER, staticCylinderVBO);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * 4, nullptr);
   glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 8 * 4, (GLvoid *)12);
   glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * 4, (GLvoid *)16);
   glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 8 * 4, (GLvoid *)28);
+
+  glBindBuffer(GL_ARRAY_BUFFER, dynamicCylinderVBO);
+  glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 2 * 4, (GLvoid *)nullptr);
+
   glEnableVertexAttribArray(0);  // pos
   glEnableVertexAttribArray(1);  // height
   glEnableVertexAttribArray(2);  // direction
   glEnableVertexAttribArray(3);  // radius
-
-  glBindBuffer(GL_ARRAY_BUFFER, dynamicCylinderVBO);
-  glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 2 * 4, (GLvoid *)nullptr);
   glEnableVertexAttribArray(4);  // color
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cylinderIndicesVBO);
 
   glBindVertexArray(0);
 
@@ -688,15 +671,16 @@ void widget3d::initializeGL() {
 
   glBindVertexArray(lineVAO);
 
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineIndicesVBO);
+
   glBindBuffer(GL_ARRAY_BUFFER, staticLineVBO);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * 4, nullptr);
-  glEnableVertexAttribArray(0);  // pos
 
   glBindBuffer(GL_ARRAY_BUFFER, dynamicLineVBO);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * 4, nullptr);
-  glEnableVertexAttribArray(1);  // color
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineIndicesVBO);
+  glEnableVertexAttribArray(0);  // pos
+  glEnableVertexAttribArray(1);  // color
 
   glBindVertexArray(0);
 
@@ -712,6 +696,7 @@ void widget3d::initializeGL() {
   glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 10 * 4, (GLvoid *)16);
   glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 10 * 4, (GLvoid *)28);
   glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 10 * 4, (GLvoid *)32);
+
   glEnableVertexAttribArray(0);  // pos
   glEnableVertexAttribArray(1);  // height
   glEnableVertexAttribArray(2);  // direction

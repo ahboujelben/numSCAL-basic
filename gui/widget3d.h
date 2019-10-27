@@ -132,11 +132,8 @@ class widget3d : public QOpenGLWidget {
 
  protected:
   template <typename T>
-  void allocateBufferOnGPU(GLuint buffer, const unsigned count, GLenum target,
-                           GLenum access);
-  template <typename T>
   void uploadDataToGPU(GLuint buffer, std::vector<T> h_data,
-                       const unsigned count, GLenum target);
+                       const unsigned count, GLenum target, GLenum access);
   void initialiseDataBuffers();
   void bufferCylinderDynamicData();
   void bufferCylinderStaticData();
@@ -168,7 +165,6 @@ class widget3d : public QOpenGLWidget {
   bool networkBuilt, simulationRunnning, buffersAllocated, refreshRequested,
       axes, animation, poreBodies, nodeBodies, poreLines, oilVisible,
       waterVisible, waterWetVisible, oilWetVisible, cutX, cutY, cutZ;
-
   glm::vec4 backgroundColor;
   glm::vec3 oilColor, waterColor, tracerColor;
   QPoint lastPos;
@@ -176,7 +172,6 @@ class widget3d : public QOpenGLWidget {
   std::vector<GLfloat> dynamicSphereBuffer, staticSphereBuffer,
       dynamicCylinderBuffer, staticCylinderBuffer, dynamicLineBuffer,
       staticLineBuffer;
-
   std::vector<GLint> sphereIndicesBuffer, cylinderIndicesBuffer,
       lineIndicesBuffer;
   // shader attributes
