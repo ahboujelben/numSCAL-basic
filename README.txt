@@ -1,7 +1,8 @@
 numSCAL - Open Source Edition
-Copyright: Ahmed Hamdi Boujelben 2019
+Copyright: Ahmed Hamdi Boujelben 2018-2021
+Licence: MIT
 Author: Ahmed Hamdi Boujelben (ahmed.hamdi.boujelben@gmail.com)
-Developed at: Heriot-Watt University
+Developed at: Heriot-Watt University - Edinburgh, UK
 
 Build instructions:
 Make sure you have already insalled Qt (mingw32 or mingw64 version) with a mingw compiler that supports C++14.
